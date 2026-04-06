@@ -11,6 +11,7 @@ pipx inject poetry poetry-plugin-shell
 poetry python install 3.13
 poetry env use 3.13
 
+poetry lock
 poetry install
 ```
 
