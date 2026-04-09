@@ -1,9 +1,11 @@
 FROM python:3.13-slim
+
 ENV POETRY_VIRTUALENVS_CREATE=false
 
 WORKDIR /app
 
-COPY . .
+COPY pyproject.toml poetry.lock ./
+COPY api ./api
 
 RUN pip install poetry
 RUN poetry config installer.max-workers 10
