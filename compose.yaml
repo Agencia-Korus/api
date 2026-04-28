@@ -1,6 +1,6 @@
 services:
   korus-db:
-    image: postgres
+    image: postgres:18
     volumes:
       - pgdata:/var/lib/postgresql
     environment:
@@ -9,13 +9,22 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   korus-api:
     image: korus-api
+    entrypoint: ./entrypoint.sh
     build: .
     ports:
       - "8000:8000"
     depends_on:
-      - korus-db
-
+      korus-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@korus-db:5432/${POSTGRES_DB}
+      DEBUG: ${DEBUG}
 volumes:
   pgdata:
