@@ -5,3 +5,7 @@ app = FastAPI(
     version='0.1.0',
     description='Microsserviço de autenticação'
 )
+
+@app.get('/health', tags=['Health Auth'])
+async def health():
+    return {'status': 'auth microservice is running'}
