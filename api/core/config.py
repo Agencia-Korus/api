@@ -9,7 +9,7 @@ from core.constants import (
 )
 
 class Settings(BaseSettings):
-	database_url: str
+	database_url: str = 'postgres-url-development'
 	debug: bool = False
 	jwt_secret_key: str = 'secret-key-development'
 	jwt_algorithm: str = JWT_DEFAULT_ALGORITHM
@@ -24,4 +24,4 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-	return Settings()
+    return Settings()
