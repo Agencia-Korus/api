@@ -6,9 +6,9 @@ from sqlalchemy import update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.constants import PAGINATION_DEFAULT_LIMIT, PAGINATION_DEFAULT_OFFSET
-from db.base import BaseModel
+from db.base import Base
 
-ModelT = TypeVar("ModelT", bound=BaseModel)
+ModelT = TypeVar("ModelT", bound=Base)
 
 
 class BaseRepository(Generic[ModelT]):
@@ -48,9 +48,11 @@ class BaseRepository(Generic[ModelT]):
         if not update_data:
             return await self.get(entity_id)
 
+        id_field = getattr(self.model, "id")
+
         statement = (
             sa_update(self.model)
-            .where(self.model.id == entity_id)
+            .where(id_field == entity_id)
             .values(**update_data)
             .returning(self.model)
         )
@@ -62,7 +64,8 @@ class BaseRepository(Generic[ModelT]):
         return result.scalar_one_or_none()
 
     async def delete(self, entity_id: int) -> bool:
-        statement = sa_delete(self.model).where(self.model.id == entity_id)
+        id_field = getattr(self.model, "id")
+        statement = sa_delete(self.model).where(id_field == entity_id)
         result = await self.session.execute(statement)
         await self.session.flush()
         deleted_id = result.scalar_one_or_none()
