@@ -15,9 +15,8 @@ os.environ.setdefault('JWT_SECRET_KEY', 'test-secret')
 
 from core.security import create_access_token
 from db.session import engine
+from main import app
 from sqlalchemy import text
-
-from api.main import app
 
 BASE_URL_ENV = 'KORUS_BASE_URL'
 DEFAULT_TIMEOUT_SECONDS = 30

@@ -2,6 +2,7 @@ import uuid
 
 import pytest
 from httpx import AsyncClient
+
 from tests.conftest import requires_db
 
 
