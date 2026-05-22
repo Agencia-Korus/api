@@ -11,7 +11,7 @@ from core.config import get_settings
 from db.base import Base
 
 # Models 
-from modules.posts import model as posts_models
+from db.registro import ALL_MODELS
 
 settings = get_settings()
 
