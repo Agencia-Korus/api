@@ -16,7 +16,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.constants import (
 	ICONE_MAX_LENGTH,
-	NOME_MAX_LENGTH,
+	NOME_MAX_LENGHT,
 	SLUG_MAX_LENGTH,
 	URL_MAX_LENGTH,
 )
@@ -28,7 +28,7 @@ class Servico(Base):
 	__tablename__ = 'servico'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-	nome: Mapped[str] = mapped_column(String(NOME_MAX_LENGTH), nullable=False)
+	nome: Mapped[str] = mapped_column(String(NOME_MAX_LENGHT), nullable=False)
 	slug: Mapped[str] = mapped_column(
 		String(SLUG_MAX_LENGTH), unique=True, nullable=False
 	)
