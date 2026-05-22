@@ -24,7 +24,6 @@ for module_router in (
     gamificacao_router,
     integracoes_router,
     leads_router,
-    leads_router,
     lgpd_router,
     portfolio_router,
     projetos_router,
