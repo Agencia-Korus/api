@@ -1,12 +1,12 @@
 from functools import lru_cache
 
+from core.constants import (
+	JWT_ACCESS_TOKEN_EXPIRE_MIN,
+	JWT_DEFAULT_ALGORITHM,
+	JWT_REFRESH_TOKEN_EXPIRE_DAYS,
+)
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from core.constants import (
-    JWT_ACCESS_TOKEN_EXPIRE_MIN,
-    JWT_DEFAULT_ALGORITHM,
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS
-)
 
 class Settings(BaseSettings):
 	database_url: str = 'postgres-url-development'
@@ -24,4 +24,4 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+	return Settings()

@@ -2,8 +2,8 @@ import uuid
 
 import pytest
 from httpx import AsyncClient
-
 from tests.conftest import requires_db
+
 
 def _payload_cliente():
 	suffix = uuid.uuid4().hex[:8]
@@ -19,6 +19,7 @@ def _payload_cliente():
 		},
 	}
 
+
 def _payload_funcionario():
 	suffix = uuid.uuid4().hex[:8]
 	return {
@@ -29,6 +30,7 @@ def _payload_funcionario():
 		'funcionario': {'cargo': 'Designer', 'especialidade': 'UI'},
 	}
 
+
 @pytest.mark.asyncio
 @requires_db
 @pytest.mark.parametrize('payload_builder', [_payload_cliente, _payload_funcionario])
@@ -36,20 +38,20 @@ async def test_admin_cria_usuarios_de_tipos_diversos(
 	client: AsyncClient, admin_headers: dict[str, str], payload_builder
 ):
 	payload = payload_builder()
-	resp = await client.post(
-		'/api/v1/usuarios', json=payload, headers=admin_headers
-	)
+	resp = await client.post('/api/v1/usuarios', json=payload, headers=admin_headers)
 	assert resp.status_code == 201, resp.text
 	criado = resp.json()
 	assert criado['email'] == payload['email']
 	assert criado['status'] == 'ativo'
 	assert 'senha' not in criado
 
+
 @pytest.mark.asyncio
 @requires_db
 async def test_criar_usuario_sem_token_retorna_401(client: AsyncClient):
 	resp = await client.post('/api/v1/usuarios', json=_payload_cliente())
 	assert resp.status_code == 401
+
 
 @pytest.mark.asyncio
 @requires_db
@@ -61,20 +63,18 @@ async def test_criar_usuario_com_role_nao_admin_retorna_403(
 	)
 	assert resp.status_code == 403
 
+
 @pytest.mark.asyncio
 @requires_db
 async def test_email_duplicado_retorna_409(
 	client: AsyncClient, admin_headers: dict[str, str]
 ):
 	payload = _payload_cliente()
-	first = await client.post(
-		'/api/v1/usuarios', json=payload, headers=admin_headers
-	)
+	first = await client.post('/api/v1/usuarios', json=payload, headers=admin_headers)
 	assert first.status_code == 201
-	second = await client.post(
-		'/api/v1/usuarios', json=payload, headers=admin_headers
-	)
+	second = await client.post('/api/v1/usuarios', json=payload, headers=admin_headers)
 	assert second.status_code == 409
+
 
 @pytest.mark.asyncio
 @requires_db
@@ -85,6 +85,7 @@ async def test_registro_publico_cria_usuario_pendente(client: AsyncClient):
 	criado = resp.json()
 	assert criado['status'] == 'pendente'
 
+
 @pytest.mark.asyncio
 @requires_db
 async def test_registro_publico_nao_permite_admin(client: AsyncClient):
@@ -92,6 +93,7 @@ async def test_registro_publico_nao_permite_admin(client: AsyncClient):
 	payload['role'] = 'admin'
 	resp = await client.post('/api/v1/usuarios/registro', json=payload)
 	assert resp.status_code == 400
+
 
 @pytest.mark.asyncio
 @requires_db
@@ -109,6 +111,7 @@ async def test_admin_aprova_cadastro_pendente(
 	assert resp.status_code == 200
 	assert resp.json()['status'] == 'ativo'
 
+
 @pytest.mark.asyncio
 @requires_db
 async def test_aprovar_sem_admin_retorna_403(
@@ -122,6 +125,7 @@ async def test_aprovar_sem_admin_retorna_403(
 		f'/api/v1/usuarios/{usuario_id}/aprovar', headers=cliente_headers
 	)
 	assert resp.status_code == 403
+
 
 @pytest.mark.asyncio
 @requires_db
