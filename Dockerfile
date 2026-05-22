@@ -4,11 +4,15 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 
 WORKDIR /app
 
-COPY . .
+#não reinstala poetry se não forem adicionadas bibliotecas novas
+COPY pyproject.toml poetry.lock* ./
 
-RUN pip install poetry
-RUN poetry config installer.max-workers 10
-RUN poetry install --no-interaction --no-ansi --without dev
+RUN pip install --no-cache-dir poetry \
+&& poetry config installer.max-workers 10 \
+&& poetry install --no-interaction --no-ansi --without dev --no-root
+
+#copia o código do backend
+COPY . .
 
 EXPOSE 8000
 
