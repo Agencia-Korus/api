@@ -14,7 +14,7 @@ dependencies = [
     "asyncpg (>=0.31.0,<0.32.0)",
     "alembic (>=1.18.4,<2.0.0)",
     "python-jose[cryptography] (>=3.3.0,<4.0.0)",
-    "passlib[bcrypt] (>=1.7.4,<2.0.0)",
+    "bcrypt (>=4.0.1,<5.1)",
     "email-validator (>=2.2.0,<3.0.0)",
 ]
 
@@ -29,8 +29,7 @@ pydantic-settings = ">=2.14.0,<3.0.0"
 asyncpg = ">=0.31.0,<0.32.0"
 alembic = ">=1.18.4,<2.0.0"
 python-jose = { version = ">=3.3.0,<4.0.0", extras = ["cryptography"] }
-passlib = { version = ">=1.7.4,<2.0.0", extras = ["bcrypt"] }
-bcrypt = ">=4.0.1,<4.1"
+bcrypt = ">=4.0.1,<5.1"
 email-validator = ">=2.2.0,<3.0.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -73,7 +72,7 @@ quote-style = 'single'
 indent-style = 'tab'
 
 [tool.pytest.ini_options]
-pythonpath = '.'
+pythonpath = ['api']
 addopts = '-p no:warnings'
 asyncio_mode = 'auto'
 asyncio_default_fixture_loop_scope = 'function'
@@ -89,5 +88,5 @@ run = 'fastapi dev api/main.py'
 migrate = 'alembic upgrade head'
 makemigration = 'alembic revision --autogenerate -m'
 pre_test = 'task lint'
-test = 'pytest -x --cov=api --cov=core --cov=db --cov=modules -vv'
+test = 'pytest -x --cov=core --cov=db --cov=modules -vv'
 post_test = 'coverage html'
