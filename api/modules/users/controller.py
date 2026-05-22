@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, status
 from starlette.status import HTTP_201_CREATED
 
-from api.deps import PaginationDep, SessionDep
+from deps import PaginationDep, SessionDep
 from core.enums import UserRole, UserStatus
 from core.security import require_role
 from modules.users.schema import (
