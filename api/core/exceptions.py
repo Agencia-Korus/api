@@ -5,7 +5,7 @@ class NotFoundError(HTTPException):
 	def __init__(self, entity: str, identifier: str | int):
 		super().__init__(
 			status_code=status.HTTP_404_NOT_FOUND,
-			detail=f'{entity} com ID {identifier} não encontrado',
+			detail=f'{entity} com identificador {identifier} não encontrado',
 		)
 
 
