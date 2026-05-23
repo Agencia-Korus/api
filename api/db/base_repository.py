@@ -43,17 +43,21 @@ class BaseRepository(Generic[ModelT]):
 		return list(result.scalars().all())
 
 	async def update(self, entity_id: int, data: dict[str, Any]) -> ModelT | None:
-		clean = {k: v for k, v in data.items() if v is not None}
-		if not clean:
+		update_data = self._remove_empty_values(data)
+		if not update_data:
 			return await self.get(entity_id)
-		stmt = (
-			sa_update(self.model)
-			.where(self.model.id == entity_id)
-			.values(**clean)
-			.returning(self.model)
-		)
-		result = await self.session.execute(stmt)
+		id_field = getattr(self.model, "id")
+		statement = (
+            sa_update(self.model)
+            .where(id_field == entity_id)
+            .values(**update_data)
+            .returning(self.model)
+        )
+
+		result = await self.session.execute(statement)
+
 		await self.session.flush()
+
 		return result.scalar_one_or_none()
 
 	async def delete(self, entity_id: int) -> bool:
