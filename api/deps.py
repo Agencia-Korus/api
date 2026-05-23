@@ -1,21 +1,14 @@
 from typing import Annotated
 
+from db.session import get_session
 from fastapi import Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-
-
 
 from core.constants import (
 	PAGINATION_DEFAULT_LIMIT,
 	PAGINATION_DEFAULT_OFFSET,
 	PAGINATION_MAX_LIMIT,
 )
-from db.session import get_session
-
-
-from fastapi import Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 
 class Pagination:
@@ -30,19 +23,11 @@ class Pagination:
 			default=PAGINATION_DEFAULT_LIMIT,
 			ge=1,
 			le=PAGINATION_MAX_LIMIT,
-
 			description='Tamanho máximo da página.',
-
-			description='Tamanho máximo da página',
-
 		),
 	):
 		self.offset = offset
 		self.limit = limit
-
-
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
-PaginationDep = Annotated[Pagination, Depends(Pagination)]
 
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]

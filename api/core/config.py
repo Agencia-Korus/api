@@ -11,7 +11,7 @@ from core.constants import (
 
 
 class Settings(BaseSettings):
-	database_url: str
+	database_url: str = 'database-url'
 	debug: bool = False
 	jwt_secret_key: str = 'change-me'
 	jwt_algorithm: str = JWT_DEFAULT_ALGORITHM
