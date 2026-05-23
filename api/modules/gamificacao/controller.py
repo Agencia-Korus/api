@@ -109,9 +109,7 @@ async def registrar_xp(payload: HistoricoXpCreate, service: ServiceDep):
 	response_model=list[HistoricoXpResponse],
 	summary='Lista XP do funcionário (admin ou o próprio funcionário)',
 )
-async def listar_historico(
-	funcionario_id: int, service: ServiceDep, caller: CallerDep
-):
+async def listar_historico(funcionario_id: int, service: ServiceDep, caller: CallerDep):
 	caller_id, caller_role = caller
 	if caller_role == UserRole.FUNCIONARIO.value and caller_id != funcionario_id:
 		raise HTTPException(
@@ -172,9 +170,7 @@ async def deletar_conquista(conquista_id: int, service: ServiceDep):
 	dependencies=[AdminGuard],
 	summary='Desbloqueia conquista para funcionário (somente admin)',
 )
-async def desbloquear(
-	funcionario_id: int, conquista_id: int, service: ServiceDep
-):
+async def desbloquear(funcionario_id: int, conquista_id: int, service: ServiceDep):
 	return await service.desbloquear_conquista(funcionario_id, conquista_id)
 
 

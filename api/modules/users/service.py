@@ -13,7 +13,6 @@ from modules.users.repository import (
 from modules.users.schema import UsuarioCreate, UsuarioRegister, UsuarioUpdate
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
 _ENTITY = 'Usuário'
 
 

@@ -21,8 +21,8 @@ from core.constants import (
 	DOCUMENTO_MAX_LENGTH,
 	NIVEL_ACESSO_INICIAL,
 	NIVEL_FUNCIONARIO_INICIAL,
-	NOME_MAX_LENGHT,
-	RAZAO_SOCIAL_MAX_LENGHT,
+	NOME_MAX_LENGTH,
+	RAZAO_SOCIAL_MAX_LENGTH,
 	SEGMENTO_MAX_LENGTH,
 	SENHA_HASH_MAX_LENGTH,
 	TELEFONE_MAX_LENGTH,
@@ -35,7 +35,7 @@ class Usuario(Base):
 	__tablename__ = 'usuarios'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-	nome: Mapped[str] = mapped_column(String(NOME_MAX_LENGHT), nullable=False)
+	nome: Mapped[str] = mapped_column(String(NOME_MAX_LENGTH), nullable=False)
 	# CITEXT() -> Lucas@email.com = lucas@email.com
 	email: Mapped[str] = mapped_column(CITEXT(), unique=True, nullable=False)
 	senha_hash: Mapped[str] = mapped_column(
@@ -83,7 +83,7 @@ class Cliente(Base):
 		BigInteger, ForeignKey('usuario.id', ondelete='CASCADE'), primary_key=True
 	)
 	razao_social: Mapped[str] = mapped_column(
-		String(RAZAO_SOCIAL_MAX_LENGHT), nullable=False
+		String(RAZAO_SOCIAL_MAX_LENGTH), nullable=False
 	)
 	cnpj_cpf: Mapped[str] = mapped_column(
 		String(DOCUMENTO_MAX_LENGTH), unique=True, nullable=False

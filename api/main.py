@@ -15,9 +15,7 @@ app = FastAPI(title='API Korus', version='0.1.0')
 app = FastAPI(
 	title='Korus API',
 	version='0.1.0',
-	description=(
-		'Backend principal da Korus.'
-	),
+	description=('Backend principal da Korus.'),
 )
 
 app.add_middleware(

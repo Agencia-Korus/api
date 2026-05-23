@@ -16,18 +16,18 @@ from modules.users.controller import router as users_router
 api_router = APIRouter()
 
 for module_router in (
-    academy_router,
-    agenda_router,
-    comunicados_router,
-    dashboard_router,
-    gamificacao_router,
-    integracoes_router,
-    leads_router,
-    lgpd_router,
-    portfolio_router,
-    projetos_router,
-    servicos_router,
-    tarefas_router,
-    users_router
+	academy_router,
+	agenda_router,
+	comunicados_router,
+	dashboard_router,
+	gamificacao_router,
+	integracoes_router,
+	leads_router,
+	lgpd_router,
+	portfolio_router,
+	projetos_router,
+	servicos_router,
+	tarefas_router,
+	users_router,
 ):
-    api_router.include_router(module_router)
+	api_router.include_router(module_router)

@@ -1,13 +1,12 @@
 from typing import Any, Generic, TypeVar
 
-from core.constants import PAGINATION_DEFAULT_LIMIT, PAGINATION_DEFAULT_OFFSET
 from db.base import Base
-
 from sqlalchemy import delete as sa_delete
 from sqlalchemy import select
 from sqlalchemy import update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.constants import PAGINATION_DEFAULT_LIMIT, PAGINATION_DEFAULT_OFFSET
 
 ModelT = TypeVar('ModelT', bound=Base)
 
@@ -46,13 +45,13 @@ class BaseRepository(Generic[ModelT]):
 		update_data = self._remove_empty_values(data)
 		if not update_data:
 			return await self.get(entity_id)
-		id_field = getattr(self.model, "id")
+		id_field = getattr(self.model, 'id')
 		statement = (
-            sa_update(self.model)
-            .where(id_field == entity_id)
-            .values(**update_data)
-            .returning(self.model)
-        )
+			sa_update(self.model)
+			.where(id_field == entity_id)
+			.values(**update_data)
+			.returning(self.model)
+		)
 
 		result = await self.session.execute(statement)
 
@@ -61,7 +60,7 @@ class BaseRepository(Generic[ModelT]):
 		return result.scalar_one_or_none()
 
 	async def delete(self, entity_id: int) -> bool:
-		id_field = getattr(self.model, "id")
+		id_field = getattr(self.model, 'id')
 		statement = sa_delete(self.model).where(id_field == entity_id)
 		result = await self.session.execute(statement)
 		await self.session.flush()

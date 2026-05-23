@@ -6,8 +6,8 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from core.constants import (
 	CARGO_MAX_LENGTH,
 	DOCUMENTO_MAX_LENGTH,
-	NOME_MAX_LENGHT,
-	RAZAO_SOCIAL_MAX_LENGHT,
+	NOME_MAX_LENGTH,
+	RAZAO_SOCIAL_MAX_LENGTH,
 	SEGMENTO_MAX_LENGTH,
 	TELEFONE_MAX_LENGTH,
 	URL_MAX_LENGTH,
@@ -15,7 +15,7 @@ from core.constants import (
 
 
 class ClientePayload(BaseModel):
-	razao_social: str = Field(max_length=RAZAO_SOCIAL_MAX_LENGHT)
+	razao_social: str = Field(max_length=RAZAO_SOCIAL_MAX_LENGTH)
 	cnpj_cpf: str = Field(max_length=DOCUMENTO_MAX_LENGTH)
 	segmento: str | None = Field(default=None, max_length=SEGMENTO_MAX_LENGTH)
 
@@ -30,7 +30,7 @@ class AdminPayload(BaseModel):
 
 
 class UsuarioCreate(BaseModel):
-	nome: str = Field(max_length=NOME_MAX_LENGHT)
+	nome: str = Field(max_length=NOME_MAX_LENGTH)
 	email: EmailStr
 	senha: str = Field(min_length=8)
 	role: UserRole
@@ -43,7 +43,7 @@ class UsuarioCreate(BaseModel):
 
 
 class UsuarioRegister(BaseModel):
-	nome: str = Field(max_length=NOME_MAX_LENGHT)
+	nome: str = Field(max_length=NOME_MAX_LENGTH)
 	email: EmailStr
 	senha: str = Field(min_length=8)
 	role: UserRole
@@ -54,7 +54,7 @@ class UsuarioRegister(BaseModel):
 
 
 class UsuarioUpdate(BaseModel):
-	nome: str | None = Field(default=None, max_length=NOME_MAX_LENGHT)
+	nome: str | None = Field(default=None, max_length=NOME_MAX_LENGTH)
 	email: EmailStr | None = None
 	role: UserRole | None = None
 	telefone: str | None = Field(default=None, max_length=TELEFONE_MAX_LENGTH)
