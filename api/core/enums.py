@@ -16,3 +16,23 @@ class UserStatus(str, Enum):
 	ATIVO = 'ativo'
 	INATIVO = 'inativo'
 	PENDENTE = 'pendente'
+
+
+class ServicoStatus(str, Enum):
+	ATIVO = 'ativo'
+	INATIVO = 'inativo'
+	RASCUNHO = 'rascunho'
+
+
+class LeadStatus(str, Enum):
+	NOVO = 'novo'
+	CONTATO = 'contato'
+	PROPOSTA = 'proposta'
+	GANHO = 'ganho'
+	PERDIDO = 'perdido'
+
+
+class LeadPrioridade(str, Enum):
+	BAIXA = 'baixa'
+	MEDIA = 'media'
+	ALTA = 'alta'
