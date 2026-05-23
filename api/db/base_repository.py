@@ -1,12 +1,21 @@
 from typing import Any, Generic, TypeVar
 
+<<<<<<< HEAD:db/base_repository.py
+=======
 from core.constants import PAGINATION_DEFAULT_LIMIT, PAGINATION_DEFAULT_OFFSET
 from db.base import Base
+>>>>>>> main:api/db/base_repository.py
 from sqlalchemy import delete as sa_delete
 from sqlalchemy import select
 from sqlalchemy import update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+<<<<<<< HEAD:db/base_repository.py
+from core.constants import PAGINATION_DEFAULT_LIMIT, PAGINATION_DEFAULT_OFFSET
+from db.base import Base
+
+=======
+>>>>>>> main:api/db/base_repository.py
 ModelT = TypeVar('ModelT', bound=Base)
 
 
@@ -18,10 +27,15 @@ class BaseRepository(Generic[ModelT]):
 
 	async def add(self, entity: ModelT) -> ModelT:
 		self.session.add(entity)
+<<<<<<< HEAD:db/base_repository.py
+		await self.session.flush()
+		await self.session.refresh(entity)
+=======
 
 		await self.session.flush()
 		await self.session.refresh(entity)
 
+>>>>>>> main:api/db/base_repository.py
 		return entity
 
 	async def get(self, entity_id: int) -> ModelT | None:
@@ -33,6 +47,36 @@ class BaseRepository(Generic[ModelT]):
 		limit: int = PAGINATION_DEFAULT_LIMIT,
 		filters: dict[str, Any] | None = None,
 	) -> list[ModelT]:
+<<<<<<< HEAD:db/base_repository.py
+		stmt = select(self.model)
+		if filters:
+			for field, value in filters.items():
+				if value is not None and hasattr(self.model, field):
+					stmt = stmt.where(getattr(self.model, field) == value)
+		stmt = stmt.offset(offset).limit(limit)
+		result = await self.session.execute(stmt)
+		return list(result.scalars().all())
+
+	async def update(self, entity_id: int, data: dict[str, Any]) -> ModelT | None:
+		clean = {k: v for k, v in data.items() if v is not None}
+		if not clean:
+			return await self.get(entity_id)
+		stmt = (
+			sa_update(self.model)
+			.where(self.model.id == entity_id)
+			.values(**clean)
+			.returning(self.model)
+		)
+		result = await self.session.execute(stmt)
+		await self.session.flush()
+		return result.scalar_one_or_none()
+
+	async def delete(self, entity_id: int) -> bool:
+		stmt = sa_delete(self.model).where(self.model.id == entity_id)
+		result = await self.session.execute(stmt)
+		await self.session.flush()
+		return result.rowcount > 0
+=======
 		statement = select(self.model)
 		statement = self._apply_filters(statement, filters)
 		statement = statement.offset(offset).limit(limit)
@@ -89,3 +133,4 @@ class BaseRepository(Generic[ModelT]):
 	@staticmethod
 	def _remove_empty_values(data: dict[str, Any]) -> dict[str, Any]:
 		return {field: value for field, value in data.items() if value is not None}
+>>>>>>> main:api/db/base_repository.py
