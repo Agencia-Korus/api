@@ -32,7 +32,7 @@ from core.constants import (
 
 
 class Usuario(Base):
-	__tablename__ = 'usuarios'
+	__tablename__ = 'usuario'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
 	nome: Mapped[str] = mapped_column(String(NOME_MAX_LENGTH), nullable=False)
@@ -77,7 +77,7 @@ class Usuario(Base):
 
 
 class Cliente(Base):
-	__tablename__ = 'clientes'
+	__tablename__ = 'cliente'
 
 	id: Mapped[int] = mapped_column(
 		BigInteger, ForeignKey('usuario.id', ondelete='CASCADE'), primary_key=True
@@ -93,7 +93,7 @@ class Cliente(Base):
 
 
 class Funcionario(Base):
-	__tablename__ = 'funcionarios'
+	__tablename__ = 'funcionario'
 
 	id: Mapped[int] = mapped_column(
 		BigInteger, ForeignKey('usuario.id', ondelete='CASCADE'), primary_key=True
@@ -111,7 +111,7 @@ class Funcionario(Base):
 
 
 class Admin(Base):
-	__tablename__ = 'admins'
+	__tablename__ = 'admin'
 
 	id: Mapped[int] = mapped_column(
 		BigInteger,
