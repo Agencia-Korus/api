@@ -2,6 +2,7 @@ from typing import Annotated
 
 from core.enums import ServicoStatus, UserRole
 from core.security import require_role
+from deps import PaginationDep, SessionDep
 from fastapi import APIRouter, Depends, Query, status
 from modules.servicos.schema import (
 	EntregavelCreate,
@@ -12,8 +13,6 @@ from modules.servicos.schema import (
 	ServicoUpdate,
 )
 from modules.servicos.service import ServicoService
-
-from api.deps import PaginationDep, SessionDep
 
 router = APIRouter(
 	prefix='/servicos',

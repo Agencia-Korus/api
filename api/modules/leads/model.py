@@ -19,9 +19,9 @@ from sqlalchemy.dialects.postgresql import CITEXT
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.constants import (
-	NOME_MAX_LENGHT,
+	NOME_MAX_LENGTH,
 	ORCAMENTO_MAX_LENGTH,
-	RAZAO_SOCIAL_MAX_LENGHT,
+	RAZAO_SOCIAL_MAX_LENGTH,
 	TELEFONE_MAX_LENGTH,
 )
 
@@ -33,10 +33,10 @@ class Lead(Base):
 	servico_id: Mapped[int | None] = mapped_column(
 		BigInteger, ForeignKey('servico.id', ondelete='SET NULL')
 	)
-	nome: Mapped[str] = mapped_column(String(NOME_MAX_LENGHT), nullable=False)
+	nome: Mapped[str] = mapped_column(String(NOME_MAX_LENGTH), nullable=False)
 	email: Mapped[str] = mapped_column(CITEXT(), nullable=False)
 	whatsapp: Mapped[str | None] = mapped_column(String(TELEFONE_MAX_LENGTH))
-	empresa: Mapped[str | None] = mapped_column(String(RAZAO_SOCIAL_MAX_LENGHT))
+	empresa: Mapped[str | None] = mapped_column(String(RAZAO_SOCIAL_MAX_LENGTH))
 	orcamento: Mapped[str | None] = mapped_column(String(ORCAMENTO_MAX_LENGTH))
 	prazo_desejado: Mapped[date | None] = mapped_column(Date)
 	termos_aceitos: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

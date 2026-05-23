@@ -7,6 +7,7 @@ from core.security import (
 	oauth2_scheme,
 	require_role,
 )
+from deps import PaginationDep, SessionDep
 from fastapi import APIRouter, Depends, HTTPException, status
 from modules.gamificacao.schema import (
 	ConquistaCreate,
@@ -20,8 +21,6 @@ from modules.gamificacao.schema import (
 	RegraXpUpdate,
 )
 from modules.gamificacao.service import GamificacaoService
-
-from api.deps import PaginationDep, SessionDep
 
 router = APIRouter(prefix='/gamificacao', tags=['Gamificação'])
 

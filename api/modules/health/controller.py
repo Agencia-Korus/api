@@ -1,9 +1,8 @@
 from http import HTTPStatus
 
+from deps import SessionDep
 from fastapi import APIRouter
 from sqlalchemy import text
-
-from api.deps import SessionDep
 
 router = APIRouter(prefix='/health', tags=['Saúde'])
 

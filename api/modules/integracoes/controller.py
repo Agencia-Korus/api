@@ -2,6 +2,7 @@ from typing import Annotated
 
 from core.enums import UserRole
 from core.security import require_role
+from deps import PaginationDep, SessionDep
 from fastapi import APIRouter, Depends, status
 from modules.integracoes.schema import (
 	IntegracaoCreate,
@@ -9,8 +10,6 @@ from modules.integracoes.schema import (
 	IntegracaoUpdate,
 )
 from modules.integracoes.service import IntegracaoService
-
-from api.deps import PaginationDep, SessionDep
 
 router = APIRouter(
 	prefix='/integracoes',
