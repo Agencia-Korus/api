@@ -1,5 +1,7 @@
 from datetime import date, datetime
 
+from core.enums import Complexidade, Prioridade, TarefaStatus, enum_values
+from db.base import Base
 from sqlalchemy import (
 	BigInteger,
 	Date,
@@ -21,8 +23,6 @@ from core.constants import (
 	TITULO_MAX_LENGTH,
 	URL_MAX_LENGTH,
 )
-from core.enums import Complexidade, Prioridade, TarefaStatus, enum_values
-from db.base import Base
 
 
 class Tarefa(Base):

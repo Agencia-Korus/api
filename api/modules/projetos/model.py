@@ -1,5 +1,7 @@
 from datetime import date, datetime
 
+from core.enums import ProjetoStatus, enum_values
+from db.base import Base
 from sqlalchemy import (
 	BigInteger,
 	CheckConstraint,
@@ -22,8 +24,6 @@ from core.constants import (
 	PROGRESSO_MIN,
 	TITULO_MAX_LENGTH,
 )
-from core.enums import ProjetoStatus, enum_values
-from db.base import Base
 
 
 class Projeto(Base):

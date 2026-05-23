@@ -1,5 +1,6 @@
 from datetime import date, datetime
 
+from core.enums import ProjetoStatus
 from pydantic import BaseModel, ConfigDict, Field
 
 from core.constants import (
@@ -8,7 +9,6 @@ from core.constants import (
 	PROGRESSO_MIN,
 	TITULO_MAX_LENGTH,
 )
-from core.enums import ProjetoStatus
 
 
 class ProjetoBase(BaseModel):

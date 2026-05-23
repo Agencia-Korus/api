@@ -1,10 +1,9 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
-
-from api.deps import SessionDep
 from core.enums import UserRole
 from core.security import CurrentUser, get_current_user, require_role
+from deps import SessionDep
+from fastapi import APIRouter, Depends
 from modules.dashboard.service import DashboardService
 
 router = APIRouter(prefix='/dashboard', tags=['Dashboard'])

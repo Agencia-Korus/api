@@ -1,7 +1,6 @@
-from sqlalchemy import select
-
 from db.base_repository import BaseRepository
 from modules.agenda.model import EventoAgenda, SolicitacaoReuniao
+from sqlalchemy import select
 
 
 class EventoAgendaRepository(BaseRepository[EventoAgenda]):

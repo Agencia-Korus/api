@@ -2,12 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from fastapi import HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.enums import TarefaStatus, UserRole
 from core.exceptions import NotFoundError
+from fastapi import HTTPException, status
 from modules.projetos.model import Projeto, ProjetoFuncionario
 from modules.tarefas.model import Anexo, Comentario, Tarefa
 from modules.tarefas.repository import (
@@ -21,6 +18,8 @@ from modules.tarefas.schema import (
 	TarefaCreate,
 	TarefaUpdate,
 )
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 _ENTITY_TAREFA = 'Tarefa'
 _ENTITY_COMENTARIO = 'Comentário'

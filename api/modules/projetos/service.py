@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from fastapi import HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.enums import ProjetoStatus, UserRole
 from core.exceptions import NotFoundError
+from fastapi import HTTPException, status
 from modules.projetos.model import Projeto, ProjetoFuncionario
 from modules.projetos.repository import (
 	ProjetoFuncionarioRepository,
@@ -15,6 +13,7 @@ from modules.projetos.schema import (
 	ProjetoFuncionarioCreate,
 	ProjetoUpdate,
 )
+from sqlalchemy.ext.asyncio import AsyncSession
 
 _ENTITY = 'Projeto'
 

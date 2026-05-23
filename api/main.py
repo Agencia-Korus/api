@@ -1,16 +1,22 @@
+# ruff: noqa: E402
+
+import sys
 from http import HTTPStatus
+from pathlib import Path
+
+APP_DIR = Path(__file__).resolve().parent
+if str(APP_DIR) not in sys.path:
+	sys.path.insert(0, str(APP_DIR))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from modules.health.controller import router as health_router
+from v1.router import api_router as api_v1_router
 
-from api.v1.router import api_router as api_v1_router
 from core.config import get_settings
 
 settings = get_settings()
-
-app = FastAPI(title='API Korus', version='0.1.0')
 
 app = FastAPI(
 	title='Korus API',

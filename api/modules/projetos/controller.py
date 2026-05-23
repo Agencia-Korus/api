@@ -1,10 +1,9 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
-
-from api.deps import PaginationDep, SessionDep
 from core.enums import ProjetoStatus, UserRole
 from core.security import CurrentUser, get_current_user, require_role
+from deps import PaginationDep, SessionDep
+from fastapi import APIRouter, Depends, Query, status
 from modules.projetos.schema import (
 	ProjetoCreate,
 	ProjetoFuncionarioCreate,

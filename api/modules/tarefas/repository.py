@@ -1,9 +1,8 @@
-from sqlalchemy import or_, select
-
 from core.enums import TarefaStatus, UserRole
 from db.base_repository import BaseRepository
 from modules.projetos.model import Projeto, ProjetoFuncionario
 from modules.tarefas.model import Anexo, Comentario, Tarefa
+from sqlalchemy import or_, select
 
 
 class TarefaRepository(BaseRepository[Tarefa]):

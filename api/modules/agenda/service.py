@@ -3,9 +3,6 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from core.config import get_settings
 from core.exceptions import NotFoundError
 from modules.agenda.google_calendar import ClienteGoogleCalendar, EventoGoogleCalendar
 from modules.agenda.model import EventoAgenda, SolicitacaoReuniao
@@ -20,6 +17,9 @@ from modules.agenda.schema import (
 	SolicitacaoReuniaoCreate,
 	SolicitacaoReuniaoUpdate,
 )
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from core.config import get_settings
 
 _ENTITY_EVENTO = 'Evento de agenda'
 _ENTITY_SOLICITACAO = 'Solicitação de reunião'

@@ -4,7 +4,7 @@ from deps import SessionDep
 from fastapi import APIRouter
 from sqlalchemy import text
 
-router = APIRouter(prefix='/health', tags=['Saúde'])
+router = APIRouter(prefix='/health/db', tags=['Saúde'])
 
 
 @router.get('', status_code=HTTPStatus.OK)

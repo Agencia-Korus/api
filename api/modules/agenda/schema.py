@@ -1,10 +1,10 @@
 from datetime import date, datetime, time
 from typing import Literal
 
+from core.enums import EventoTipo, SolicitacaoStatus
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from core.constants import DURACAO_EVENTO_PADRAO_MIN, TITULO_MAX_LENGTH
-from core.enums import EventoTipo, SolicitacaoStatus
 
 
 class EventoAgendaBase(BaseModel):

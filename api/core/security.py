@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Any
 
@@ -16,6 +17,12 @@ CREDENTIALS_EXCEPTION = HTTPException(
 	detail='Credenciais inválidas',
 	headers={'WWW-Authenticate': 'Bearer'},
 )
+
+
+@dataclass(frozen=True)
+class CurrentUser:
+	id: int
+	role: str
 
 
 def create_access_token(subject: str | int, extra: dict[str, Any] | None = None) -> str:
@@ -57,6 +64,19 @@ def get_current_user_id(token: Annotated[str | None, Depends(oauth2_scheme)]) ->
 	if not subject:
 		raise CREDENTIALS_EXCEPTION
 	return int(subject)
+
+
+def get_current_user(
+	token: Annotated[str | None, Depends(oauth2_scheme)],
+) -> CurrentUser:
+	if not token:
+		raise CREDENTIALS_EXCEPTION
+	payload = decode_token(token)
+	subject = payload.get('sub')
+	role = payload.get('role')
+	if not subject or not role:
+		raise CREDENTIALS_EXCEPTION
+	return CurrentUser(id=int(subject), role=str(role))
 
 
 def require_role(*allowed_roles: str):

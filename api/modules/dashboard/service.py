@@ -3,12 +3,9 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 from typing import Any
 
-from fastapi import HTTPException, status
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.enums import ProjetoStatus, TarefaStatus, UserRole, UserStatus
 from core.exceptions import NotFoundError
+from fastapi import HTTPException, status
 from modules.agenda.model import EventoAgenda
 from modules.comunicados.model import Comunicado
 from modules.gamificacao.model import Conquista, FuncionarioConquista, HistoricoXp
@@ -16,6 +13,8 @@ from modules.leads.model import Lead
 from modules.projetos.model import Projeto, ProjetoFuncionario
 from modules.tarefas.model import Tarefa
 from modules.users.model import Cliente, Funcionario, Usuario
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class DashboardService:
