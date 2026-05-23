@@ -61,11 +61,14 @@ class BaseRepository(Generic[ModelT]):
 
 	async def delete(self, entity_id: int) -> bool:
 		id_field = getattr(self.model, 'id')
-		statement = sa_delete(self.model).where(id_field == entity_id)
+		statement = (
+			sa_delete(self.model)
+			.where(id_field == entity_id)
+			.returning(id_field)
+		)
 		result = await self.session.execute(statement)
 		await self.session.flush()
-		deleted_id = result.scalar_one_or_none()
-		return deleted_id is not None
+		return result.scalar_one_or_none() is not None
 
 	def _apply_filters(self, statement: Any, filters: dict[str, Any] | None) -> Any:
 		if not filters:
