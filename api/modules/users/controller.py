@@ -67,7 +67,7 @@ async def atualizar(usuario_id: int, payload: UsuarioUpdate, service: ServiceDep
 
 
 @router.post(
-	'{usuario_id}/aprovar',
+	'/{usuario_id}/aprovar',
 	response_model=UsuarioResponse,
 	dependencies=[AdminGuard],
 	summary='Aprova cadastro pendente, ativando o usuário (somente admin)',
