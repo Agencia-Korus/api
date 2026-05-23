@@ -1,8 +1,44 @@
 from datetime import date, time
 
+import pytest
+
+from core.config import Settings
 from core.enums import EventoTipo
+from modules.agenda.google_calendar import ClienteGoogleCalendar
 from modules.agenda.model import EventoAgenda
 from modules.agenda.service import AgendaService
+
+
+def test_criar_evento_ignora_google_quando_arquivo_credencial_nao_existe():
+	cliente = ClienteGoogleCalendar(
+		Settings(
+			google_calendar_enabled=True,
+			google_calendar_service_account_file='/caminho/inexistente.json',
+		)
+	)
+
+	assert cliente._pode_escrever_eventos() is False
+	assert cliente.esta_configurado() is False
+
+
+@pytest.mark.asyncio
+async def test_criar_evento_retorna_none_sem_credenciais_validas():
+	cliente = ClienteGoogleCalendar(
+		Settings(
+			google_calendar_enabled=True,
+			google_calendar_service_account_file='/caminho/inexistente.json',
+		)
+	)
+
+	evento = await cliente.criar_evento(
+		titulo='Reunião',
+		descricao=None,
+		data=date(2026, 5, 24),
+		hora=time(10, 0),
+		duracao_min=30,
+	)
+
+	assert evento is None
 
 
 def test_evento_local_para_site_usa_fuso_horario_configurado():

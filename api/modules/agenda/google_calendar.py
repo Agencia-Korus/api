@@ -4,6 +4,7 @@ import asyncio
 import json
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
+from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
@@ -41,16 +42,18 @@ class ClienteGoogleCalendar:
 	def esta_configurado(self) -> bool:
 		if not self.configuracoes.google_calendar_enabled:
 			return False
-		tem_conta_servico = bool(
-			self.configuracoes.google_calendar_service_account_file
-			or self.configuracoes.google_calendar_service_account_json
-		)
-		if tem_conta_servico:
+		if self._credenciais_conta_servico_disponiveis():
 			return True
 		return bool(
 			self.configuracoes.google_calendar_id
 			and self.configuracoes.google_calendar_api_key
 		)
+
+	def _credenciais_conta_servico_disponiveis(self) -> bool:
+		if self.configuracoes.google_calendar_service_account_json:
+			return True
+		arquivo = self.configuracoes.google_calendar_service_account_file
+		return bool(arquivo and Path(arquivo).is_file())
 
 	async def listar_eventos(
 		self, data_inicio: date | None = None, data_fim: date | None = None
@@ -208,10 +211,7 @@ class ClienteGoogleCalendar:
 	def _pode_escrever_eventos(self) -> bool:
 		return bool(
 			self.configuracoes.google_calendar_enabled
-			and (
-				self.configuracoes.google_calendar_service_account_file
-				or self.configuracoes.google_calendar_service_account_json
-			)
+			and self._credenciais_conta_servico_disponiveis()
 		)
 
 	async def _obter_token_conta_servico(self) -> str:
@@ -261,10 +261,16 @@ class ClienteGoogleCalendar:
 		if self.configuracoes.google_calendar_service_account_json:
 			return json.loads(self.configuracoes.google_calendar_service_account_json)
 		if self.configuracoes.google_calendar_service_account_file:
-			with open(
-				self.configuracoes.google_calendar_service_account_file,
-				encoding='utf-8',
-			) as file:
+			caminho = Path(self.configuracoes.google_calendar_service_account_file)
+			if not caminho.is_file():
+				raise HTTPException(
+					status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+					detail=(
+						'Arquivo da conta de serviço do Google Calendar '
+						f'não encontrado: {caminho}'
+					),
+				)
+			with caminho.open(encoding='utf-8') as file:
 				return json.load(file)
 		raise HTTPException(
 			status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
