@@ -34,7 +34,7 @@ async def criar(payload: UsuarioCreate, service: ServiceDep):
 	return await service.create(payload)
 
 
-@router.get('', response_model=list[UsuarioResponse])
+@router.get('', response_model=list[UsuarioResponse], dependencies=[AdminGuard])
 async def listar(
 	service: ServiceDep,
 	page: PaginationDep,
@@ -51,7 +51,7 @@ async def listar(
 	)
 
 
-@router.get('/{usuario_id}', response_model=UsuarioResponse)
+@router.get('/{usuario_id}', response_model=UsuarioResponse, dependencies=[AdminGuard])
 async def obter(usuario_id: int, service: ServiceDep):
 	return await service.get(usuario_id)
 
