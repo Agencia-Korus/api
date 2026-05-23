@@ -1,7 +1,3 @@
-from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from db.base_repository import BaseRepository
 from modules.gamificacao.model import (
 	Conquista,
@@ -9,6 +5,9 @@ from modules.gamificacao.model import (
 	HistoricoXp,
 	RegraXp,
 )
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class RegraXpRepository(BaseRepository[RegraXp]):

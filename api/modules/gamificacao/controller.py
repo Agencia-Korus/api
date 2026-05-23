@@ -1,8 +1,5 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
-
-from api.deps import PaginationDep, SessionDep
 from core.enums import UserRole
 from core.security import (
 	CREDENTIALS_EXCEPTION,
@@ -10,6 +7,7 @@ from core.security import (
 	oauth2_scheme,
 	require_role,
 )
+from fastapi import APIRouter, Depends, HTTPException, status
 from modules.gamificacao.schema import (
 	ConquistaCreate,
 	ConquistaResponse,
@@ -22,6 +20,8 @@ from modules.gamificacao.schema import (
 	RegraXpUpdate,
 )
 from modules.gamificacao.service import GamificacaoService
+
+from api.deps import PaginationDep, SessionDep
 
 router = APIRouter(prefix='/gamificacao', tags=['Gamificação'])
 

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.exceptions import ConflictError, NotFoundError
 from modules.integracoes.model import Integracao
 from modules.integracoes.repository import IntegracaoRepository
@@ -10,6 +8,7 @@ from modules.integracoes.schema import (
 	IntegracaoCreate,
 	IntegracaoUpdate,
 )
+from sqlalchemy.ext.asyncio import AsyncSession
 
 _ENTITY = 'Integração'
 

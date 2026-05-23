@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.enums import ServicoStatus
 from core.exceptions import ConflictError, NotFoundError
 from modules.servicos.model import Entregavel, Servico
@@ -12,6 +10,7 @@ from modules.servicos.schema import (
 	ServicoCreate,
 	ServicoUpdate,
 )
+from sqlalchemy.ext.asyncio import AsyncSession
 
 _ENTITY_SERVICO = 'Serviço'
 _ENTITY_ENTREGAVEL = 'Entregável'

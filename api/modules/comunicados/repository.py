@@ -1,9 +1,8 @@
+from db.base_repository import BaseRepository
+from modules.comunicados.model import Comunicado, ComunicadoLeitura
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from db.base_repository import BaseRepository
-from modules.comunicados.model import Comunicado, ComunicadoLeitura
 
 
 class ComunicadoRepository(BaseRepository[Comunicado]):

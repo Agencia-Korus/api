@@ -1,6 +1,8 @@
 from datetime import datetime
 from decimal import Decimal
 
+from core.enums import AcademyTipo, enum_values
+from db.base import Base
 from sqlalchemy import (
 	BigInteger,
 	Boolean,
@@ -21,8 +23,6 @@ from core.constants import (
 	TITULO_MAX_LENGTH,
 	URL_MAX_LENGTH,
 )
-from core.enums import AcademyTipo, enum_values
-from db.base import Base
 
 
 class Academy(Base):

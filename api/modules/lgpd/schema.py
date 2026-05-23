@@ -1,9 +1,9 @@
 from datetime import datetime
 
+from core.enums import ConsentimentoTipo
 from pydantic import BaseModel, ConfigDict, Field
 
 from core.constants import USER_AGENT_MAX_LENGTH
-from core.enums import ConsentimentoTipo
 
 
 class ConsentimentoLgpdCreate(BaseModel):

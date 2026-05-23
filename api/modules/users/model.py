@@ -1,18 +1,5 @@
 from datetime import date, datetime
 
-from core.constants import (
-	CARGO_MAX_LENGTH,
-	DOCUMENTO_MAX_LENGTH,
-	NIVEL_ACESSO_INICIAL,
-	NIVEL_FUNCIONARIO_INICIAL,
-	NOME_MAX_LENGHT,
-	RAZAO_SOCIAL_MAX_LENGHT,
-	SEGMENTO_MAX_LENGTH,
-	SENHA_HASH_MAX_LENGTH,
-	TELEFONE_MAX_LENGTH,
-	URL_MAX_LENGTH,
-	XP_INICIAL,
-)
 from core.enums import UserRole, UserStatus, enum_values
 from db.base import Base
 from sqlalchemy import (
@@ -28,6 +15,20 @@ from sqlalchemy import (
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import CITEXT
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from core.constants import (
+	CARGO_MAX_LENGTH,
+	DOCUMENTO_MAX_LENGTH,
+	NIVEL_ACESSO_INICIAL,
+	NIVEL_FUNCIONARIO_INICIAL,
+	NOME_MAX_LENGHT,
+	RAZAO_SOCIAL_MAX_LENGHT,
+	SEGMENTO_MAX_LENGTH,
+	SENHA_HASH_MAX_LENGTH,
+	TELEFONE_MAX_LENGTH,
+	URL_MAX_LENGTH,
+	XP_INICIAL,
+)
 
 
 class Usuario(Base):

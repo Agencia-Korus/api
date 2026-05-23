@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import Literal
 
+from core.enums import IntegracaoStatus
 from pydantic import BaseModel, ConfigDict, Field
 
 from core.constants import CHAVE_INTEGRACAO_MAX_LENGTH, SEGMENTO_MAX_LENGTH
-from core.enums import IntegracaoStatus
 
 GOOGLE_CALENDAR_INTEGRATION = 'google_calendar'
 

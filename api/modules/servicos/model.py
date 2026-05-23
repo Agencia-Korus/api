@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from core.enums import ServicoStatus, enum_values
+from db.base import Base
 from sqlalchemy import (
 	BigInteger,
 	DateTime,
@@ -20,8 +22,6 @@ from core.constants import (
 	SLUG_MAX_LENGTH,
 	URL_MAX_LENGTH,
 )
-from core.enums import ServicoStatus, enum_values
-from db.base import Base
 
 
 class Servico(Base):

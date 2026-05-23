@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from core.enums import ServicoStatus
 from pydantic import BaseModel, ConfigDict, Field
 
 from core.constants import (
@@ -8,7 +9,6 @@ from core.constants import (
 	SLUG_MAX_LENGTH,
 	URL_MAX_LENGTH,
 )
-from core.enums import ServicoStatus
 
 
 class ServicoBase(BaseModel):

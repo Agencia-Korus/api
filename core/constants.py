@@ -1,6 +1,6 @@
 from typing import Final
 
-#final transforma variavel em constante
+# final transforma variavel em constante
 
 NOME_MAX_LENGTH: Final = 150
 RAZAO_SOCIAL_MAX_LENGTH: Final = 200

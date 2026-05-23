@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.enums import AcademyTipo
 from core.exceptions import NotFoundError
 from modules.academy.model import Academy
 from modules.academy.repository import AcademyRepository
 from modules.academy.schema import AcademyCreate, AcademyUpdate
+from sqlalchemy.ext.asyncio import AsyncSession
 
 _ENTITY = 'Conteúdo Academy'
 

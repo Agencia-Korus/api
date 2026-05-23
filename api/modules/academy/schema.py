@@ -1,10 +1,10 @@
 from datetime import datetime
 from decimal import Decimal
 
+from core.enums import AcademyTipo
 from pydantic import BaseModel, ConfigDict, Field
 
 from core.constants import TITULO_MAX_LENGTH, URL_MAX_LENGTH
-from core.enums import AcademyTipo
 
 
 class AcademyBase(BaseModel):

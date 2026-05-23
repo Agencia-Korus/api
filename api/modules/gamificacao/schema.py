@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from core.enums import Complexidade
 from pydantic import BaseModel, ConfigDict, Field
 
 from core.constants import (
@@ -8,7 +9,6 @@ from core.constants import (
 	NOME_MAX_LENGTH,
 	XP_MIN,
 )
-from core.enums import Complexidade
 
 
 class RegraXpBase(BaseModel):

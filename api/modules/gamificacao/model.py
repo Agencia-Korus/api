@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from core.enums import Complexidade, enum_values
+from db.base import Base
 from sqlalchemy import (
 	BigInteger,
 	CheckConstraint,
@@ -21,8 +23,6 @@ from core.constants import (
 	NOME_MAX_LENGTH,
 	XP_MIN,
 )
-from core.enums import Complexidade, enum_values
-from db.base import Base
 
 
 class RegraXp(Base):

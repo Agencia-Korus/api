@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Any
 
-from core.config import get_settings
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+
+from core.config import get_settings
 
 settings = get_settings()
 

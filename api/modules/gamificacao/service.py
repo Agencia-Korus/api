@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.exceptions import NotFoundError
 from modules.gamificacao.model import (
 	Conquista,
@@ -23,6 +21,7 @@ from modules.gamificacao.schema import (
 	RegraXpUpdate,
 )
 from modules.users.model import Funcionario
+from sqlalchemy.ext.asyncio import AsyncSession
 
 _ENTITY_REGRA = 'Regra XP'
 _ENTITY_CONQUISTA = 'Conquista'

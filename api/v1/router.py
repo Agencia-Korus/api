@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-
 from modules.academy.controller import router as academy_router
 from modules.agenda.controller import router as agenda_router
 from modules.comunicados.controller import router as comunicados_router

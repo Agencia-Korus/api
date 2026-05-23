@@ -1,7 +1,6 @@
-from sqlalchemy import select
-
 from db.base_repository import BaseRepository
 from modules.servicos.model import Entregavel, Servico
+from sqlalchemy import select
 
 
 class ServicoRepository(BaseRepository[Servico]):

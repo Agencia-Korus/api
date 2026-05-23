@@ -1,5 +1,8 @@
 from datetime import date, datetime
 
+from core.enums import UserRole, UserStatus
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+
 from core.constants import (
 	CARGO_MAX_LENGTH,
 	DOCUMENTO_MAX_LENGTH,
@@ -9,8 +12,6 @@ from core.constants import (
 	TELEFONE_MAX_LENGTH,
 	URL_MAX_LENGTH,
 )
-from core.enums import UserRole, UserStatus
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class ClientePayload(BaseModel):

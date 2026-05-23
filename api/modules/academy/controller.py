@@ -1,12 +1,12 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
-
-from api.deps import PaginationDep, SessionDep
 from core.enums import AcademyTipo, UserRole
 from core.security import require_role
+from fastapi import APIRouter, Depends, Query, status
 from modules.academy.schema import AcademyCreate, AcademyResponse, AcademyUpdate
 from modules.academy.service import AcademyService
+
+from api.deps import PaginationDep, SessionDep
 
 router = APIRouter(prefix='/academy', tags=['Academy'])
 

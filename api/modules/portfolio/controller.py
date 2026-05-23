@@ -1,16 +1,16 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
-
-from api.deps import PaginationDep, SessionDep
 from core.enums import UserRole
 from core.security import require_role
+from fastapi import APIRouter, Depends, Query, status
 from modules.portfolio.schema import (
 	PortfolioCreate,
 	PortfolioResponse,
 	PortfolioUpdate,
 )
 from modules.portfolio.service import PortfolioService
+
+from api.deps import PaginationDep, SessionDep
 
 router = APIRouter(
 	prefix='/portfolio',

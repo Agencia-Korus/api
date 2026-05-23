@@ -1,7 +1,6 @@
-from sqlalchemy import select
-
 from db.base_repository import BaseRepository
 from modules.portfolio.model import Portfolio
+from sqlalchemy import select
 
 
 class PortfolioRepository(BaseRepository[Portfolio]):

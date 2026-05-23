@@ -11,7 +11,7 @@ from modules.servicos import model as servicos_model
 from modules.tarefas import model as tarefas_model
 from modules.users import model as users_model
 
-#utilizado na env de migração do allembic
+# utilizado na env de migração do allembic
 ALL_MODELS = (
 	academy_model,
 	agenda_model,

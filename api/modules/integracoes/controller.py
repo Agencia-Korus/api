@@ -1,16 +1,16 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
-
-from api.deps import PaginationDep, SessionDep
 from core.enums import UserRole
 from core.security import require_role
+from fastapi import APIRouter, Depends, status
 from modules.integracoes.schema import (
 	IntegracaoCreate,
 	IntegracaoResponse,
 	IntegracaoUpdate,
 )
 from modules.integracoes.service import IntegracaoService
+
+from api.deps import PaginationDep, SessionDep
 
 router = APIRouter(
 	prefix='/integracoes',

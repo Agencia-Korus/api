@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from modules.lgpd.model import ConsentimentoLgpd
 from modules.lgpd.repository import ConsentimentoLgpdRepository
 from modules.lgpd.schema import ConsentimentoLgpdCreate
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class LgpdService:

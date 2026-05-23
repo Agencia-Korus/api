@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-
 from modules.leads.controller import router as leads_router
 from modules.portfolio.controller import router as portfolio_router
 from modules.servicos.controller import router as servicos_router

@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.enums import LeadPrioridade, LeadStatus
 from core.exceptions import NotFoundError
 from modules.leads.model import Lead
 from modules.leads.repository import LeadRepository
 from modules.leads.schema import LeadCreate, LeadUpdate
+from sqlalchemy.ext.asyncio import AsyncSession
 
 _ENTITY = 'Lead'
 

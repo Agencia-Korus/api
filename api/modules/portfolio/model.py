@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from db.base import Base
 from sqlalchemy import (
 	BigInteger,
 	Boolean,
@@ -19,7 +20,6 @@ from core.constants import (
 	TITULO_MAX_LENGTH,
 	URL_MAX_LENGTH,
 )
-from db.base import Base
 
 
 class Portfolio(Base):

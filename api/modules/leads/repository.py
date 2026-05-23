@@ -1,8 +1,7 @@
-from sqlalchemy import or_, select
-
 from core.enums import LeadPrioridade, LeadStatus
 from db.base_repository import BaseRepository
 from modules.leads.model import Lead
+from sqlalchemy import or_, select
 
 
 class LeadRepository(BaseRepository[Lead]):

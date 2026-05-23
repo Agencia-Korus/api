@@ -2,13 +2,13 @@ import csv
 from io import StringIO
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, Response, status
-
-from api.deps import PaginationDep, SessionDep
 from core.enums import LeadPrioridade, LeadStatus, UserRole
 from core.security import require_role
+from fastapi import APIRouter, Depends, Query, Response, status
 from modules.leads.schema import LeadCreate, LeadResponse, LeadUpdate
 from modules.leads.service import LeadService
+
+from api.deps import PaginationDep, SessionDep
 
 router = APIRouter(
 	prefix='/leads',

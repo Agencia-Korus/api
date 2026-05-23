@@ -1,8 +1,7 @@
-from sqlalchemy import select
-
 from db.base_repository import BaseRepository
 from modules.integracoes.model import Integracao
 from modules.integracoes.schema import GOOGLE_CALENDAR_INTEGRATION
+from sqlalchemy import select
 
 
 class IntegracaoRepository(BaseRepository[Integracao]):

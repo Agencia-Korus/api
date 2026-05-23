@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from core.enums import ComunicadoAlvo, enum_values
+from db.base import Base
 from sqlalchemy import (
 	BigInteger,
 	DateTime,
@@ -14,8 +16,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.constants import TITULO_MAX_LENGTH
-from core.enums import ComunicadoAlvo, enum_values
-from db.base import Base
 
 
 class Comunicado(Base):

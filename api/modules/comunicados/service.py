@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.enums import ComunicadoAlvo
 from core.exceptions import NotFoundError
 from modules.comunicados.model import Comunicado, ComunicadoLeitura
@@ -10,6 +8,7 @@ from modules.comunicados.repository import (
 	ComunicadoRepository,
 )
 from modules.comunicados.schema import ComunicadoCreate, ComunicadoUpdate
+from sqlalchemy.ext.asyncio import AsyncSession
 
 _ENTITY = 'Comunicado'
 

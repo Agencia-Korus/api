@@ -1,11 +1,12 @@
 from functools import lru_cache
 
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from core.constants import (
 	JWT_ACCESS_TOKEN_EXPIRE_MIN,
 	JWT_DEFAULT_ALGORITHM,
 	JWT_REFRESH_TOKEN_EXPIRE_DAYS,
 )
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):

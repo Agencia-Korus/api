@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.exceptions import NotFoundError
 from modules.portfolio.model import Portfolio
 from modules.portfolio.repository import PortfolioRepository
 from modules.portfolio.schema import PortfolioCreate, PortfolioUpdate
+from sqlalchemy.ext.asyncio import AsyncSession
 
 _ENTITY = 'Item de portfólio'
 

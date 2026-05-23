@@ -1,12 +1,12 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
-
-from api.deps import PaginationDep, SessionDep
 from core.enums import UserRole
 from core.security import require_role
+from fastapi import APIRouter, Depends, status
 from modules.lgpd.schema import ConsentimentoLgpdCreate, ConsentimentoLgpdResponse
 from modules.lgpd.service import LgpdService
+
+from api.deps import PaginationDep, SessionDep
 
 router = APIRouter(prefix='/lgpd', tags=['LGPD'])
 

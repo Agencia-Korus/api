@@ -1,5 +1,7 @@
 from datetime import date, datetime
 
+from core.enums import LeadPrioridade, LeadStatus, enum_values
+from db.base import Base
 from sqlalchemy import (
 	BigInteger,
 	Boolean,
@@ -22,8 +24,6 @@ from core.constants import (
 	RAZAO_SOCIAL_MAX_LENGHT,
 	TELEFONE_MAX_LENGTH,
 )
-from core.enums import LeadPrioridade, LeadStatus, enum_values
-from db.base import Base
 
 
 class Lead(Base):

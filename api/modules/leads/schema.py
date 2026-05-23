@@ -1,5 +1,6 @@
 from datetime import date, datetime
 
+from core.enums import LeadPrioridade, LeadStatus
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from core.constants import (
@@ -8,7 +9,6 @@ from core.constants import (
 	RAZAO_SOCIAL_MAX_LENGTH,
 	TELEFONE_MAX_LENGTH,
 )
-from core.enums import LeadPrioridade, LeadStatus
 
 
 class LeadBase(BaseModel):

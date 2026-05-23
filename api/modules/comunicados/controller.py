@@ -1,10 +1,8 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
-
-from api.deps import PaginationDep, SessionDep
 from core.enums import ComunicadoAlvo, UserRole
 from core.security import get_current_user_id, require_role
+from fastapi import APIRouter, Depends, Query, status
 from modules.comunicados.schema import (
 	ComunicadoCreate,
 	ComunicadoLeituraResponse,
@@ -12,6 +10,8 @@ from modules.comunicados.schema import (
 	ComunicadoUpdate,
 )
 from modules.comunicados.service import ComunicadoService
+
+from api.deps import PaginationDep, SessionDep
 
 router = APIRouter(prefix='/comunicados', tags=['Comunicados'])
 
