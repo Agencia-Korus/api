@@ -4,7 +4,6 @@ import asyncio
 import json
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
-from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
@@ -52,8 +51,7 @@ class ClienteGoogleCalendar:
 	def _credenciais_conta_servico_disponiveis(self) -> bool:
 		if self.configuracoes.google_calendar_service_account_json:
 			return True
-		arquivo = self.configuracoes.google_calendar_service_account_file
-		return bool(arquivo and Path(arquivo).is_file())
+		return self.configuracoes.caminho_conta_servico_google() is not None
 
 	async def listar_eventos(
 		self, data_inicio: date | None = None, data_fim: date | None = None
@@ -260,18 +258,23 @@ class ClienteGoogleCalendar:
 	def _info_conta_servico(self) -> dict[str, Any]:
 		if self.configuracoes.google_calendar_service_account_json:
 			return json.loads(self.configuracoes.google_calendar_service_account_json)
-		if self.configuracoes.google_calendar_service_account_file:
-			caminho = Path(self.configuracoes.google_calendar_service_account_file)
-			if not caminho.is_file():
-				raise HTTPException(
-					status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-					detail=(
-						'Arquivo da conta de serviço do Google Calendar '
-						f'não encontrado: {caminho}'
-					),
-				)
+		caminho = self.configuracoes.caminho_conta_servico_google()
+		if caminho:
 			with caminho.open(encoding='utf-8') as file:
 				return json.load(file)
+		caminhos_configurados = [
+			self.configuracoes.google_calendar_service_account_host_file,
+			self.configuracoes.google_calendar_service_account_file,
+		]
+		if any(caminhos_configurados):
+			raise HTTPException(
+				status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+				detail=(
+					'Arquivo da conta de serviço do Google Calendar não encontrado. '
+					'Para testar localmente com task run, coloque o JSON em '
+					'.env.google-calendar-service-account.json na raiz do projeto.'
+				),
+			)
 		raise HTTPException(
 			status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
 			detail='Google Calendar não configurado',

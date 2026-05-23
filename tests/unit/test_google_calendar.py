@@ -1,4 +1,5 @@
 from datetime import date, time
+from pathlib import Path
 
 import pytest
 
@@ -7,6 +8,19 @@ from core.enums import EventoTipo
 from modules.agenda.google_calendar import ClienteGoogleCalendar
 from modules.agenda.model import EventoAgenda
 from modules.agenda.service import AgendaService
+
+
+def test_caminho_conta_servico_prioriza_arquivo_local(tmp_path: Path):
+	arquivo_local = tmp_path / 'conta-servico.json'
+	arquivo_local.write_text('{"client_email":"x","private_key":"y"}', encoding='utf-8')
+	arquivo_docker = tmp_path / 'docker.json'
+
+	settings = Settings(
+		google_calendar_service_account_host_file=str(arquivo_local),
+		google_calendar_service_account_file=str(arquivo_docker),
+	)
+
+	assert settings.caminho_conta_servico_google() == arquivo_local.resolve()
 
 
 def test_criar_evento_ignora_google_quando_arquivo_credencial_nao_existe():

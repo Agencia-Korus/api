@@ -51,6 +51,7 @@ logs/
 .env.*
 !.env.example
 !.env.template
+.env.google-calendar-service-account.json
 
 # =========================
 # FastAPI / local runtime

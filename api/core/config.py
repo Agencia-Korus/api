@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -23,6 +24,7 @@ class Settings(BaseSettings):
 	google_calendar_id: str | None = None
 	google_calendar_api_key: str | None = None
 	google_calendar_service_account_file: str | None = None
+	google_calendar_service_account_host_file: str | None = None
 	google_calendar_service_account_json: str | None = None
 	google_calendar_delegated_user: str | None = None
 	google_calendar_timezone: str = 'America/Sao_Paulo'
@@ -39,6 +41,20 @@ class Settings(BaseSettings):
 		}:
 			return False
 		return value
+
+	def caminho_conta_servico_google(self) -> Path | None:
+		candidatos = (
+			self.google_calendar_service_account_host_file,
+			self.google_calendar_service_account_file,
+			'.env.google-calendar-service-account.json',
+		)
+		for caminho in candidatos:
+			if not caminho:
+				continue
+			arquivo = Path(caminho)
+			if arquivo.is_file():
+				return arquivo.resolve()
+		return None
 
 	model_config = SettingsConfigDict(
 		env_file='.env', env_file_encoding='utf-8', extra='ignore'
