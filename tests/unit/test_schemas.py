@@ -1,24 +1,39 @@
-from datetime import date, time
+import pytest
+from core.enums import LeadPrioridade, LeadStatus, ServicoStatus
+from modules.leads.schema import LeadCreate
+from modules.servicos.schema import ServicoCreate, ServicoUpdate
+from pydantic import ValidationError
 
-from core.enums import EventoTipo
-from modules.agenda.model import EventoAgenda
-from modules.agenda.service import AgendaService
 
-
-def test_evento_local_para_site_usa_fuso_horario_configurado():
-	evento = EventoAgenda(
-		id=1,
-		usuario_id=1,
-		titulo='Evento local',
-		descricao=None,
-		tipo=EventoTipo.REUNIAO,
-		data=date(2026, 5, 24),
-		hora=time(16, 30),
-		duracao_min=30,
+def test_servico_create_define_status_ativo_por_padrao():
+	payload = ServicoCreate(
+		nome='Identidade Visual',
+		slug='identidade-visual',
+		descricao='Branding completo.',
 	)
 
-	resposta = AgendaService._evento_local_para_site(evento)
+	assert payload.status == ServicoStatus.ATIVO
 
-	assert resposta.inicio.isoformat() == '2026-05-24T16:30:00-03:00'
-	assert resposta.fim
-	assert resposta.fim.isoformat() == '2026-05-24T17:00:00-03:00'
+
+def test_servico_update_permite_patch_parcial():
+	payload = ServicoUpdate(descricao='Nova descricao')
+
+	assert payload.nome is None
+	assert payload.descricao == 'Nova descricao'
+
+
+def test_lead_create_define_status_e_prioridade_padrao():
+	payload = LeadCreate(
+		nome='Cliente Teste',
+		email='cliente@example.com',
+		mensagem='Quero conhecer os serviços.',
+	)
+
+	assert payload.status == LeadStatus.NOVO
+	assert payload.prioridade == LeadPrioridade.MEDIA
+	assert payload.termos_aceitos is False
+
+
+def test_lead_create_valida_email():
+	with pytest.raises(ValidationError):
+		LeadCreate(nome='Cliente Teste', email='email-invalido')

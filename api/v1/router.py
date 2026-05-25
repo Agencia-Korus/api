@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 from modules.academy.controller import router as academy_router
 from modules.agenda.controller import router as agenda_router
-from modules.auth_proxy.controller import router as auth_router
 from modules.comunicados.controller import router as comunicados_router
 from modules.dashboard.controller import router as dashboard_router
 from modules.gamificacao.controller import router as gamificacao_router
@@ -19,7 +18,6 @@ api_router = APIRouter()
 for module_router in (
 	academy_router,
 	agenda_router,
-	auth_router,
 	comunicados_router,
 	dashboard_router,
 	gamificacao_router,

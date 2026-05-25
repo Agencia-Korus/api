@@ -3,12 +3,13 @@ from typing import Annotated
 from core.enums import UserRole
 from core.security import (
 	CREDENTIALS_EXCEPTION,
+	bearer_scheme,
 	decode_token,
-	oauth2_scheme,
 	require_role,
 )
 from deps import PaginationDep, SessionDep
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials
 from modules.gamificacao.schema import (
 	ConquistaCreate,
 	ConquistaResponse,
@@ -35,11 +36,15 @@ AdminGuard = Depends(require_role(UserRole.ADMIN.value))
 
 
 def _admin_or_funcionario(
-	token: Annotated[str | None, Depends(oauth2_scheme)],
+	credentials: Annotated[
+		HTTPAuthorizationCredentials | None,
+		Depends(bearer_scheme),
+	],
 ) -> tuple[int, str]:
 	"""Função para permitir acesso de admin ou funcionário."""
-	if not token:
+	if not credentials:
 		raise CREDENTIALS_EXCEPTION
+	token = credentials.credentials
 	payload = decode_token(token)
 	role = payload.get('role')
 	if role not in {UserRole.ADMIN.value, UserRole.FUNCIONARIO.value}:

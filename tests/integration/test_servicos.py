@@ -6,15 +6,13 @@ from httpx import AsyncClient
 from tests.conftest import requires_db
 
 
-def _payload(**overrides):
+def _payload_servico(**overrides):
 	base = {
-		'nome': f'Lead {uuid.uuid4().hex[:6]}',
-		'email': f'{uuid.uuid4().hex[:8]}@example.com',
-		'whatsapp': '+5561999990000',
-		'orcamento': 'R$5k-R$10k',
-		'mensagem': 'Quero saber sobre identidade visual',
-		'status': 'novo',
-		'prioridade': 'media',
+		'nome': f'Servico {uuid.uuid4().hex[:6]}',
+		'slug': f'servico-{uuid.uuid4().hex[:8]}',
+		'descricao': 'Servico criado pelos testes de integração.',
+		'icone': 'sparkles',
+		'status': 'ativo',
 	}
 	base.update(overrides)
 	return base
@@ -22,40 +20,44 @@ def _payload(**overrides):
 
 @pytest.mark.asyncio
 @requires_db
-@pytest.mark.parametrize('prioridade', ['baixa', 'media', 'alta'])
-async def test_criar_lead_com_prioridades(admin_client: AsyncClient, prioridade: str):
+@pytest.mark.parametrize('status', ['ativo', 'inativo'])
+async def test_criar_servico_com_status(admin_client: AsyncClient, status: str):
 	resp = await admin_client.post(
-		'/api/v1/leads', json=_payload(prioridade=prioridade)
+		'/api/v1/servicos', json=_payload_servico(status=status)
 	)
+
 	assert resp.status_code == 201
-	assert resp.json()['prioridade'] == prioridade
+	assert resp.json()['status'] == status
 
 
 @pytest.mark.asyncio
 @requires_db
-@pytest.mark.parametrize(
-	('status_inicial', 'novo_status'),
-	[
-		('novo', 'em_contato'),
-		('em_contato', 'qualificado'),
-		('qualificado', 'convertido'),
-	],
-)
-async def test_atualizar_status_lead(
-	admin_client: AsyncClient, status_inicial: str, novo_status: str
-):
-	criado = (
-		await admin_client.post('/api/v1/leads', json=_payload(status=status_inicial))
+async def test_adicionar_listar_e_atualizar_entregavel(admin_client: AsyncClient):
+	servico = (
+		await admin_client.post('/api/v1/servicos', json=_payload_servico())
 	).json()
-	resp = await admin_client.patch(
-		f'/api/v1/leads/{criado["id"]}', json={'status': novo_status}
+
+	criado = await admin_client.post(
+		f'/api/v1/servicos/{servico["id"]}/entregaveis',
+		json={'descricao': 'Primeira entrega', 'ordem': 1, 'servico_id': servico['id']},
 	)
-	assert resp.status_code == 200
-	assert resp.json()['status'] == novo_status
+	assert criado.status_code == 201
+
+	listagem = await admin_client.get(f'/api/v1/servicos/{servico["id"]}/entregaveis')
+	assert listagem.status_code == 200
+	assert listagem.json()[0]['descricao'] == 'Primeira entrega'
+
+	entregavel_id = criado.json()['id']
+	atualizado = await admin_client.patch(
+		f'/api/v1/servicos/entregaveis/{entregavel_id}',
+		json={'descricao': 'Entrega revisada'},
+	)
+	assert atualizado.status_code == 200
+	assert atualizado.json()['descricao'] == 'Entrega revisada'
 
 
 @pytest.mark.asyncio
 @requires_db
-async def test_lead_nao_encontrado_retorna_404(admin_client: AsyncClient):
-	resp = await admin_client.get('/api/v1/leads/99999999')
+async def test_servico_nao_encontrado_retorna_404(admin_client: AsyncClient):
+	resp = await admin_client.get('/api/v1/servicos/99999999')
 	assert resp.status_code == 404

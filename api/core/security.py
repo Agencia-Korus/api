@@ -4,15 +4,12 @@ from typing import Annotated, Any
 
 from core.config import get_settings
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 
 settings = get_settings()
 
-oauth2_scheme = OAuth2PasswordBearer(
-	tokenUrl='/api/v1/auth/login',
-	auto_error=False,
-)
+bearer_scheme = HTTPBearer(auto_error=False)
 
 CREDENTIALS_EXCEPTION = HTTPException(
 	status_code=status.HTTP_401_UNAUTHORIZED,
@@ -63,10 +60,23 @@ def decode_token(token: str) -> dict[str, Any]:
 		raise CREDENTIALS_EXCEPTION from exc
 
 
-def get_current_user_id(token: Annotated[str | None, Depends(oauth2_scheme)]) -> int:
-	"""Função para obter o ID do usuário autenticado."""
-	if not token:
+def _extract_bearer_token(
+	credentials: HTTPAuthorizationCredentials | None,
+) -> str:
+	"""Função interna para extrair o token Bearer recebido."""
+	if not credentials:
 		raise CREDENTIALS_EXCEPTION
+	return credentials.credentials
+
+
+def get_current_user_id(
+	credentials: Annotated[
+		HTTPAuthorizationCredentials | None,
+		Depends(bearer_scheme),
+	],
+) -> int:
+	"""Função para obter o ID do usuário autenticado."""
+	token = _extract_bearer_token(credentials)
 	payload = decode_token(token)
 	subject = payload.get('sub')
 	if not subject:
@@ -75,11 +85,13 @@ def get_current_user_id(token: Annotated[str | None, Depends(oauth2_scheme)]) ->
 
 
 def get_current_user(
-	token: Annotated[str | None, Depends(oauth2_scheme)],
+	credentials: Annotated[
+		HTTPAuthorizationCredentials | None,
+		Depends(bearer_scheme),
+	],
 ) -> CurrentUser:
 	"""Função para obter os dados do usuário autenticado."""
-	if not token:
-		raise CREDENTIALS_EXCEPTION
+	token = _extract_bearer_token(credentials)
 	payload = decode_token(token)
 	subject = payload.get('sub')
 	role = payload.get('role')
@@ -91,10 +103,14 @@ def get_current_user(
 def require_role(*allowed_roles: str):
 	"""Função para exigir perfis específicos de acesso."""
 
-	def _checker(token: Annotated[str | None, Depends(oauth2_scheme)]) -> int:
+	def _checker(
+		credentials: Annotated[
+			HTTPAuthorizationCredentials | None,
+			Depends(bearer_scheme),
+		],
+	) -> int:
 		"""Função interna para validar o perfil do token recebido."""
-		if not token:
-			raise CREDENTIALS_EXCEPTION
+		token = _extract_bearer_token(credentials)
 		payload = decode_token(token)
 		role = payload.get('role')
 		if role not in allowed_roles:

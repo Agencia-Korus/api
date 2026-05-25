@@ -20,7 +20,6 @@ class Settings(BaseSettings):
 	jwt_access_token_expire_minutes: int = JWT_ACCESS_TOKEN_EXPIRE_MIN
 	jwt_refresh_token_expire_days: int = JWT_REFRESH_TOKEN_EXPIRE_DAYS
 	cors_allow_origins: str = '*'
-	auth_token_url: str = 'http://127.0.0.1:8001/auth/login'
 	google_calendar_enabled: bool = False
 	google_calendar_id: str | None = None
 	google_calendar_api_key: str | None = None

@@ -12,10 +12,8 @@ def test_health():
 	assert response.json() == {'message': 'API is running...'}
 
 
-def test_swagger_authorize_usa_endpoint_do_auth_service():
+def test_swagger_authorize_usa_bearer_sem_chamada_de_login():
 	openapi = client.get('/openapi.json')
-	token_url = openapi.json()['components']['securitySchemes']['OAuth2PasswordBearer'][
-		'flows'
-	]['password']['tokenUrl']
+	security_scheme = openapi.json()['components']['securitySchemes']['HTTPBearer']
 	assert openapi.status_code == HTTPStatus.OK
-	assert token_url == '/api/v1/auth/login'
+	assert security_scheme == {'type': 'http', 'scheme': 'bearer'}
