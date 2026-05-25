@@ -17,6 +17,7 @@ services:
   korus-api:
     image: korus-api
     entrypoint: ./entrypoint.sh
+    command: poetry run uvicorn main:app --app-dir api --host 0.0.0.0 --port 8000
     build: .
     ports:
       - "8000:8000"
@@ -24,7 +25,7 @@ services:
       korus-db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@korus-db:5432/${POSTGRES_DB}
+      DATABASE_URL: ${DATABASE_URL}
       DEBUG: ${DEBUG}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JWT_ALGORITHM: ${JWT_ALGORITHM}
@@ -41,6 +42,7 @@ services:
       GOOGLE_CALENDAR_DAYS_PAST: ${GOOGLE_CALENDAR_DAYS_PAST}
       GOOGLE_CALENDAR_DAYS_FUTURE: ${GOOGLE_CALENDAR_DAYS_FUTURE}
     volumes:
+      - ./:/app
       - ./.env.google-calendar-service-account.json:/run/secrets/google-calendar-service-account.json:ro
 volumes:
   pgdata:
