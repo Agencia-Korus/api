@@ -1,5 +1,11 @@
 from datetime import datetime
 
+from core.constants import (
+	ICONE_MAX_LENGTH,
+	NOME_MAX_LENGTH,
+	SLUG_MAX_LENGTH,
+	URL_MAX_LENGTH,
+)
 from core.enums import ServicoStatus, enum_values
 from db.base import Base
 from sqlalchemy import (
@@ -16,15 +22,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from core.constants import (
-	ICONE_MAX_LENGTH,
-	NOME_MAX_LENGTH,
-	SLUG_MAX_LENGTH,
-	URL_MAX_LENGTH,
-)
-
 
 class Servico(Base):
+	"""Classe que representa a tabela de serviço no banco de dados."""
+
 	__tablename__ = 'servico'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
@@ -54,6 +55,8 @@ class Servico(Base):
 
 
 class Entregavel(Base):
+	"""Classe que representa a tabela de entregável no banco de dados."""
+
 	__tablename__ = 'entregavel'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)

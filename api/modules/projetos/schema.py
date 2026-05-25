@@ -1,17 +1,18 @@
 from datetime import date, datetime
 
-from core.enums import ProjetoStatus
-from pydantic import BaseModel, ConfigDict, Field
-
 from core.constants import (
 	PAPEL_MAX_LENGTH,
 	PROGRESSO_MAX,
 	PROGRESSO_MIN,
 	TITULO_MAX_LENGTH,
 )
+from core.enums import ProjetoStatus
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ProjetoBase(BaseModel):
+	"""Classe que define os dados de projeto usados pela API."""
+
 	nome: str = Field(max_length=TITULO_MAX_LENGTH)
 	descricao: str | None = None
 	cliente_id: int
@@ -21,11 +22,15 @@ class ProjetoBase(BaseModel):
 
 
 class ProjetoCreate(ProjetoBase):
+	"""Classe que define os dados de projeto usados pela API."""
+
 	status: ProjetoStatus = ProjetoStatus.PLANEJAMENTO
 	progresso: int = Field(default=PROGRESSO_MIN, ge=PROGRESSO_MIN, le=PROGRESSO_MAX)
 
 
 class ProjetoUpdate(BaseModel):
+	"""Classe que define os dados de projeto usados pela API."""
+
 	nome: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
 	descricao: str | None = None
 	servico_id: int | None = None
@@ -36,6 +41,8 @@ class ProjetoUpdate(BaseModel):
 
 
 class ProjetoResponse(ProjetoBase):
+	"""Classe que define os dados de projeto usados pela API."""
+
 	id: int
 	status: ProjetoStatus
 	progresso: int
@@ -44,11 +51,15 @@ class ProjetoResponse(ProjetoBase):
 
 
 class ProjetoFuncionarioCreate(BaseModel):
+	"""Classe que define os dados de membro do projeto usados pela API."""
+
 	funcionario_id: int
 	papel: str | None = Field(default=None, max_length=PAPEL_MAX_LENGTH)
 
 
 class ProjetoFuncionarioResponse(BaseModel):
+	"""Classe que define os dados de membro do projeto usados pela API."""
+
 	projeto_id: int
 	funcionario_id: int
 	papel: str | None

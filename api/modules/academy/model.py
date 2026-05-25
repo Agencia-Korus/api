@@ -1,6 +1,12 @@
 from datetime import datetime
 from decimal import Decimal
 
+from core.constants import (
+	PRECO_DECIMAL_PLACES,
+	PRECO_TOTAL_DIGITS,
+	TITULO_MAX_LENGTH,
+	URL_MAX_LENGTH,
+)
 from core.enums import AcademyTipo, enum_values
 from db.base import Base
 from sqlalchemy import (
@@ -17,15 +23,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from core.constants import (
-	PRECO_DECIMAL_PLACES,
-	PRECO_TOTAL_DIGITS,
-	TITULO_MAX_LENGTH,
-	URL_MAX_LENGTH,
-)
-
 
 class Academy(Base):
+	"""Classe que representa a tabela de conteúdo da Academy no banco de dados."""
+
 	__tablename__ = 'academy'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)

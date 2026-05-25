@@ -1,5 +1,6 @@
 from datetime import date, datetime, time
 
+from core.constants import DURACAO_EVENTO_PADRAO_MIN, TITULO_MAX_LENGTH
 from core.enums import EventoTipo, SolicitacaoStatus, enum_values
 from db.base import Base
 from sqlalchemy import (
@@ -21,10 +22,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from core.constants import DURACAO_EVENTO_PADRAO_MIN, TITULO_MAX_LENGTH
-
 
 class EventoAgenda(Base):
+	"""Classe que representa a tabela de evento de agenda no banco de dados."""
+
 	__tablename__ = 'evento_agenda'
 	__table_args__ = (
 		Index('idx_evento_usuario_data', 'usuario_id', 'data'),
@@ -65,6 +66,8 @@ class EventoAgenda(Base):
 
 
 class SolicitacaoReuniao(Base):
+	"""Classe que representa a tabela de solicitação de reunião no banco de dados."""
+
 	__tablename__ = 'solicitacao_reuniao'
 	__table_args__ = (
 		CheckConstraint(

@@ -1,5 +1,11 @@
 from datetime import date, datetime
 
+from core.constants import (
+	NOME_MAX_LENGTH,
+	ORCAMENTO_MAX_LENGTH,
+	RAZAO_SOCIAL_MAX_LENGTH,
+	TELEFONE_MAX_LENGTH,
+)
 from core.enums import LeadPrioridade, LeadStatus, enum_values
 from db.base import Base
 from sqlalchemy import (
@@ -18,15 +24,10 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import CITEXT
 from sqlalchemy.orm import Mapped, mapped_column
 
-from core.constants import (
-	NOME_MAX_LENGTH,
-	ORCAMENTO_MAX_LENGTH,
-	RAZAO_SOCIAL_MAX_LENGTH,
-	TELEFONE_MAX_LENGTH,
-)
-
 
 class Lead(Base):
+	"""Classe que representa a tabela de lead no banco de dados."""
+
 	__tablename__ = 'lead'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)

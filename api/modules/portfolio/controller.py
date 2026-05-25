@@ -19,6 +19,7 @@ router = APIRouter(
 
 
 def _service(session: SessionDep) -> PortfolioService:
+	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return PortfolioService(session)
 
 
@@ -27,6 +28,7 @@ ServiceDep = Annotated[PortfolioService, Depends(_service)]
 
 @router.post('', response_model=PortfolioResponse, status_code=status.HTTP_201_CREATED)
 async def criar(payload: PortfolioCreate, service: ServiceDep):
+	"""Função para criar um novo registro."""
 	return await service.create(payload)
 
 
@@ -40,6 +42,7 @@ async def listar(
 	destaques: DestaquesQuery = False,
 	categoria: str | None = None,
 ):
+	"""Função para listar registros."""
 	return await service.list_filtered(
 		offset=page.offset,
 		limit=page.limit,
@@ -50,14 +53,17 @@ async def listar(
 
 @router.get('/{item_id}', response_model=PortfolioResponse)
 async def obter(item_id: int, service: ServiceDep):
+	"""Função para obter um registro pelo ID."""
 	return await service.get(item_id)
 
 
 @router.patch('/{item_id}', response_model=PortfolioResponse)
 async def atualizar(item_id: int, payload: PortfolioUpdate, service: ServiceDep):
+	"""Função para atualizar um registro pelo ID."""
 	return await service.update(item_id, payload)
 
 
 @router.delete('/{item_id}', status_code=status.HTTP_204_NO_CONTENT)
 async def deletar(item_id: int, service: ServiceDep):
+	"""Função para excluir um registro pelo ID."""
 	await service.delete(item_id)

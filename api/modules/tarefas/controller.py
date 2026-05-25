@@ -19,6 +19,7 @@ router = APIRouter(prefix='/tarefas', tags=['Tarefas'])
 
 
 def _service(session: SessionDep) -> TarefaService:
+	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return TarefaService(session)
 
 
@@ -35,6 +36,7 @@ CurrentUserDep = Annotated[CurrentUser, Depends(get_current_user)]
 	summary='Cria tarefa (somente admin)',
 )
 async def criar(payload: TarefaCreate, service: ServiceDep):
+	"""Função para criar um novo registro."""
 	return await service.create(payload)
 
 
@@ -55,6 +57,7 @@ async def listar(
 	responsavel_id: int | None = None,
 	status_filter: Annotated[TarefaStatus | None, Query(alias='status')] = None,
 ):
+	"""Função para listar registros."""
 	return await service.list_visible(
 		offset=page.offset,
 		limit=page.limit,
@@ -72,6 +75,7 @@ async def listar(
 	summary='Obtém tarefa visível ao usuário autenticado',
 )
 async def obter(tarefa_id: int, service: ServiceDep, current_user: CurrentUserDep):
+	"""Função para obter um registro pelo ID."""
 	return await service.get_visible(tarefa_id, current_user.id, current_user.role)
 
 
@@ -86,6 +90,7 @@ async def atualizar(
 	service: ServiceDep,
 	current_user: CurrentUserDep,
 ):
+	"""Função para atualizar um registro pelo ID."""
 	await service.ensure_can_manage_tarefa(
 		tarefa_id, current_user.id, current_user.role
 	)
@@ -98,6 +103,7 @@ async def atualizar(
 	summary='Remove tarefa (admin ou funcionário envolvido)',
 )
 async def deletar(tarefa_id: int, service: ServiceDep, current_user: CurrentUserDep):
+	"""Função para excluir um registro pelo ID."""
 	await service.ensure_can_manage_tarefa(
 		tarefa_id, current_user.id, current_user.role
 	)
@@ -116,6 +122,7 @@ async def comentar(
 	current_user: CurrentUserDep,
 	conteudo: Annotated[str, Body(..., embed=True)],
 ):
+	"""Função para adicionar um comentário a uma tarefa."""
 	await service.get_visible(tarefa_id, current_user.id, current_user.role)
 	payload = ComentarioCreate(tarefa_id=tarefa_id, conteudo=conteudo)
 	return await service.add_comentario(payload, current_user.id)
@@ -129,6 +136,7 @@ async def comentar(
 async def listar_comentarios(
 	tarefa_id: int, service: ServiceDep, current_user: CurrentUserDep
 ):
+	"""Função para listar comentários de uma tarefa."""
 	await service.get_visible(tarefa_id, current_user.id, current_user.role)
 	return await service.list_comentarios(tarefa_id)
 
@@ -140,6 +148,7 @@ async def listar_comentarios(
 	summary='Remove comentário (somente admin)',
 )
 async def remover_comentario(comentario_id: int, service: ServiceDep):
+	"""Função para remover um comentário pelo ID."""
 	await service.delete_comentario(comentario_id)
 
 
@@ -155,6 +164,7 @@ async def anexar(
 	service: ServiceDep,
 	current_user: CurrentUserDep,
 ):
+	"""Função para adicionar um anexo a uma tarefa."""
 	await service.ensure_can_manage_tarefa(
 		tarefa_id, current_user.id, current_user.role
 	)
@@ -170,6 +180,7 @@ async def anexar(
 async def listar_anexos(
 	tarefa_id: int, service: ServiceDep, current_user: CurrentUserDep
 ):
+	"""Função para listar anexos de uma tarefa."""
 	await service.get_visible(tarefa_id, current_user.id, current_user.role)
 	return await service.list_anexos(tarefa_id)
 
@@ -181,4 +192,5 @@ async def listar_anexos(
 	summary='Remove anexo (somente admin)',
 )
 async def remover_anexo(anexo_id: int, service: ServiceDep):
+	"""Função para remover um anexo pelo ID."""
 	await service.delete_anexo(anexo_id)

@@ -1,5 +1,11 @@
 from datetime import date, datetime
 
+from core.constants import (
+	PAPEL_MAX_LENGTH,
+	TIPO_ARQUIVO_MAX_LENGTH,
+	TITULO_MAX_LENGTH,
+	URL_MAX_LENGTH,
+)
 from core.enums import Complexidade, Prioridade, TarefaStatus, enum_values
 from db.base import Base
 from sqlalchemy import (
@@ -17,15 +23,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from core.constants import (
-	PAPEL_MAX_LENGTH,
-	TIPO_ARQUIVO_MAX_LENGTH,
-	TITULO_MAX_LENGTH,
-	URL_MAX_LENGTH,
-)
-
 
 class Tarefa(Base):
+	"""Classe que representa a tabela de tarefa no banco de dados."""
+
 	__tablename__ = 'tarefa'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
@@ -84,6 +85,8 @@ class Tarefa(Base):
 
 
 class Comentario(Base):
+	"""Classe que representa a tabela de comentário no banco de dados."""
+
 	__tablename__ = 'comentario'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
@@ -102,6 +105,8 @@ class Comentario(Base):
 
 
 class Anexo(Base):
+	"""Classe que representa a tabela de anexo no banco de dados."""
+
 	__tablename__ = 'anexo'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)

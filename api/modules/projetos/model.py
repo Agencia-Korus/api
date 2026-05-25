@@ -1,5 +1,11 @@
 from datetime import date, datetime
 
+from core.constants import (
+	PAPEL_MAX_LENGTH,
+	PROGRESSO_MAX,
+	PROGRESSO_MIN,
+	TITULO_MAX_LENGTH,
+)
 from core.enums import ProjetoStatus, enum_values
 from db.base import Base
 from sqlalchemy import (
@@ -18,15 +24,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from core.constants import (
-	PAPEL_MAX_LENGTH,
-	PROGRESSO_MAX,
-	PROGRESSO_MIN,
-	TITULO_MAX_LENGTH,
-)
-
 
 class Projeto(Base):
+	"""Classe que representa a tabela de projeto no banco de dados."""
+
 	__tablename__ = 'projeto'
 	__table_args__ = (
 		CheckConstraint(
@@ -69,6 +70,8 @@ class Projeto(Base):
 
 
 class ProjetoFuncionario(Base):
+	"""Classe que representa a tabela de membro do projeto no banco de dados."""
+
 	__tablename__ = 'projeto_funcionario'
 
 	projeto_id: Mapped[int] = mapped_column(

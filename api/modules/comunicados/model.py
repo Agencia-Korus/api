@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from core.constants import TITULO_MAX_LENGTH
 from core.enums import ComunicadoAlvo, enum_values
 from db.base import Base
 from sqlalchemy import (
@@ -15,10 +16,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from core.constants import TITULO_MAX_LENGTH
-
 
 class Comunicado(Base):
+	"""Classe que representa a tabela de comunicado no banco de dados."""
+
 	__tablename__ = 'comunicado'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
@@ -43,6 +44,8 @@ class Comunicado(Base):
 
 
 class ComunicadoLeitura(Base):
+	"""Classe que representa a tabela de leitura de comunicado no banco de dados."""
+
 	__tablename__ = 'comunicado_leitura'
 
 	comunicado_id: Mapped[int] = mapped_column(

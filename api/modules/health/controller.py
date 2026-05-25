@@ -9,5 +9,6 @@ router = APIRouter(prefix='/health/db', tags=['Saúde'])
 
 @router.get('', status_code=HTTPStatus.OK)
 async def health(session: SessionDep):
+	"""Função para verificar se o serviço está disponível."""
 	await session.execute(text('SELECT 1'))
 	return {'status': 'ok'}

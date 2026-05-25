@@ -16,6 +16,7 @@ router = APIRouter(prefix='/usuarios', tags=['Usuários'])
 
 
 def _service(session: SessionDep) -> UsuarioService:
+	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return UsuarioService(session)
 
 
@@ -31,6 +32,7 @@ AdminGuard = Depends(require_role(UserRole.ADMIN.value))
 	summary='Cria usuário (somente admin)',
 )
 async def criar(payload: UsuarioCreate, service: ServiceDep):
+	"""Função para criar um novo registro."""
 	return await service.create(payload)
 
 
@@ -42,6 +44,7 @@ async def listar(
 	status_filter: Annotated[UserStatus | None, Query(alias='status')] = None,
 	search: str | None = None,
 ):
+	"""Função para listar registros."""
 	return await service.list_filtered(
 		offset=page.offset,
 		limit=page.limit,
@@ -53,6 +56,7 @@ async def listar(
 
 @router.get('/{usuario_id}', response_model=UsuarioResponse, dependencies=[AdminGuard])
 async def obter(usuario_id: int, service: ServiceDep):
+	"""Função para obter um registro pelo ID."""
 	return await service.get(usuario_id)
 
 
@@ -63,6 +67,7 @@ async def obter(usuario_id: int, service: ServiceDep):
 	summary='Edita dados do usuário (somente admin)',
 )
 async def atualizar(usuario_id: int, payload: UsuarioUpdate, service: ServiceDep):
+	"""Função para atualizar um registro pelo ID."""
 	return await service.update(usuario_id, payload)
 
 
@@ -73,6 +78,7 @@ async def atualizar(usuario_id: int, payload: UsuarioUpdate, service: ServiceDep
 	summary='Aprova cadastro pendente, ativando o usuário (somente admin)',
 )
 async def aprovar(usuario_id: int, service: ServiceDep):
+	"""Função para aprovar o cadastro de um usuário."""
 	return await service.approve(usuario_id)
 
 
@@ -83,4 +89,5 @@ async def aprovar(usuario_id: int, service: ServiceDep):
 	summary='Remove usuário (somente admin)',
 )
 async def deletar(usuario_id: int, service: ServiceDep):
+	"""Função para excluir um registro pelo ID."""
 	await service.delete(usuario_id)

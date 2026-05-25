@@ -1,9 +1,8 @@
 from collections.abc import AsyncGenerator
 
+from core.config import get_settings
 from core.database import normalize_async_database_url
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-
-from core.config import get_settings
 
 settings = get_settings()
 database_url, connect_args = normalize_async_database_url(settings.database_url)
@@ -21,6 +20,7 @@ AsyncSessionLocal = async_sessionmaker(
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
+	"""Função para fornecer uma sessão assíncrona do banco de dados."""
 	async with AsyncSessionLocal() as session:
 		try:
 			yield session

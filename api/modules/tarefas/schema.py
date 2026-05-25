@@ -1,17 +1,18 @@
 from datetime import date, datetime
 
-from core.enums import Complexidade, Prioridade, TarefaStatus
-from pydantic import BaseModel, ConfigDict, Field
-
 from core.constants import (
 	PAPEL_MAX_LENGTH,
 	TIPO_ARQUIVO_MAX_LENGTH,
 	TITULO_MAX_LENGTH,
 	URL_MAX_LENGTH,
 )
+from core.enums import Complexidade, Prioridade, TarefaStatus
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TarefaBase(BaseModel):
+	"""Classe que define os dados de tarefa usados pela API."""
+
 	projeto_id: int
 	responsavel_id: int | None = None
 	titulo: str = Field(max_length=TITULO_MAX_LENGTH)
@@ -22,12 +23,16 @@ class TarefaBase(BaseModel):
 
 
 class TarefaCreate(TarefaBase):
+	"""Classe que define os dados de tarefa usados pela API."""
+
 	status: TarefaStatus = TarefaStatus.A_FAZER
 	complexidade: Complexidade = Complexidade.MEDIA
 	prioridade: Prioridade = Prioridade.MEDIA
 
 
 class TarefaUpdate(BaseModel):
+	"""Classe que define os dados de tarefa usados pela API."""
+
 	responsavel_id: int | None = None
 	titulo: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
 	descricao: str | None = None
@@ -40,6 +45,8 @@ class TarefaUpdate(BaseModel):
 
 
 class TarefaResponse(TarefaBase):
+	"""Classe que define os dados de tarefa usados pela API."""
+
 	id: int
 	status: TarefaStatus
 	complexidade: Complexidade
@@ -50,11 +57,15 @@ class TarefaResponse(TarefaBase):
 
 
 class ComentarioCreate(BaseModel):
+	"""Classe que define os dados de comentário usados pela API."""
+
 	tarefa_id: int
 	conteudo: str
 
 
 class ComentarioResponse(BaseModel):
+	"""Classe que define os dados de comentário usados pela API."""
+
 	id: int
 	tarefa_id: int
 	autor_id: int
@@ -64,6 +75,8 @@ class ComentarioResponse(BaseModel):
 
 
 class AnexoCreate(BaseModel):
+	"""Classe que define os dados de anexo usados pela API."""
+
 	tarefa_id: int
 	nome: str = Field(max_length=TITULO_MAX_LENGTH)
 	url: str = Field(max_length=URL_MAX_LENGTH)
@@ -72,6 +85,8 @@ class AnexoCreate(BaseModel):
 
 
 class AnexoResponse(AnexoCreate):
+	"""Classe que define os dados de anexo usados pela API."""
+
 	id: int
 	criado_em: datetime
 	model_config = ConfigDict(from_attributes=True)

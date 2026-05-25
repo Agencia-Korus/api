@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from core.constants import USER_AGENT_MAX_LENGTH
 from core.enums import ConsentimentoTipo, enum_values
 from db.base import Base
 from sqlalchemy import (
@@ -16,10 +17,10 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import INET
 from sqlalchemy.orm import Mapped, mapped_column
 
-from core.constants import USER_AGENT_MAX_LENGTH
-
 
 class ConsentimentoLgpd(Base):
+	"""Classe que representa a tabela de consentimento LGPD no banco de dados."""
+
 	__tablename__ = 'consentimento_lgpd'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)

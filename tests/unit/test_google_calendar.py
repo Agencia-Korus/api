@@ -2,7 +2,6 @@ from datetime import date, time
 from pathlib import Path
 
 import pytest
-
 from core.config import Settings
 from core.enums import EventoTipo
 from modules.agenda.google_calendar import ClienteGoogleCalendar

@@ -19,6 +19,7 @@ router = APIRouter(
 
 
 def _service(session: SessionDep) -> IntegracaoService:
+	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return IntegracaoService(session)
 
 
@@ -33,6 +34,7 @@ ServiceDep = Annotated[IntegracaoService, Depends(_service)]
 	description='Somente a integração com Google Calendar é aceita neste projeto.',
 )
 async def criar(payload: IntegracaoCreate, service: ServiceDep):
+	"""Função para criar um novo registro."""
 	return await service.create(payload)
 
 
@@ -42,6 +44,7 @@ async def criar(payload: IntegracaoCreate, service: ServiceDep):
 	summary='Lista configuração do Google Calendar (somente admin)',
 )
 async def listar(service: ServiceDep, page: PaginationDep):
+	"""Função para listar registros."""
 	return await service.list(offset=page.offset, limit=page.limit)
 
 
@@ -51,6 +54,7 @@ async def listar(service: ServiceDep, page: PaginationDep):
 	summary='Obtém configuração do Google Calendar (somente admin)',
 )
 async def obter(integracao_id: int, service: ServiceDep):
+	"""Função para obter um registro pelo ID."""
 	return await service.get(integracao_id)
 
 
@@ -60,6 +64,7 @@ async def obter(integracao_id: int, service: ServiceDep):
 	summary='Atualiza configuração do Google Calendar (somente admin)',
 )
 async def atualizar(integracao_id: int, payload: IntegracaoUpdate, service: ServiceDep):
+	"""Função para atualizar um registro pelo ID."""
 	return await service.update(integracao_id, payload)
 
 
@@ -69,4 +74,5 @@ async def atualizar(integracao_id: int, payload: IntegracaoUpdate, service: Serv
 	summary='Remove configuração do Google Calendar (somente admin)',
 )
 async def deletar(integracao_id: int, service: ServiceDep):
+	"""Função para excluir um registro pelo ID."""
 	await service.delete(integracao_id)

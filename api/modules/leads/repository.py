@@ -5,6 +5,8 @@ from sqlalchemy import or_, select
 
 
 class LeadRepository(BaseRepository[Lead]):
+	"""Classe responsável pelo acesso aos dados de lead."""
+
 	model = Lead
 
 	async def list_filtered(
@@ -16,6 +18,7 @@ class LeadRepository(BaseRepository[Lead]):
 		servico_id: int | None = None,
 		search: str | None = None,
 	) -> list[Lead]:
+		"""Função para listar registros aplicando filtros e paginação."""
 		stmt = select(Lead)
 		if status is not None:
 			stmt = stmt.where(Lead.status == status)

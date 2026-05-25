@@ -11,6 +11,7 @@ router = APIRouter(prefix='/lgpd', tags=['LGPD'])
 
 
 def _service(session: SessionDep) -> LgpdService:
+	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return LgpdService(session)
 
 
@@ -29,6 +30,7 @@ AdminGuard = Depends(require_role(UserRole.ADMIN.value))
 	),
 )
 async def registrar(payload: ConsentimentoLgpdCreate, service: ServiceDep):
+	"""Função para registrar um consentimento LGPD."""
 	return await service.registrar(payload)
 
 
@@ -39,4 +41,5 @@ async def registrar(payload: ConsentimentoLgpdCreate, service: ServiceDep):
 	summary='Lista consentimentos LGPD (somente admin)',
 )
 async def listar(service: ServiceDep, page: PaginationDep):
+	"""Função para listar registros."""
 	return await service.listar(offset=page.offset, limit=page.limit)

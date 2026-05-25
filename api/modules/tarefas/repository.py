@@ -6,9 +6,12 @@ from sqlalchemy import or_, select
 
 
 class TarefaRepository(BaseRepository[Tarefa]):
+	"""Classe responsável pelo acesso aos dados de tarefa."""
+
 	model = Tarefa
 
 	async def list_by_projeto(self, projeto_id: int) -> list[Tarefa]:
+		"""Função para listar registros vinculados a um projeto."""
 		stmt = (
 			select(Tarefa).where(Tarefa.projeto_id == projeto_id).order_by(Tarefa.ordem)
 		)
@@ -23,6 +26,7 @@ class TarefaRepository(BaseRepository[Tarefa]):
 		responsavel_id: int | None = None,
 		status: TarefaStatus | None = None,
 	) -> list[Tarefa]:
+		"""Função para listar registros aplicando filtros e paginação."""
 		stmt = select(Tarefa)
 		if projeto_id is not None:
 			stmt = stmt.where(Tarefa.projeto_id == projeto_id)
@@ -44,12 +48,14 @@ class TarefaRepository(BaseRepository[Tarefa]):
 		responsavel_id: int | None = None,
 		status: TarefaStatus | None = None,
 	) -> list[Tarefa]:
+		"""Função para listar registros visíveis para o usuário autenticado."""
 		stmt = select(Tarefa).join(Projeto, Projeto.id == Tarefa.projeto_id)
 		if role == UserRole.CLIENTE.value:
 			stmt = stmt.where(Projeto.cliente_id == usuario_id)
 		elif role == UserRole.FUNCIONARIO.value:
 			stmt = (
-				stmt.outerjoin(
+				stmt
+				.outerjoin(
 					ProjetoFuncionario,
 					ProjetoFuncionario.projeto_id == Tarefa.projeto_id,
 				)
@@ -73,9 +79,12 @@ class TarefaRepository(BaseRepository[Tarefa]):
 
 
 class ComentarioRepository(BaseRepository[Comentario]):
+	"""Classe responsável pelo acesso aos dados de comentário."""
+
 	model = Comentario
 
 	async def list_by_tarefa(self, tarefa_id: int) -> list[Comentario]:
+		"""Função para listar registros vinculados a uma tarefa."""
 		stmt = (
 			select(Comentario)
 			.where(Comentario.tarefa_id == tarefa_id)
@@ -86,9 +95,12 @@ class ComentarioRepository(BaseRepository[Comentario]):
 
 
 class AnexoRepository(BaseRepository[Anexo]):
+	"""Classe responsável pelo acesso aos dados de anexo."""
+
 	model = Anexo
 
 	async def list_by_tarefa(self, tarefa_id: int) -> list[Anexo]:
+		"""Função para listar registros vinculados a uma tarefa."""
 		stmt = select(Anexo).where(Anexo.tarefa_id == tarefa_id)
 		result = await self.session.execute(stmt)
 		return list(result.scalars().all())

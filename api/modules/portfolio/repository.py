@@ -4,9 +4,12 @@ from sqlalchemy import select
 
 
 class PortfolioRepository(BaseRepository[Portfolio]):
+	"""Classe responsável pelo acesso aos dados de portfólio."""
+
 	model = Portfolio
 
 	async def list_destaques(self) -> list[Portfolio]:
+		"""Função para listar itens de portfólio marcados como destaque."""
 		stmt = (
 			select(Portfolio)
 			.where(Portfolio.destaque.is_(True))
@@ -22,6 +25,7 @@ class PortfolioRepository(BaseRepository[Portfolio]):
 		categoria: str | None = None,
 		destaques: bool = False,
 	) -> list[Portfolio]:
+		"""Função para listar registros aplicando filtros e paginação."""
 		stmt = select(Portfolio)
 		if destaques:
 			stmt = stmt.where(Portfolio.destaque.is_(True))

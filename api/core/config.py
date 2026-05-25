@@ -1,17 +1,18 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
 from core.constants import (
 	JWT_ACCESS_TOKEN_EXPIRE_MIN,
 	JWT_DEFAULT_ALGORITHM,
 	JWT_REFRESH_TOKEN_EXPIRE_DAYS,
 )
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+	"""Classe que centraliza as configurações da aplicação."""
+
 	database_url: str = 'database-url'
 	debug: bool = False
 	jwt_secret_key: str = 'change-me'
@@ -34,6 +35,7 @@ class Settings(BaseSettings):
 	@field_validator('debug', mode='before')
 	@classmethod
 	def parse_debug(cls, value: object) -> object:
+		"""Função para converter o valor de debug recebido por configuração."""
 		if isinstance(value, str) and value.strip().lower() in {
 			'release',
 			'production',
@@ -43,6 +45,7 @@ class Settings(BaseSettings):
 		return value
 
 	def caminho_conta_servico_google(self) -> Path | None:
+		"""Função para localizar o arquivo de credenciais do Google Calendar."""
 		candidatos = (
 			self.google_calendar_service_account_host_file,
 			self.google_calendar_service_account_file,
@@ -63,4 +66,5 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
+	"""Função para obter as configurações carregadas do ambiente."""
 	return Settings()

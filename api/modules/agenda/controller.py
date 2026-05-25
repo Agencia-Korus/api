@@ -30,6 +30,7 @@ router = APIRouter(prefix='/agenda', tags=['Agenda'], dependencies=[LoggedUserGu
 
 
 def _service(session: SessionDep) -> AgendaService:
+	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return AgendaService(session)
 
 
@@ -43,6 +44,7 @@ ServiceDep = Annotated[AgendaService, Depends(_service)]
 	summary='Cria evento na agenda (usuário autenticado)',
 )
 async def criar_evento(payload: EventoAgendaCreate, service: ServiceDep):
+	"""Função para criar um evento na agenda."""
 	return await service.criar_evento(payload)
 
 
@@ -61,6 +63,7 @@ async def listar_eventos_site(
 	data_inicio: date | None = None,
 	data_fim: date | None = None,
 ):
+	"""Função para listar eventos públicos exibidos no site."""
 	return await service.listar_eventos_site(current_user.id, data_inicio, data_fim)
 
 
@@ -70,6 +73,7 @@ async def listar_eventos_site(
 	summary='Lista eventos locais de um usuário (usuário autenticado)',
 )
 async def listar_eventos(usuario_id: int, service: ServiceDep):
+	"""Função para listar eventos de um usuário."""
 	return await service.listar_eventos(usuario_id)
 
 
@@ -87,6 +91,7 @@ async def listar_eventos_calendario_google(
 	data_inicio: date | None = None,
 	data_fim: date | None = None,
 ):
+	"""Função para listar eventos sincronizados do Google Calendar."""
 	return await service.listar_eventos_calendario_google(data_inicio, data_fim)
 
 
@@ -96,6 +101,7 @@ async def listar_eventos_calendario_google(
 	summary='Obtém evento da agenda (usuário autenticado)',
 )
 async def obter_evento(evento_id: int, service: ServiceDep):
+	"""Função para obter um evento da agenda pelo ID."""
 	return await service.get_evento(evento_id)
 
 
@@ -107,6 +113,7 @@ async def obter_evento(evento_id: int, service: ServiceDep):
 async def atualizar_evento(
 	evento_id: int, payload: EventoAgendaUpdate, service: ServiceDep
 ):
+	"""Função para atualizar um evento da agenda."""
 	return await service.atualizar_evento(evento_id, payload)
 
 
@@ -116,6 +123,7 @@ async def atualizar_evento(
 	summary='Remove evento da agenda (usuário autenticado)',
 )
 async def deletar_evento(evento_id: int, service: ServiceDep):
+	"""Função para excluir um evento da agenda."""
 	await service.deletar_evento(evento_id)
 
 
@@ -126,6 +134,7 @@ async def deletar_evento(evento_id: int, service: ServiceDep):
 	summary='Solicita reunião (usuário autenticado)',
 )
 async def criar_solicitacao(payload: SolicitacaoReuniaoCreate, service: ServiceDep):
+	"""Função para criar uma solicitação de reunião."""
 	return await service.criar_solicitacao(payload)
 
 
@@ -135,6 +144,7 @@ async def criar_solicitacao(payload: SolicitacaoReuniaoCreate, service: ServiceD
 	summary='Lista solicitações recebidas (usuário autenticado)',
 )
 async def listar_solicitacoes(destinatario_id: int, service: ServiceDep):
+	"""Função para listar solicitações de reunião recebidas."""
 	return await service.listar_solicitacoes_recebidas(destinatario_id)
 
 
@@ -148,6 +158,7 @@ async def atualizar_solicitacao(
 	payload: SolicitacaoReuniaoUpdate,
 	service: ServiceDep,
 ):
+	"""Função para atualizar uma solicitação de reunião."""
 	return await service.atualizar_solicitacao(solicitacao_id, payload)
 
 
@@ -157,4 +168,5 @@ async def atualizar_solicitacao(
 	summary='Remove solicitação de reunião (usuário autenticado)',
 )
 async def deletar_solicitacao(solicitacao_id: int, service: ServiceDep):
+	"""Função para excluir uma solicitação de reunião."""
 	await service.deletar_solicitacao(solicitacao_id)

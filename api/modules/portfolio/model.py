@@ -1,5 +1,11 @@
 from datetime import datetime
 
+from core.constants import (
+	CATEGORIA_MAX_LENGTH,
+	NOME_MAX_LENGTH,
+	TITULO_MAX_LENGTH,
+	URL_MAX_LENGTH,
+)
 from db.base import Base
 from sqlalchemy import (
 	BigInteger,
@@ -14,15 +20,10 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
-from core.constants import (
-	CATEGORIA_MAX_LENGTH,
-	NOME_MAX_LENGTH,
-	TITULO_MAX_LENGTH,
-	URL_MAX_LENGTH,
-)
-
 
 class Portfolio(Base):
+	"""Classe que representa a tabela de portfólio no banco de dados."""
+
 	__tablename__ = 'portfolio'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)

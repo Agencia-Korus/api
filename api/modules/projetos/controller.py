@@ -17,6 +17,7 @@ router = APIRouter(prefix='/projetos', tags=['Projetos'])
 
 
 def _service(session: SessionDep) -> ProjetoService:
+	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return ProjetoService(session)
 
 
@@ -33,6 +34,7 @@ CurrentUserDep = Annotated[CurrentUser, Depends(get_current_user)]
 	summary='Cria projeto e define cliente vinculado (somente admin)',
 )
 async def criar(payload: ProjetoCreate, service: ServiceDep):
+	"""Função para criar um novo registro."""
 	return await service.create(payload)
 
 
@@ -52,6 +54,7 @@ async def listar(
 	cliente_id: int | None = None,
 	status_filter: Annotated[ProjetoStatus | None, Query(alias='status')] = None,
 ):
+	"""Função para listar registros."""
 	return await service.list_visible(
 		offset=page.offset,
 		limit=page.limit,
@@ -68,6 +71,7 @@ async def listar(
 	summary='Obtém projeto visível ao usuário autenticado',
 )
 async def obter(projeto_id: int, service: ServiceDep, current_user: CurrentUserDep):
+	"""Função para obter um registro pelo ID."""
 	return await service.get_visible(projeto_id, current_user.id, current_user.role)
 
 
@@ -78,6 +82,7 @@ async def obter(projeto_id: int, service: ServiceDep, current_user: CurrentUserD
 	summary='Atualiza projeto (somente admin)',
 )
 async def atualizar(projeto_id: int, payload: ProjetoUpdate, service: ServiceDep):
+	"""Função para atualizar um registro pelo ID."""
 	return await service.update(projeto_id, payload)
 
 
@@ -88,6 +93,7 @@ async def atualizar(projeto_id: int, payload: ProjetoUpdate, service: ServiceDep
 	summary='Remove projeto (somente admin)',
 )
 async def deletar(projeto_id: int, service: ServiceDep):
+	"""Função para excluir um registro pelo ID."""
 	await service.delete(projeto_id)
 
 
@@ -101,6 +107,7 @@ async def deletar(projeto_id: int, service: ServiceDep):
 async def adicionar_membro(
 	projeto_id: int, payload: ProjetoFuncionarioCreate, service: ServiceDep
 ):
+	"""Função para adicionar um funcionário à equipe do projeto."""
 	return await service.adicionar_membro(projeto_id, payload)
 
 
@@ -112,6 +119,7 @@ async def adicionar_membro(
 async def listar_equipe(
 	projeto_id: int, service: ServiceDep, current_user: CurrentUserDep
 ):
+	"""Função para listar a equipe de um projeto."""
 	await service.get_visible(projeto_id, current_user.id, current_user.role)
 	return await service.listar_equipe(projeto_id)
 
@@ -123,4 +131,5 @@ async def listar_equipe(
 	summary='Remove funcionário do projeto (somente admin)',
 )
 async def remover_membro(projeto_id: int, funcionario_id: int, service: ServiceDep):
+	"""Função para remover um funcionário da equipe do projeto."""
 	await service.remover_membro(projeto_id, funcionario_id)

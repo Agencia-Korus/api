@@ -17,6 +17,7 @@ router = APIRouter(
 
 
 def _service(session: SessionDep) -> LeadService:
+	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return LeadService(session)
 
 
@@ -25,6 +26,7 @@ ServiceDep = Annotated[LeadService, Depends(_service)]
 
 @router.post('', response_model=LeadResponse, status_code=status.HTTP_201_CREATED)
 async def criar(payload: LeadCreate, service: ServiceDep):
+	"""Função para criar um novo registro."""
 	return await service.create(payload)
 
 
@@ -37,6 +39,7 @@ async def listar(
 	servico_id: int | None = None,
 	search: str | None = None,
 ):
+	"""Função para listar registros."""
 	return await service.list_filtered(
 		offset=page.offset,
 		limit=page.limit,
@@ -55,6 +58,7 @@ async def exportar_csv(
 	servico_id: int | None = None,
 	search: str | None = None,
 ):
+	"""Função para exportar registros em formato CSV."""
 	leads = await service.list_filtered(
 		offset=0,
 		limit=10_000,
@@ -101,14 +105,17 @@ async def exportar_csv(
 
 @router.get('/{lead_id}', response_model=LeadResponse)
 async def obter(lead_id: int, service: ServiceDep):
+	"""Função para obter um registro pelo ID."""
 	return await service.get(lead_id)
 
 
 @router.patch('/{lead_id}', response_model=LeadResponse)
 async def atualizar(lead_id: int, payload: LeadUpdate, service: ServiceDep):
+	"""Função para atualizar um registro pelo ID."""
 	return await service.update(lead_id, payload)
 
 
 @router.delete('/{lead_id}', status_code=status.HTTP_204_NO_CONTENT)
 async def deletar(lead_id: int, service: ServiceDep):
+	"""Função para excluir um registro pelo ID."""
 	await service.delete(lead_id)

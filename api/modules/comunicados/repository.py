@@ -6,16 +6,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class ComunicadoRepository(BaseRepository[Comunicado]):
+	"""Classe responsável pelo acesso aos dados de comunicado."""
+
 	model = Comunicado
 
 
 class ComunicadoLeituraRepository:
+	"""Classe responsável pelo acesso aos dados de leitura de comunicado."""
+
 	def __init__(self, session: AsyncSession):
+		"""Função para inicializar a instância com suas dependências."""
 		self.session = session
 
 	async def marcar_lido(
 		self, comunicado_id: int, usuario_id: int
 	) -> ComunicadoLeitura:
+		"""Função para registrar a leitura de um comunicado."""
 		stmt = (
 			insert(ComunicadoLeitura)
 			.values(comunicado_id=comunicado_id, usuario_id=usuario_id)
@@ -31,6 +37,7 @@ class ComunicadoLeituraRepository:
 		return result.scalar_one()
 
 	async def list_by_comunicado(self, comunicado_id: int) -> list[ComunicadoLeitura]:
+		"""Função para listar leituras vinculadas a um comunicado."""
 		stmt = select(ComunicadoLeitura).where(
 			ComunicadoLeitura.comunicado_id == comunicado_id
 		)

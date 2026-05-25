@@ -143,3 +143,6 @@ Thumbs.db
 
 *.swp
 *.swo
+
+# Cloned reference repository used only for local comparison.
+korus-entrega2/

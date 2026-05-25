@@ -1,13 +1,14 @@
 from datetime import date, datetime, time
 from typing import Literal
 
+from core.constants import DURACAO_EVENTO_PADRAO_MIN, TITULO_MAX_LENGTH
 from core.enums import EventoTipo, SolicitacaoStatus
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from core.constants import DURACAO_EVENTO_PADRAO_MIN, TITULO_MAX_LENGTH
-
 
 class EventoAgendaBase(BaseModel):
+	"""Classe que define os dados de evento de agenda usados pela API."""
+
 	titulo: str = Field(max_length=TITULO_MAX_LENGTH)
 	descricao: str | None = None
 	tipo: EventoTipo = EventoTipo.REUNIAO
@@ -17,6 +18,8 @@ class EventoAgendaBase(BaseModel):
 
 
 class EventoAgendaCreate(EventoAgendaBase):
+	"""Classe que define os dados de evento de agenda usados pela API."""
+
 	usuario_id: int
 
 	model_config = ConfigDict(
@@ -35,6 +38,8 @@ class EventoAgendaCreate(EventoAgendaBase):
 
 
 class EventoAgendaUpdate(BaseModel):
+	"""Classe que define os dados de evento de agenda usados pela API."""
+
 	titulo: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
 	descricao: str | None = None
 	tipo: EventoTipo | None = None
@@ -55,6 +60,8 @@ class EventoAgendaUpdate(BaseModel):
 
 
 class EventoAgendaResponse(EventoAgendaBase):
+	"""Classe que define os dados de evento de agenda usados pela API."""
+
 	id: int
 	usuario_id: int
 	google_event_id: str | None = None
@@ -64,6 +71,8 @@ class EventoAgendaResponse(EventoAgendaBase):
 
 
 class AgendaEventoSiteResponse(BaseModel):
+	"""Classe que define os dados de agenda evento site usados pela API."""
+
 	id: str
 	origem: Literal['local', 'google_calendar']
 	titulo: str
@@ -102,6 +111,8 @@ class AgendaEventoSiteResponse(BaseModel):
 
 
 class EventoGoogleCalendarResponse(BaseModel):
+	"""Classe que define os dados de evento google calendar usados pela API."""
+
 	id: str
 	titulo: str
 	descricao: str | None = None
@@ -126,6 +137,8 @@ class EventoGoogleCalendarResponse(BaseModel):
 
 
 class SolicitacaoReuniaoBase(BaseModel):
+	"""Classe que define os dados de solicitação de reunião usados pela API."""
+
 	titulo: str = Field(max_length=TITULO_MAX_LENGTH)
 	mensagem: str | None = None
 	data: date
@@ -135,12 +148,15 @@ class SolicitacaoReuniaoBase(BaseModel):
 
 	@model_validator(mode='after')
 	def _diferentes(self):
+		"""Função para validar se remetente e destinatário são diferentes."""
 		if self.remetente_id == self.destinatario_id:
 			raise ValueError('remetente e destinatário devem ser diferentes')
 		return self
 
 
 class SolicitacaoReuniaoCreate(SolicitacaoReuniaoBase):
+	"""Classe que define os dados de solicitação de reunião usados pela API."""
+
 	status: SolicitacaoStatus = SolicitacaoStatus.PENDENTE
 
 	model_config = ConfigDict(
@@ -159,6 +175,8 @@ class SolicitacaoReuniaoCreate(SolicitacaoReuniaoBase):
 
 
 class SolicitacaoReuniaoUpdate(BaseModel):
+	"""Classe que define os dados de solicitação de reunião usados pela API."""
+
 	titulo: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
 	mensagem: str | None = None
 	data: date | None = None
@@ -177,6 +195,8 @@ class SolicitacaoReuniaoUpdate(BaseModel):
 
 
 class SolicitacaoReuniaoResponse(BaseModel):
+	"""Classe que define os dados de solicitação de reunião usados pela API."""
+
 	id: int
 	titulo: str
 	mensagem: str | None

@@ -1,17 +1,18 @@
 from datetime import date, datetime
 
-from core.enums import LeadPrioridade, LeadStatus
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
-
 from core.constants import (
 	NOME_MAX_LENGTH,
 	ORCAMENTO_MAX_LENGTH,
 	RAZAO_SOCIAL_MAX_LENGTH,
 	TELEFONE_MAX_LENGTH,
 )
+from core.enums import LeadPrioridade, LeadStatus
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class LeadBase(BaseModel):
+	"""Classe que define os dados de lead usados pela API."""
+
 	nome: str = Field(max_length=NOME_MAX_LENGTH)
 	email: EmailStr
 	whatsapp: str | None = Field(default=None, max_length=TELEFONE_MAX_LENGTH)
@@ -23,12 +24,16 @@ class LeadBase(BaseModel):
 
 
 class LeadCreate(LeadBase):
+	"""Classe que define os dados de lead usados pela API."""
+
 	status: LeadStatus = LeadStatus.NOVO
 	prioridade: LeadPrioridade = LeadPrioridade.MEDIA
 	termos_aceitos: bool = False
 
 
 class LeadUpdate(BaseModel):
+	"""Classe que define os dados de lead usados pela API."""
+
 	nome: str | None = Field(default=None, max_length=NOME_MAX_LENGTH)
 	email: EmailStr | None = None
 	whatsapp: str | None = Field(default=None, max_length=TELEFONE_MAX_LENGTH)
@@ -43,6 +48,8 @@ class LeadUpdate(BaseModel):
 
 
 class LeadResponse(LeadBase):
+	"""Classe que define os dados de lead usados pela API."""
+
 	id: int
 	status: LeadStatus
 	prioridade: LeadPrioridade

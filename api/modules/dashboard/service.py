@@ -18,10 +18,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class DashboardService:
+	"""Classe responsável pelas regras de negócio de dashboard."""
+
 	def __init__(self, session: AsyncSession):
+		"""Função para inicializar a instância com suas dependências."""
 		self.session = session
 
 	async def admin(self) -> dict[str, Any]:
+		"""Função para montar os indicadores do painel administrativo."""
 		return {
 			'cards': {
 				'leads_no_mes': await self._count(Lead),
@@ -58,6 +62,7 @@ class DashboardService:
 	async def cliente(
 		self, cliente_id: int, usuario_id: int | None = None, role: str | None = None
 	) -> dict[str, Any]:
+		"""Função para montar os indicadores do painel do cliente."""
 		await self._ensure_can_view_cliente(cliente_id, usuario_id, role)
 		project_ids = select(Projeto.id).where(Projeto.cliente_id == cliente_id)
 		return {
@@ -97,6 +102,7 @@ class DashboardService:
 		usuario_id: int | None = None,
 		role: str | None = None,
 	) -> dict[str, Any]:
+		"""Função para montar os indicadores do painel do funcionário."""
 		funcionario = await self._ensure_can_view_funcionario(
 			funcionario_id, usuario_id, role
 		)
@@ -127,6 +133,7 @@ class DashboardService:
 	async def projeto_kanban(
 		self, projeto_id: int, usuario_id: int | None = None, role: str | None = None
 	) -> dict[str, Any]:
+		"""Função para montar os dados do quadro Kanban de um projeto."""
 		projeto = await self.session.get(Projeto, projeto_id)
 		if not projeto:
 			raise NotFoundError('Projeto', projeto_id)
@@ -153,6 +160,7 @@ class DashboardService:
 		}
 
 	async def _count(self, model, *conditions) -> int:
+		"""Função interna para contar registros com filtros opcionais."""
 		stmt = select(func.count()).select_from(model)
 		for condition in conditions:
 			stmt = stmt.where(condition)
@@ -161,6 +169,7 @@ class DashboardService:
 	async def _series_by_period(
 		self, date_column, period: str, id_column, *conditions
 	) -> list[dict[str, Any]]:
+		"""Função interna para agrupar registros por período."""
 		bucket = func.date_trunc(period, date_column).label('periodo')
 		stmt = select(bucket, func.count(id_column)).where(date_column.is_not(None))
 		for condition in conditions:
@@ -170,6 +179,7 @@ class DashboardService:
 		return [{'periodo': row[0], 'total': int(row[1])} for row in rows]
 
 	async def _recent_leads(self) -> list[dict[str, Any]]:
+		"""Função interna para listar leads recentes."""
 		stmt = select(Lead).order_by(Lead.data.desc()).limit(10)
 		leads = list((await self.session.execute(stmt)).scalars().all())
 		return [
@@ -186,6 +196,7 @@ class DashboardService:
 		]
 
 	async def _ranking(self) -> list[dict[str, Any]]:
+		"""Função interna para montar o ranking de funcionários."""
 		stmt = (
 			select(Funcionario, Usuario)
 			.join(Usuario, Usuario.id == Funcionario.id)
@@ -205,12 +216,14 @@ class DashboardService:
 		]
 
 	async def _ensure_cliente(self, cliente_id: int) -> Cliente:
+		"""Função interna para garantir que o cliente existe."""
 		cliente = await self.session.get(Cliente, cliente_id)
 		if not cliente:
 			raise NotFoundError('Cliente', cliente_id)
 		return cliente
 
 	async def _ensure_funcionario(self, funcionario_id: int) -> Funcionario:
+		"""Função interna para garantir que o funcionário existe."""
 		funcionario = await self.session.get(Funcionario, funcionario_id)
 		if not funcionario:
 			raise NotFoundError('Funcionario', funcionario_id)
@@ -219,6 +232,7 @@ class DashboardService:
 	async def _ensure_can_view_cliente(
 		self, cliente_id: int, usuario_id: int | None, role: str | None
 	) -> Cliente:
+		"""Função interna para validar acesso aos dados de um cliente."""
 		cliente = await self._ensure_cliente(cliente_id)
 		if role is None:
 			return cliente
@@ -234,6 +248,7 @@ class DashboardService:
 	async def _ensure_can_view_funcionario(
 		self, funcionario_id: int, usuario_id: int | None, role: str | None
 	) -> Funcionario:
+		"""Função interna para validar acesso aos dados de um funcionário."""
 		funcionario = await self._ensure_funcionario(funcionario_id)
 		if role is None:
 			return funcionario
@@ -249,6 +264,7 @@ class DashboardService:
 	async def _ensure_can_view_projeto(
 		self, projeto: Projeto, usuario_id: int | None, role: str | None
 	) -> None:
+		"""Função interna para validar acesso aos dados de um projeto."""
 		if role is None:
 			return
 		if role == UserRole.ADMIN.value:
@@ -256,9 +272,13 @@ class DashboardService:
 		if role == UserRole.CLIENTE.value and projeto.cliente_id == usuario_id:
 			return
 		if role == UserRole.FUNCIONARIO.value:
-			stmt = select(func.count()).select_from(ProjetoFuncionario).where(
-				ProjetoFuncionario.projeto_id == projeto.id,
-				ProjetoFuncionario.funcionario_id == usuario_id,
+			stmt = (
+				select(func.count())
+				.select_from(ProjetoFuncionario)
+				.where(
+					ProjetoFuncionario.projeto_id == projeto.id,
+					ProjetoFuncionario.funcionario_id == usuario_id,
+				)
 			)
 			if int((await self.session.execute(stmt)).scalar_one()) > 0:
 				return
@@ -268,6 +288,7 @@ class DashboardService:
 		)
 
 	async def _projects_for_cliente(self, cliente_id: int) -> list[dict[str, Any]]:
+		"""Função interna para listar projetos de um cliente."""
 		stmt = (
 			select(Projeto).where(Projeto.cliente_id == cliente_id).order_by(Projeto.id)
 		)
@@ -284,6 +305,7 @@ class DashboardService:
 		]
 
 	async def _upcoming_tasks(self, project_ids) -> list[dict[str, Any]]:
+		"""Função interna para listar próximas tarefas."""
 		stmt = (
 			select(Tarefa)
 			.where(Tarefa.projeto_id.in_(project_ids), Tarefa.prazo >= date.today())
@@ -294,6 +316,7 @@ class DashboardService:
 		return [self._task_payload(tarefa) for tarefa in tarefas]
 
 	async def _recent_announcements(self) -> list[dict[str, Any]]:
+		"""Função interna para listar comunicados recentes."""
 		stmt = select(Comunicado).order_by(Comunicado.data.desc()).limit(10)
 		comunicados = list((await self.session.execute(stmt)).scalars().all())
 		return [
@@ -308,6 +331,7 @@ class DashboardService:
 		]
 
 	async def _events_for_user(self, usuario_id: int) -> list[dict[str, Any]]:
+		"""Função interna para listar eventos de um usuário."""
 		stmt = (
 			select(EventoAgenda)
 			.where(EventoAgenda.usuario_id == usuario_id)
@@ -327,6 +351,7 @@ class DashboardService:
 		]
 
 	async def _xp_for_funcionario(self, funcionario_id: int) -> int:
+		"""Função interna para calcular o XP de um funcionário."""
 		start = datetime.now(timezone.utc).replace(
 			day=1, hour=0, minute=0, second=0, microsecond=0
 		)
@@ -337,6 +362,7 @@ class DashboardService:
 		return int((await self.session.execute(stmt)).scalar_one())
 
 	async def _tasks_for_funcionario(self, funcionario_id: int) -> list[dict[str, Any]]:
+		"""Função interna para listar tarefas de um funcionário."""
 		stmt = (
 			select(Tarefa)
 			.where(Tarefa.responsavel_id == funcionario_id)
@@ -347,6 +373,7 @@ class DashboardService:
 		return [self._task_payload(tarefa) for tarefa in tarefas]
 
 	async def _xp_history(self, funcionario_id: int) -> list[dict[str, Any]]:
+		"""Função interna para listar o histórico de XP."""
 		stmt = (
 			select(HistoricoXp)
 			.where(HistoricoXp.funcionario_id == funcionario_id)
@@ -368,6 +395,7 @@ class DashboardService:
 	async def _achievements_for_funcionario(
 		self, funcionario_id: int
 	) -> list[dict[str, Any]]:
+		"""Função interna para listar conquistas de um funcionário."""
 		stmt = (
 			select(Conquista, FuncionarioConquista.desbloqueado_em)
 			.join(
@@ -392,6 +420,7 @@ class DashboardService:
 
 	@staticmethod
 	def _task_payload(tarefa: Tarefa) -> dict[str, Any]:
+		"""Função interna para montar o payload de uma tarefa."""
 		return {
 			'id': tarefa.id,
 			'projeto_id': tarefa.projeto_id,

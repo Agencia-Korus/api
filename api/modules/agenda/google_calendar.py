@@ -10,10 +10,9 @@ from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
+from core.config import Settings
 from fastapi import HTTPException, status
 from jose import jwt
-
-from core.config import Settings
 
 URL_TOKEN_GOOGLE = 'https://oauth2.googleapis.com/token'
 BASE_API_GOOGLE_CALENDAR = 'https://www.googleapis.com/calendar/v3'
@@ -23,6 +22,8 @@ TEMPO_LIMITE_REQUISICAO_SEGUNDOS = 10
 
 @dataclass(frozen=True)
 class EventoGoogleCalendar:
+	"""Classe que representa um evento retornado pelo Google Calendar."""
+
 	id: str
 	titulo: str
 	descricao: str | None
@@ -32,13 +33,17 @@ class EventoGoogleCalendar:
 
 
 class ClienteGoogleCalendar:
+	"""Classe responsável pela comunicação com o Google Calendar."""
+
 	def __init__(self, configuracoes: Settings):
+		"""Função para inicializar a instância com suas dependências."""
 		self.configuracoes = configuracoes
 		self._token_acesso: str | None = None
 		self._token_expira_em: datetime | None = None
 		self._id_calendario: str | None = None
 
 	def esta_configurado(self) -> bool:
+		"""Função para verificar se o Google Calendar está configurado."""
 		if not self.configuracoes.google_calendar_enabled:
 			return False
 		if self._credenciais_conta_servico_disponiveis():
@@ -49,6 +54,7 @@ class ClienteGoogleCalendar:
 		)
 
 	def _credenciais_conta_servico_disponiveis(self) -> bool:
+		"""Função interna para verificar credenciais de conta de serviço."""
 		if self.configuracoes.google_calendar_service_account_json:
 			return True
 		return self.configuracoes.caminho_conta_servico_google() is not None
@@ -56,6 +62,7 @@ class ClienteGoogleCalendar:
 	async def listar_eventos(
 		self, data_inicio: date | None = None, data_fim: date | None = None
 	) -> list[EventoGoogleCalendar]:
+		"""Função para listar eventos de um usuário."""
 		if not self.esta_configurado():
 			return []
 		hoje = datetime.now(timezone.utc).date()
@@ -95,6 +102,7 @@ class ClienteGoogleCalendar:
 		hora: time | None,
 		duracao_min: int,
 	) -> EventoGoogleCalendar | None:
+		"""Função para criar um evento na agenda."""
 		if not self._pode_escrever_eventos():
 			return None
 		id_calendario = await self._resolver_id_calendario()
@@ -121,6 +129,7 @@ class ClienteGoogleCalendar:
 		hora: time | None,
 		duracao_min: int,
 	) -> EventoGoogleCalendar | None:
+		"""Função para atualizar um evento da agenda."""
 		if not self._pode_escrever_eventos():
 			return None
 		id_calendario = await self._resolver_id_calendario()
@@ -152,6 +161,7 @@ class ClienteGoogleCalendar:
 		return self._converter_evento(evento_atualizado)
 
 	async def deletar_evento(self, id_evento_google: str) -> None:
+		"""Função para excluir um evento da agenda."""
 		if not self._pode_escrever_eventos():
 			return
 		id_calendario = await self._resolver_id_calendario()
@@ -171,6 +181,7 @@ class ClienteGoogleCalendar:
 			raise
 
 	async def _resolver_id_calendario(self) -> str | None:
+		"""Função interna para resolver o ID do calendário configurado."""
 		if self.configuracoes.google_calendar_id:
 			return self.configuracoes.google_calendar_id
 		if self._id_calendario:
@@ -194,6 +205,7 @@ class ClienteGoogleCalendar:
 		caminho: str,
 		parametros: dict[str, Any] | None = None,
 	) -> str:
+		"""Função interna para montar a URL da API do calendário."""
 		id_calendario = quote(id_calendario, safe='')
 		url = f'{BASE_API_GOOGLE_CALENDAR}/calendars/{id_calendario}/{caminho}'
 		if parametros:
@@ -201,18 +213,21 @@ class ClienteGoogleCalendar:
 		return url
 
 	async def _cabecalhos_autenticacao(self) -> dict[str, str]:
+		"""Função interna para montar cabeçalhos de autenticação do Google."""
 		if self.configuracoes.google_calendar_api_key:
 			return {}
 		token = await self._obter_token_conta_servico()
 		return {'Authorization': f'Bearer {token}'}
 
 	def _pode_escrever_eventos(self) -> bool:
+		"""Função interna para verificar se eventos podem ser escritos."""
 		return bool(
 			self.configuracoes.google_calendar_enabled
 			and self._credenciais_conta_servico_disponiveis()
 		)
 
 	async def _obter_token_conta_servico(self) -> str:
+		"""Função interna para obter token da conta de serviço."""
 		agora = datetime.now(timezone.utc)
 		if (
 			self._token_acesso
@@ -237,12 +252,10 @@ class ClienteGoogleCalendar:
 			info['private_key'],
 			algorithm='RS256',
 		)
-		corpo = urlencode(
-			{
-				'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-				'assertion': assercao,
-			}
-		).encode()
+		corpo = urlencode({
+			'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+			'assertion': assercao,
+		}).encode()
 		dados = await self._requisitar_json(
 			'POST',
 			URL_TOKEN_GOOGLE,
@@ -256,6 +269,7 @@ class ClienteGoogleCalendar:
 		return self._token_acesso
 
 	def _info_conta_servico(self) -> dict[str, Any]:
+		"""Função interna para carregar os dados da conta de serviço."""
 		if self.configuracoes.google_calendar_service_account_json:
 			return json.loads(self.configuracoes.google_calendar_service_account_json)
 		caminho = self.configuracoes.caminho_conta_servico_google()
@@ -288,6 +302,7 @@ class ClienteGoogleCalendar:
 		hora: time | None,
 		duracao_min: int,
 	) -> dict[str, Any]:
+		"""Função interna para montar o corpo de um evento do Google Calendar."""
 		corpo: dict[str, Any] = {
 			'summary': titulo,
 			'description': descricao,
@@ -321,6 +336,7 @@ class ClienteGoogleCalendar:
 		corpo_requisicao: bytes | None = None,
 		cabecalhos: dict[str, str] | None = None,
 	) -> dict[str, Any]:
+		"""Função interna para executar uma requisição JSON assíncrona."""
 		return await asyncio.to_thread(
 			self._requisitar_json_sincrono,
 			metodo,
@@ -336,6 +352,7 @@ class ClienteGoogleCalendar:
 		corpo_requisicao: bytes | None,
 		cabecalhos: dict[str, str],
 	) -> dict[str, Any]:
+		"""Função interna para executar uma requisição JSON síncrona."""
 		requisicao = Request(
 			url=url,
 			data=corpo_requisicao,
@@ -369,6 +386,7 @@ class ClienteGoogleCalendar:
 			) from exc
 
 	def _converter_evento(self, item: dict[str, Any]) -> EventoGoogleCalendar:
+		"""Função interna para converter um evento do Google Calendar."""
 		inicio = self._converter_data_hora_evento(item.get('start', {}))
 		fim = (
 			self._converter_data_hora_evento(item.get('end', {}))
@@ -386,10 +404,12 @@ class ClienteGoogleCalendar:
 
 	@staticmethod
 	def _erro_recurso_nao_encontrado(exc: HTTPException) -> bool:
+		"""Função interna para identificar erro de recurso não encontrado."""
 		return exc.status_code == status.HTTP_404_NOT_FOUND
 
 	@staticmethod
 	def _converter_data_hora_evento(dados_data_hora: dict[str, Any]) -> datetime:
+		"""Função interna para converter data e hora de um evento."""
 		if dados_data_hora.get('dateTime'):
 			valor = dados_data_hora['dateTime'].replace('Z', '+00:00')
 			return datetime.fromisoformat(valor)

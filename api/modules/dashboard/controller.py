@@ -10,6 +10,7 @@ router = APIRouter(prefix='/dashboard', tags=['Dashboard'])
 
 
 def _service(session: SessionDep) -> DashboardService:
+	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return DashboardService(session)
 
 
@@ -24,6 +25,7 @@ CurrentUserDep = Annotated[CurrentUser, Depends(get_current_user)]
 	summary='Dashboard geral da agência (somente admin)',
 )
 async def admin(service: ServiceDep):
+	"""Função para montar os indicadores do painel administrativo."""
 	return await service.admin()
 
 
@@ -35,9 +37,8 @@ async def admin(service: ServiceDep):
 		'painel.'
 	),
 )
-async def cliente(
-	cliente_id: int, service: ServiceDep, current_user: CurrentUserDep
-):
+async def cliente(cliente_id: int, service: ServiceDep, current_user: CurrentUserDep):
+	"""Função para montar os indicadores do painel do cliente."""
 	return await service.cliente(cliente_id, current_user.id, current_user.role)
 
 
@@ -52,9 +53,8 @@ async def cliente(
 async def funcionario(
 	funcionario_id: int, service: ServiceDep, current_user: CurrentUserDep
 ):
-	return await service.funcionario(
-		funcionario_id, current_user.id, current_user.role
-	)
+	"""Função para montar os indicadores do painel do funcionário."""
+	return await service.funcionario(funcionario_id, current_user.id, current_user.role)
 
 
 @router.get(
@@ -68,6 +68,5 @@ async def funcionario(
 async def projeto_kanban(
 	projeto_id: int, service: ServiceDep, current_user: CurrentUserDep
 ):
-	return await service.projeto_kanban(
-		projeto_id, current_user.id, current_user.role
-	)
+	"""Função para montar os dados do quadro Kanban de um projeto."""
+	return await service.projeto_kanban(projeto_id, current_user.id, current_user.role)

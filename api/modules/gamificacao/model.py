@@ -1,5 +1,11 @@
 from datetime import datetime
 
+from core.constants import (
+	ACAO_XP_MAX_LENGTH,
+	ICONE_MAX_LENGTH,
+	NOME_MAX_LENGTH,
+	XP_MIN,
+)
 from core.enums import Complexidade, enum_values
 from db.base import Base
 from sqlalchemy import (
@@ -17,15 +23,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from core.constants import (
-	ACAO_XP_MAX_LENGTH,
-	ICONE_MAX_LENGTH,
-	NOME_MAX_LENGTH,
-	XP_MIN,
-)
-
 
 class RegraXp(Base):
+	"""Classe que representa a tabela de regra de XP no banco de dados."""
+
 	__tablename__ = 'regra_xp'
 	__table_args__ = (CheckConstraint(f'xp >= {XP_MIN}', name='ck_regra_xp_positivo'),)
 
@@ -44,6 +45,8 @@ class RegraXp(Base):
 
 
 class HistoricoXp(Base):
+	"""Classe que representa a tabela de histórico de XP no banco de dados."""
+
 	__tablename__ = 'historico_xp'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
@@ -64,6 +67,8 @@ class HistoricoXp(Base):
 
 
 class Conquista(Base):
+	"""Classe que representa a tabela de conquista no banco de dados."""
+
 	__tablename__ = 'conquista'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
@@ -74,6 +79,8 @@ class Conquista(Base):
 
 
 class FuncionarioConquista(Base):
+	"""Classe que representa a tabela de conquista do funcionário no banco de dados."""
+
 	__tablename__ = 'funcionario_conquista'
 
 	funcionario_id: Mapped[int] = mapped_column(

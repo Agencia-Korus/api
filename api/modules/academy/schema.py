@@ -1,13 +1,14 @@
 from datetime import datetime
 from decimal import Decimal
 
+from core.constants import TITULO_MAX_LENGTH, URL_MAX_LENGTH
 from core.enums import AcademyTipo
 from pydantic import BaseModel, ConfigDict, Field
 
-from core.constants import TITULO_MAX_LENGTH, URL_MAX_LENGTH
-
 
 class AcademyBase(BaseModel):
+	"""Classe que define os dados de conteúdo da Academy usados pela API."""
+
 	titulo: str = Field(max_length=TITULO_MAX_LENGTH)
 	tipo: AcademyTipo
 	descricao: str | None = None
@@ -18,6 +19,8 @@ class AcademyBase(BaseModel):
 
 
 class AcademyCreate(AcademyBase):
+	"""Classe que define os dados de conteúdo da Academy usados pela API."""
+
 	model_config = ConfigDict(
 		json_schema_extra={
 			'example': {
@@ -34,6 +37,8 @@ class AcademyCreate(AcademyBase):
 
 
 class AcademyUpdate(BaseModel):
+	"""Classe que define os dados de conteúdo da Academy usados pela API."""
+
 	titulo: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
 	tipo: AcademyTipo | None = None
 	descricao: str | None = None
@@ -55,6 +60,8 @@ class AcademyUpdate(BaseModel):
 
 
 class AcademyResponse(AcademyBase):
+	"""Classe que define os dados de conteúdo da Academy usados pela API."""
+
 	id: int
 	criado_em: datetime
 	model_config = ConfigDict(from_attributes=True)

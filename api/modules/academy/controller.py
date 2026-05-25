@@ -11,6 +11,7 @@ router = APIRouter(prefix='/academy', tags=['Academy'])
 
 
 def _service(session: SessionDep) -> AcademyService:
+	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return AcademyService(session)
 
 
@@ -26,6 +27,7 @@ AdminGuard = Depends(require_role(UserRole.ADMIN.value))
 	summary='Cria conteúdo no Academy (somente admin)',
 )
 async def criar(payload: AcademyCreate, service: ServiceDep):
+	"""Função para criar um novo registro."""
 	return await service.create(payload)
 
 
@@ -43,6 +45,7 @@ async def listar(
 		Query(description='Por padrão a home lista somente conteúdos publicados.'),
 	] = True,
 ):
+	"""Função para listar registros."""
 	return await service.list_filtered(
 		offset=page.offset, limit=page.limit, tipo=tipo, publicado=publicado
 	)
@@ -60,6 +63,7 @@ async def listar_admin(
 	tipo: AcademyTipo | None = None,
 	publicado: bool | None = None,
 ):
+	"""Função para listar registros na visão administrativa."""
 	return await service.list_filtered(
 		offset=page.offset, limit=page.limit, tipo=tipo, publicado=publicado
 	)
@@ -71,6 +75,7 @@ async def listar_admin(
 	summary='Obtém conteúdo do Academy (público/home)',
 )
 async def obter(item_id: int, service: ServiceDep):
+	"""Função para obter um registro pelo ID."""
 	return await service.get(item_id)
 
 
@@ -81,6 +86,7 @@ async def obter(item_id: int, service: ServiceDep):
 	summary='Atualiza conteúdo no Academy (somente admin)',
 )
 async def atualizar(item_id: int, payload: AcademyUpdate, service: ServiceDep):
+	"""Função para atualizar um registro pelo ID."""
 	return await service.update(item_id, payload)
 
 
@@ -91,4 +97,5 @@ async def atualizar(item_id: int, payload: AcademyUpdate, service: ServiceDep):
 	summary='Remove conteúdo do Academy (somente admin)',
 )
 async def deletar(item_id: int, service: ServiceDep):
+	"""Função para excluir um registro pelo ID."""
 	await service.delete(item_id)

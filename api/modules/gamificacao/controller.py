@@ -26,6 +26,7 @@ router = APIRouter(prefix='/gamificacao', tags=['Gamificação'])
 
 
 def _service(session: SessionDep) -> GamificacaoService:
+	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return GamificacaoService(session)
 
 
@@ -36,6 +37,7 @@ AdminGuard = Depends(require_role(UserRole.ADMIN.value))
 def _admin_or_funcionario(
 	token: Annotated[str | None, Depends(oauth2_scheme)],
 ) -> tuple[int, str]:
+	"""Função para permitir acesso de admin ou funcionário."""
 	if not token:
 		raise CREDENTIALS_EXCEPTION
 	payload = decode_token(token)
@@ -59,6 +61,7 @@ CallerDep = Annotated[tuple[int, str], Depends(_admin_or_funcionario)]
 	summary='Cria regra de XP (somente admin)',
 )
 async def criar_regra(payload: RegraXpCreate, service: ServiceDep):
+	"""Função para criar uma regra de XP."""
 	return await service.criar_regra(payload)
 
 
@@ -69,6 +72,7 @@ async def criar_regra(payload: RegraXpCreate, service: ServiceDep):
 	summary='Lista regras de XP (somente admin)',
 )
 async def listar_regras(service: ServiceDep, page: PaginationDep):
+	"""Função para listar regras de XP."""
 	return await service.listar_regras(offset=page.offset, limit=page.limit)
 
 
@@ -79,6 +83,7 @@ async def listar_regras(service: ServiceDep, page: PaginationDep):
 	summary='Atualiza regra de XP (somente admin)',
 )
 async def atualizar_regra(regra_id: int, payload: RegraXpUpdate, service: ServiceDep):
+	"""Função para atualizar uma regra de XP."""
 	return await service.atualizar_regra(regra_id, payload)
 
 
@@ -89,6 +94,7 @@ async def atualizar_regra(regra_id: int, payload: RegraXpUpdate, service: Servic
 	summary='Remove regra de XP (somente admin)',
 )
 async def deletar_regra(regra_id: int, service: ServiceDep):
+	"""Função para excluir uma regra de XP."""
 	await service.deletar_regra(regra_id)
 
 
@@ -100,6 +106,7 @@ async def deletar_regra(regra_id: int, service: ServiceDep):
 	summary='Registra XP para funcionário (somente admin)',
 )
 async def registrar_xp(payload: HistoricoXpCreate, service: ServiceDep):
+	"""Função para registrar XP para um funcionário."""
 	return await service.registrar_xp(payload)
 
 
@@ -109,6 +116,7 @@ async def registrar_xp(payload: HistoricoXpCreate, service: ServiceDep):
 	summary='Lista XP do funcionário (admin ou o próprio funcionário)',
 )
 async def listar_historico(funcionario_id: int, service: ServiceDep, caller: CallerDep):
+	"""Função para listar o histórico de XP de um funcionário."""
 	caller_id, caller_role = caller
 	if caller_role == UserRole.FUNCIONARIO.value and caller_id != funcionario_id:
 		raise HTTPException(
@@ -126,6 +134,7 @@ async def listar_historico(funcionario_id: int, service: ServiceDep, caller: Cal
 	summary='Cria conquista (somente admin)',
 )
 async def criar_conquista(payload: ConquistaCreate, service: ServiceDep):
+	"""Função para criar uma conquista."""
 	return await service.criar_conquista(payload)
 
 
@@ -137,6 +146,7 @@ async def criar_conquista(payload: ConquistaCreate, service: ServiceDep):
 async def listar_conquistas(
 	service: ServiceDep, page: PaginationDep, caller: CallerDep
 ):
+	"""Função para listar conquistas."""
 	return await service.listar_conquistas(offset=page.offset, limit=page.limit)
 
 
@@ -149,6 +159,7 @@ async def listar_conquistas(
 async def atualizar_conquista(
 	conquista_id: int, payload: ConquistaUpdate, service: ServiceDep
 ):
+	"""Função para atualizar uma conquista."""
 	return await service.atualizar_conquista(conquista_id, payload)
 
 
@@ -159,6 +170,7 @@ async def atualizar_conquista(
 	summary='Remove conquista (somente admin)',
 )
 async def deletar_conquista(conquista_id: int, service: ServiceDep):
+	"""Função para excluir uma conquista."""
 	await service.deletar_conquista(conquista_id)
 
 
@@ -170,6 +182,7 @@ async def deletar_conquista(conquista_id: int, service: ServiceDep):
 	summary='Desbloqueia conquista para funcionário (somente admin)',
 )
 async def desbloquear(funcionario_id: int, conquista_id: int, service: ServiceDep):
+	"""Função para registrar uma conquista desbloqueada por um funcionário."""
 	return await service.desbloquear_conquista(funcionario_id, conquista_id)
 
 
@@ -180,6 +193,7 @@ async def desbloquear(funcionario_id: int, conquista_id: int, service: ServiceDe
 async def listar_funcionario_conquistas(
 	funcionario_id: int, service: ServiceDep, caller: CallerDep
 ):
+	"""Função para listar conquistas de um funcionário."""
 	caller_id, caller_role = caller
 	if caller_role == UserRole.FUNCIONARIO.value and caller_id != funcionario_id:
 		raise HTTPException(

@@ -2,15 +2,17 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Any
 
+from core.config import get_settings
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 
-from core.config import get_settings
-
 settings = get_settings()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/v1/auth/login', auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(
+	tokenUrl='/api/v1/auth/login',
+	auto_error=False,
+)
 
 CREDENTIALS_EXCEPTION = HTTPException(
 	status_code=status.HTTP_401_UNAUTHORIZED,
@@ -21,11 +23,14 @@ CREDENTIALS_EXCEPTION = HTTPException(
 
 @dataclass(frozen=True)
 class CurrentUser:
+	"""Classe que representa o usuário autenticado extraído do token."""
+
 	id: int
 	role: str
 
 
 def create_access_token(subject: str | int, extra: dict[str, Any] | None = None) -> str:
+	"""Função para criar um token JWT de acesso."""
 	expire = datetime.now(timezone.utc) + timedelta(
 		minutes=settings.jwt_access_token_expire_minutes
 	)
@@ -38,6 +43,7 @@ def create_access_token(subject: str | int, extra: dict[str, Any] | None = None)
 
 
 def create_refresh_token(subject: str | int) -> str:
+	"""Função para criar um token JWT de renovação."""
 	expire = datetime.now(timezone.utc) + timedelta(
 		days=settings.jwt_refresh_token_expire_days
 	)
@@ -48,6 +54,7 @@ def create_refresh_token(subject: str | int) -> str:
 
 
 def decode_token(token: str) -> dict[str, Any]:
+	"""Função para decodificar e validar um token JWT."""
 	try:
 		return jwt.decode(
 			token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
@@ -57,6 +64,7 @@ def decode_token(token: str) -> dict[str, Any]:
 
 
 def get_current_user_id(token: Annotated[str | None, Depends(oauth2_scheme)]) -> int:
+	"""Função para obter o ID do usuário autenticado."""
 	if not token:
 		raise CREDENTIALS_EXCEPTION
 	payload = decode_token(token)
@@ -69,6 +77,7 @@ def get_current_user_id(token: Annotated[str | None, Depends(oauth2_scheme)]) ->
 def get_current_user(
 	token: Annotated[str | None, Depends(oauth2_scheme)],
 ) -> CurrentUser:
+	"""Função para obter os dados do usuário autenticado."""
 	if not token:
 		raise CREDENTIALS_EXCEPTION
 	payload = decode_token(token)
@@ -80,7 +89,10 @@ def get_current_user(
 
 
 def require_role(*allowed_roles: str):
+	"""Função para exigir perfis específicos de acesso."""
+
 	def _checker(token: Annotated[str | None, Depends(oauth2_scheme)]) -> int:
+		"""Função interna para validar o perfil do token recebido."""
 		if not token:
 			raise CREDENTIALS_EXCEPTION
 		payload = decode_token(token)
