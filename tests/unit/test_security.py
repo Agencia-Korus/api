@@ -1,5 +1,5 @@
 import pytest
-from core.security import create_access_token, decode_token
+from core.security import criar_access_token, decode_token
 from fastapi import HTTPException
 
 
@@ -7,11 +7,11 @@ from fastapi import HTTPException
 	('subject', 'role'), [(1, 'admin'), (42, 'cliente'), (99, 'funcionario')]
 )
 def test_create_and_decode_access_token(subject: int, role: 'str'):
-	token = create_access_token(subject, extra={'role': role})
-	payload = decode_token(token)
-	assert payload['sub'] == str(subject)
-	assert payload['type'] == 'access'
-	assert payload['role'] == role
+	token = criar_access_token(subject, extra={'role': role})
+	dados = decode_token(token)
+	assert dados['sub'] == str(subject)
+	assert dados['type'] == 'access'
+	assert dados['role'] == role
 
 
 def test_decode_token_invalido_lanca_excecao():

@@ -2,17 +2,17 @@ from typing import Annotated
 
 from core.enums import ServicoStatus, UserRole
 from core.security import require_role
-from deps import PaginationDep, SessionDep
+from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, status
 from modules.servicos.schema import (
-	EntregavelCreate,
-	EntregavelResponse,
-	EntregavelUpdate,
-	ServicoCreate,
-	ServicoResponse,
-	ServicoUpdate,
+	EntregavelCriar,
+	EntregavelResposta,
+	EntregavelAtualizar,
+	ServicoCriar,
+	ServicoResposta,
+	ServicoAtualizar,
 )
-from modules.servicos.service import ServicoService
+from modules.servicos.service import ServicoServico
 
 router = APIRouter(
 	prefix='/servicos',
@@ -21,78 +21,78 @@ router = APIRouter(
 )
 
 
-def _service(session: SessionDep) -> ServicoService:
+def _service(session: DependenciaSessao) -> ServicoServico:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return ServicoService(session)
+	return ServicoServico(session)
 
 
-ServiceDep = Annotated[ServicoService, Depends(_service)]
+DependenciaServico = Annotated[ServicoServico, Depends(_service)]
 
 
-@router.post('', response_model=ServicoResponse, status_code=status.HTTP_201_CREATED)
-async def criar(payload: ServicoCreate, service: ServiceDep):
+@router.post('', response_model=ServicoResposta, status_code=status.HTTP_201_CREATED)
+async def criar(dados: ServicoCriar, servico: DependenciaServico):
 	"""Função para criar um novo registro."""
-	return await service.create(payload)
+	return await servico.criar(dados)
 
 
-@router.get('', response_model=list[ServicoResponse])
+@router.get('', response_model=list[ServicoResposta])
 async def listar(
-	service: ServiceDep,
-	page: PaginationDep,
-	status_filter: Annotated[ServicoStatus | None, Query(alias='status')] = None,
+	servico: DependenciaServico,
+	pagina: DependenciaPaginacao,
+	filtro_situacao: Annotated[ServicoStatus | None, Query(alias='status')] = None,
 ):
 	"""Função para listar registros."""
-	return await service.list_filtered(
-		offset=page.offset, limit=page.limit, status=status_filter
+	return await servico.listar_filtrados(
+		offset=pagina.offset, limit=pagina.limit, status=filtro_situacao
 	)
 
 
-@router.get('/{servico_id}', response_model=ServicoResponse)
-async def obter(servico_id: int, service: ServiceDep):
+@router.get('/{servico_id}', response_model=ServicoResposta)
+async def obter(servico_id: int, servico: DependenciaServico):
 	"""Função para obter um registro pelo ID."""
-	return await service.get(servico_id)
+	return await servico.obter(servico_id)
 
 
-@router.patch('/{servico_id}', response_model=ServicoResponse)
-async def atualizar(servico_id: int, payload: ServicoUpdate, service: ServiceDep):
+@router.patch('/{servico_id}', response_model=ServicoResposta)
+async def atualizar(servico_id: int, dados: ServicoAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
-	return await service.update(servico_id, payload)
+	return await servico.atualizar(servico_id, dados)
 
 
 @router.delete('/{servico_id}', status_code=status.HTTP_204_NO_CONTENT)
-async def deletar(servico_id: int, service: ServiceDep):
+async def deletar(servico_id: int, servico: DependenciaServico):
 	"""Função para excluir um registro pelo ID."""
-	await service.delete(servico_id)
+	await servico.deletar(servico_id)
 
 
 @router.post(
 	'/{servico_id}/entregaveis',
-	response_model=EntregavelResponse,
+	response_model=EntregavelResposta,
 	status_code=status.HTTP_201_CREATED,
 )
 async def adicionar_entregavel(
-	servico_id: int, payload: EntregavelCreate, service: ServiceDep
+	servico_id: int, dados: EntregavelCriar, servico: DependenciaServico
 ):
 	"""Função para adicionar um entregável a um serviço."""
-	payload_with_id = payload.model_copy(update={'servico_id': servico_id})
-	return await service.create_entregavel(payload_with_id)
+	payload_with_id = dados.model_copy(update={'servico_id': servico_id})
+	return await servico.criar_entregavel(payload_with_id)
 
 
-@router.get('/{servico_id}/entregaveis', response_model=list[EntregavelResponse])
-async def listar_entregaveis(servico_id: int, service: ServiceDep):
+@router.get('/{servico_id}/entregaveis', response_model=list[EntregavelResposta])
+async def listar_entregaveis(servico_id: int, servico: DependenciaServico):
 	"""Função para listar entregáveis de um serviço."""
-	return await service.list_entregaveis(servico_id)
+	return await servico.listar_entregaveis(servico_id)
 
 
-@router.patch('/entregaveis/{entregavel_id}', response_model=EntregavelResponse)
+@router.patch('/entregaveis/{entregavel_id}', response_model=EntregavelResposta)
 async def atualizar_entregavel(
-	entregavel_id: int, payload: EntregavelUpdate, service: ServiceDep
+	entregavel_id: int, dados: EntregavelAtualizar, servico: DependenciaServico
 ):
 	"""Função para atualizar um entregável pelo ID."""
-	return await service.update_entregavel(entregavel_id, payload)
+	return await servico.atualizar_entregavel(entregavel_id, dados)
 
 
 @router.delete('/entregaveis/{entregavel_id}', status_code=status.HTTP_204_NO_CONTENT)
-async def remover_entregavel(entregavel_id: int, service: ServiceDep):
+async def remover_entregavel(entregavel_id: int, servico: DependenciaServico):
 	"""Função para remover um entregável pelo ID."""
-	await service.delete_entregavel(entregavel_id)
+	await servico.deletar_entregavel(entregavel_id)

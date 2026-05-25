@@ -1,15 +1,15 @@
 from core.enums import LeadPrioridade, LeadStatus
-from db.base_repository import BaseRepository
+from db.base_repository import RepositorioBase
 from modules.leads.model import Lead
 from sqlalchemy import or_, select
 
 
-class LeadRepository(BaseRepository[Lead]):
+class RepositorioLead(RepositorioBase[Lead]):
 	"""Classe responsável pelo acesso aos dados de lead."""
 
 	model = Lead
 
-	async def list_filtered(
+	async def listar_filtrados(
 		self,
 		offset: int,
 		limit: int,

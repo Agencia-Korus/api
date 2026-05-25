@@ -1,14 +1,14 @@
-from db.base_repository import BaseRepository
+from db.base_repository import RepositorioBase
 from modules.portfolio.model import Portfolio
 from sqlalchemy import select
 
 
-class PortfolioRepository(BaseRepository[Portfolio]):
+class RepositorioPortfolio(RepositorioBase[Portfolio]):
 	"""Classe responsável pelo acesso aos dados de portfólio."""
 
 	model = Portfolio
 
-	async def list_destaques(self) -> list[Portfolio]:
+	async def listar_destaques(self) -> list[Portfolio]:
 		"""Função para listar itens de portfólio marcados como destaque."""
 		stmt = (
 			select(Portfolio)
@@ -18,7 +18,7 @@ class PortfolioRepository(BaseRepository[Portfolio]):
 		result = await self.session.execute(stmt)
 		return list(result.scalars().all())
 
-	async def list_filtered(
+	async def listar_filtrados(
 		self,
 		offset: int,
 		limit: int,

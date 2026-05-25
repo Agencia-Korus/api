@@ -1,8 +1,8 @@
-from db.base_repository import BaseRepository
+from db.base_repository import RepositorioBase
 from modules.lgpd.model import ConsentimentoLgpd
 
 
-class ConsentimentoLgpdRepository(BaseRepository[ConsentimentoLgpd]):
+class RepositorioConsentimentoLgpd(RepositorioBase[ConsentimentoLgpd]):
 	"""Classe responsável pelo acesso aos dados de consentimento LGPD."""
 
 	model = ConsentimentoLgpd

@@ -11,11 +11,11 @@ from tests.conftest import requires_db
 	['conectado', 'desconectado'],
 )
 async def test_criar_integracao_status(admin_client: AsyncClient, status_input: str):
-	payload = {
+	dados = {
 		'nome': 'google_calendar',
 		'status': status_input,
 	}
-	resp = await admin_client.post('/api/v1/integracoes', json=payload)
+	resp = await admin_client.post('/api/v1/integracoes', json=dados)
 	assert resp.status_code in {201, 409}
 	if resp.status_code == 201:
 		assert resp.json()['status'] == status_input

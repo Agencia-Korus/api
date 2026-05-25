@@ -22,7 +22,7 @@ class TarefaBase(BaseModel):
 	ordem: int = 0
 
 
-class TarefaCreate(TarefaBase):
+class TarefaCriar(TarefaBase):
 	"""Classe que define os dados de tarefa usados pela API."""
 
 	status: TarefaStatus = TarefaStatus.A_FAZER
@@ -30,7 +30,7 @@ class TarefaCreate(TarefaBase):
 	prioridade: Prioridade = Prioridade.MEDIA
 
 
-class TarefaUpdate(BaseModel):
+class TarefaAtualizar(BaseModel):
 	"""Classe que define os dados de tarefa usados pela API."""
 
 	responsavel_id: int | None = None
@@ -44,7 +44,7 @@ class TarefaUpdate(BaseModel):
 	prioridade: Prioridade | None = None
 
 
-class TarefaResponse(TarefaBase):
+class TarefaResposta(TarefaBase):
 	"""Classe que define os dados de tarefa usados pela API."""
 
 	id: int
@@ -56,14 +56,14 @@ class TarefaResponse(TarefaBase):
 	model_config = ConfigDict(from_attributes=True)
 
 
-class ComentarioCreate(BaseModel):
+class ComentarioCriar(BaseModel):
 	"""Classe que define os dados de comentário usados pela API."""
 
 	tarefa_id: int
 	conteudo: str
 
 
-class ComentarioResponse(BaseModel):
+class ComentarioResposta(BaseModel):
 	"""Classe que define os dados de comentário usados pela API."""
 
 	id: int
@@ -74,7 +74,7 @@ class ComentarioResponse(BaseModel):
 	model_config = ConfigDict(from_attributes=True)
 
 
-class AnexoCreate(BaseModel):
+class AnexoCriar(BaseModel):
 	"""Classe que define os dados de anexo usados pela API."""
 
 	tarefa_id: int
@@ -84,7 +84,7 @@ class AnexoCreate(BaseModel):
 	tamanho: int | None = None
 
 
-class AnexoResponse(AnexoCreate):
+class AnexoResposta(AnexoCriar):
 	"""Classe que define os dados de anexo usados pela API."""
 
 	id: int

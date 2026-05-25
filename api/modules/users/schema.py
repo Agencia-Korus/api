@@ -34,7 +34,7 @@ class AdminPayload(BaseModel):
 	nivel_acesso: int = 1
 
 
-class UsuarioCreate(BaseModel):
+class UsuarioCriar(BaseModel):
 	"""Classe que define os dados de usuário usados pela API."""
 
 	nome: str = Field(max_length=NOME_MAX_LENGTH)
@@ -49,7 +49,7 @@ class UsuarioCreate(BaseModel):
 	admin: AdminPayload | None = None
 
 
-class UsuarioRegister(BaseModel):
+class UsuarioRegistrar(BaseModel):
 	"""Classe que define os dados de usuario register usados pela API."""
 
 	nome: str = Field(max_length=NOME_MAX_LENGTH)
@@ -62,7 +62,7 @@ class UsuarioRegister(BaseModel):
 	funcionario: FuncionarioPayload | None = None
 
 
-class UsuarioUpdate(BaseModel):
+class UsuarioAtualizar(BaseModel):
 	"""Classe que define os dados de usuário usados pela API."""
 
 	nome: str | None = Field(default=None, max_length=NOME_MAX_LENGTH)
@@ -73,7 +73,7 @@ class UsuarioUpdate(BaseModel):
 	status: UserStatus | None = None
 
 
-class UsuarioResponse(BaseModel):
+class UsuarioResposta(BaseModel):
 	"""Classe que define os dados de usuário usados pela API."""
 
 	id: int
@@ -87,14 +87,14 @@ class UsuarioResponse(BaseModel):
 	atualizado_em: datetime
 
 
-class ClienteResponse(ClientePayload):
+class ClienteResposta(ClientePayload):
 	"""Classe que define os dados de cliente usados pela API."""
 
 	id: int
 	model_config = ConfigDict(from_attributes=True)
 
 
-class FuncionarioResponse(BaseModel):
+class FuncionarioResposta(BaseModel):
 	"""Classe que define os dados de funcionário usados pela API."""
 
 	id: int
@@ -106,7 +106,7 @@ class FuncionarioResponse(BaseModel):
 	model_config = ConfigDict(from_attributes=True)
 
 
-class AdminResponse(BaseModel):
+class AdminResposta(BaseModel):
 	"""Classe que define os dados de admin usados pela API."""
 
 	id: int

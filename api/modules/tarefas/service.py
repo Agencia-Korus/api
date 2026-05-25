@@ -8,15 +8,15 @@ from fastapi import HTTPException, status
 from modules.projetos.model import Projeto, ProjetoFuncionario
 from modules.tarefas.model import Anexo, Comentario, Tarefa
 from modules.tarefas.repository import (
-	AnexoRepository,
-	ComentarioRepository,
-	TarefaRepository,
+	RepositorioAnexo,
+	RepositorioComentario,
+	RepositorioTarefa,
 )
 from modules.tarefas.schema import (
-	AnexoCreate,
-	ComentarioCreate,
-	TarefaCreate,
-	TarefaUpdate,
+	AnexoCriar,
+	ComentarioCriar,
+	TarefaCriar,
+	TarefaAtualizar,
 )
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,39 +26,39 @@ _ENTITY_COMENTARIO = 'Comentário'
 _ENTITY_ANEXO = 'Anexo'
 
 
-class TarefaService:
+class ServicoTarefa:
 	"""Classe responsável pelas regras de negócio de tarefa."""
 
 	def __init__(self, session: AsyncSession):
 		"""Função para inicializar a instância com suas dependências."""
 		self.session = session
-		self.repo = TarefaRepository(session)
-		self.comentarios = ComentarioRepository(session)
-		self.anexos = AnexoRepository(session)
+		self.repo = RepositorioTarefa(session)
+		self.comentarios = RepositorioComentario(session)
+		self.anexos = RepositorioAnexo(session)
 
-	async def create(self, payload: TarefaCreate) -> Tarefa:
+	async def criar(self, dados: TarefaCriar) -> Tarefa:
 		"""Função para criar um novo registro."""
-		tarefa = Tarefa(**payload.model_dump())
-		tarefa = await self.repo.add(tarefa)
+		tarefa = Tarefa(**dados.model_dump())
+		tarefa = await self.repo.adicionar(tarefa)
 		await self.session.commit()
 		return tarefa
 
-	async def get(self, tarefa_id: int) -> Tarefa:
+	async def obter(self, tarefa_id: int) -> Tarefa:
 		"""Função para obter um registro pelo ID."""
-		tarefa = await self.repo.get(tarefa_id)
+		tarefa = await self.repo.obter(tarefa_id)
 		if not tarefa:
 			raise NotFoundError(_ENTITY_TAREFA, tarefa_id)
 		return tarefa
 
-	async def list(self, offset: int, limit: int) -> list[Tarefa]:
+	async def listar(self, offset: int, limit: int) -> list[Tarefa]:
 		"""Função para listar registros."""
-		return await self.repo.list_all(offset=offset, limit=limit)
+		return await self.repo.listar_todos(offset=offset, limit=limit)
 
-	async def list_by_projeto(self, projeto_id: int) -> list[Tarefa]:
+	async def listar_por_projeto(self, projeto_id: int) -> list[Tarefa]:
 		"""Função para listar registros vinculados a um projeto."""
-		return await self.repo.list_by_projeto(projeto_id)
+		return await self.repo.listar_por_projeto(projeto_id)
 
-	async def list_filtered(
+	async def listar_filtrados(
 		self,
 		offset: int,
 		limit: int,
@@ -67,7 +67,7 @@ class TarefaService:
 		status: TarefaStatus | None = None,
 	) -> list[Tarefa]:
 		"""Função para listar registros aplicando filtros e paginação."""
-		return await self.repo.list_filtered(
+		return await self.repo.listar_filtrados(
 			offset=offset,
 			limit=limit,
 			projeto_id=projeto_id,
@@ -75,7 +75,7 @@ class TarefaService:
 			status=status,
 		)
 
-	async def list_visible(
+	async def listar_visible(
 		self,
 		offset: int,
 		limit: int,
@@ -87,7 +87,7 @@ class TarefaService:
 	) -> list[Tarefa]:
 		"""Função para listar registros visíveis para o usuário autenticado."""
 		if role == UserRole.ADMIN.value:
-			return await self.list_filtered(
+			return await self.listar_filtrados(
 				offset=offset,
 				limit=limit,
 				projeto_id=projeto_id,
@@ -95,7 +95,7 @@ class TarefaService:
 				status=status,
 			)
 		if role in {UserRole.CLIENTE.value, UserRole.FUNCIONARIO.value}:
-			return await self.repo.list_visible(
+			return await self.repo.listar_visible(
 				usuario_id=usuario_id,
 				role=role,
 				offset=offset,
@@ -109,9 +109,9 @@ class TarefaService:
 			detail='Acesso negado para tarefas',
 		)
 
-	async def get_visible(self, tarefa_id: int, usuario_id: int, role: str) -> Tarefa:
+	async def obter_visible(self, tarefa_id: int, usuario_id: int, role: str) -> Tarefa:
 		"""Função para obter um registro respeitando as permissões do usuário."""
-		tarefa = await self.get(tarefa_id)
+		tarefa = await self.obter(tarefa_id)
 		if role == UserRole.ADMIN.value or await self._can_access_tarefa(
 			tarefa, usuario_id, role
 		):
@@ -125,7 +125,7 @@ class TarefaService:
 		self, tarefa_id: int, usuario_id: int, role: str
 	) -> Tarefa:
 		"""Função para validar se o usuário pode gerenciar uma tarefa."""
-		tarefa = await self.get(tarefa_id)
+		tarefa = await self.obter(tarefa_id)
 		if role == UserRole.ADMIN.value:
 			return tarefa
 		if role == UserRole.FUNCIONARIO.value and await self._funcionario_envolvido(
@@ -142,7 +142,7 @@ class TarefaService:
 	) -> bool:
 		"""Função interna para validar acesso a uma tarefa."""
 		if role == UserRole.CLIENTE.value:
-			projeto = await self.session.get(Projeto, tarefa.projeto_id)
+			projeto = await self.session.obter(Projeto, tarefa.projeto_id)
 			return bool(projeto and projeto.cliente_id == usuario_id)
 		if role == UserRole.FUNCIONARIO.value:
 			return await self._funcionario_envolvido(tarefa, usuario_id)
@@ -159,63 +159,63 @@ class TarefaService:
 		result = await self.session.execute(stmt)
 		return result.scalar_one_or_none() is not None
 
-	async def update(self, tarefa_id: int, payload: TarefaUpdate) -> Tarefa:
+	async def atualizar(self, tarefa_id: int, dados: TarefaAtualizar) -> Tarefa:
 		"""Função para atualizar um registro pelo ID."""
-		data = payload.model_dump(exclude_none=True)
+		data = dados.model_dump(exclude_none=True)
 		if data.get('status') == TarefaStatus.CONCLUIDO:
 			data['concluido_em'] = datetime.now(timezone.utc)
-		tarefa = await self.repo.update(tarefa_id, data)
+		tarefa = await self.repo.atualizar(tarefa_id, data)
 		if not tarefa:
 			raise NotFoundError(_ENTITY_TAREFA, tarefa_id)
 		await self.session.commit()
 		return tarefa
 
-	async def delete(self, tarefa_id: int) -> None:
+	async def deletar(self, tarefa_id: int) -> None:
 		"""Função para excluir um registro pelo ID."""
-		if not await self.repo.delete(tarefa_id):
+		if not await self.repo.deletar(tarefa_id):
 			raise NotFoundError(_ENTITY_TAREFA, tarefa_id)
 		await self.session.commit()
 
-	async def add_comentario(
-		self, payload: ComentarioCreate, autor_id: int
+	async def adicionar_comentario(
+		self, dados: ComentarioCriar, autor_id: int
 	) -> Comentario:
 		"""Função para adicionar um comentário a uma tarefa."""
-		await self.get(payload.tarefa_id)
+		await self.obter(dados.tarefa_id)
 		comentario = Comentario(
-			tarefa_id=payload.tarefa_id,
+			tarefa_id=dados.tarefa_id,
 			autor_id=autor_id,
-			conteudo=payload.conteudo,
+			conteudo=dados.conteudo,
 		)
-		comentario = await self.comentarios.add(comentario)
+		comentario = await self.comentarios.adicionar(comentario)
 		await self.session.commit()
 		return comentario
 
-	async def list_comentarios(self, tarefa_id: int) -> list[Comentario]:
+	async def listar_comentarios(self, tarefa_id: int) -> list[Comentario]:
 		"""Função para listar comentários de uma tarefa."""
-		await self.get(tarefa_id)
-		return await self.comentarios.list_by_tarefa(tarefa_id)
+		await self.obter(tarefa_id)
+		return await self.comentarios.listar_por_tarefa(tarefa_id)
 
-	async def delete_comentario(self, comentario_id: int) -> None:
+	async def deletar_comentario(self, comentario_id: int) -> None:
 		"""Função para excluir um comentário pelo ID."""
-		if not await self.comentarios.delete(comentario_id):
+		if not await self.comentarios.deletar(comentario_id):
 			raise NotFoundError(_ENTITY_COMENTARIO, comentario_id)
 		await self.session.commit()
 
-	async def add_anexo(self, payload: AnexoCreate) -> Anexo:
+	async def adicionar_anexo(self, dados: AnexoCriar) -> Anexo:
 		"""Função para adicionar um anexo a uma tarefa."""
-		await self.get(payload.tarefa_id)
-		anexo = Anexo(**payload.model_dump())
-		anexo = await self.anexos.add(anexo)
+		await self.obter(dados.tarefa_id)
+		anexo = Anexo(**dados.model_dump())
+		anexo = await self.anexos.adicionar(anexo)
 		await self.session.commit()
 		return anexo
 
-	async def list_anexos(self, tarefa_id: int) -> list[Anexo]:
+	async def listar_anexos(self, tarefa_id: int) -> list[Anexo]:
 		"""Função para listar anexos de uma tarefa."""
-		await self.get(tarefa_id)
-		return await self.anexos.list_by_tarefa(tarefa_id)
+		await self.obter(tarefa_id)
+		return await self.anexos.listar_por_tarefa(tarefa_id)
 
-	async def delete_anexo(self, anexo_id: int) -> None:
+	async def deletar_anexo(self, anexo_id: int) -> None:
 		"""Função para excluir um anexo pelo ID."""
-		if not await self.anexos.delete(anexo_id):
+		if not await self.anexos.deletar(anexo_id):
 			raise NotFoundError(_ENTITY_ANEXO, anexo_id)
 		await self.session.commit()

@@ -1,22 +1,22 @@
 from typing import Annotated
 
 from core.enums import UserRole
-from core.security import CurrentUser, get_current_user, require_role
-from deps import SessionDep
+from core.security import UsuarioAtual, obter_usuario_atual, require_role
+from deps import DependenciaSessao
 from fastapi import APIRouter, Depends
-from modules.dashboard.service import DashboardService
+from modules.dashboard.service import ServicoDashboard
 
 router = APIRouter(prefix='/dashboard', tags=['Dashboard'])
 
 
-def _service(session: SessionDep) -> DashboardService:
+def _service(session: DependenciaSessao) -> ServicoDashboard:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return DashboardService(session)
+	return ServicoDashboard(session)
 
 
-ServiceDep = Annotated[DashboardService, Depends(_service)]
+DependenciaServico = Annotated[ServicoDashboard, Depends(_service)]
 AdminGuard = Depends(require_role(UserRole.ADMIN.value))
-CurrentUserDep = Annotated[CurrentUser, Depends(get_current_user)]
+DependenciaUsuarioAtual = Annotated[UsuarioAtual, Depends(obter_usuario_atual)]
 
 
 @router.get(
@@ -24,9 +24,9 @@ CurrentUserDep = Annotated[CurrentUser, Depends(get_current_user)]
 	dependencies=[AdminGuard],
 	summary='Dashboard geral da agência (somente admin)',
 )
-async def admin(service: ServiceDep):
+async def admin(servico: DependenciaServico):
 	"""Função para montar os indicadores do painel administrativo."""
-	return await service.admin()
+	return await servico.admin()
 
 
 @router.get(
@@ -37,9 +37,9 @@ async def admin(service: ServiceDep):
 		'painel.'
 	),
 )
-async def cliente(cliente_id: int, service: ServiceDep, current_user: CurrentUserDep):
+async def cliente(cliente_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual):
 	"""Função para montar os indicadores do painel do cliente."""
-	return await service.cliente(cliente_id, current_user.id, current_user.role)
+	return await servico.cliente(cliente_id, usuario_atual.id, usuario_atual.role)
 
 
 @router.get(
@@ -51,10 +51,10 @@ async def cliente(cliente_id: int, service: ServiceDep, current_user: CurrentUse
 	),
 )
 async def funcionario(
-	funcionario_id: int, service: ServiceDep, current_user: CurrentUserDep
+	funcionario_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual
 ):
 	"""Função para montar os indicadores do painel do funcionário."""
-	return await service.funcionario(funcionario_id, current_user.id, current_user.role)
+	return await servico.funcionario(funcionario_id, usuario_atual.id, usuario_atual.role)
 
 
 @router.get(
@@ -66,7 +66,7 @@ async def funcionario(
 	),
 )
 async def projeto_kanban(
-	projeto_id: int, service: ServiceDep, current_user: CurrentUserDep
+	projeto_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual
 ):
 	"""Função para montar os dados do quadro Kanban de um projeto."""
-	return await service.projeto_kanban(projeto_id, current_user.id, current_user.role)
+	return await servico.projeto_kanban(projeto_id, usuario_atual.id, usuario_atual.role)

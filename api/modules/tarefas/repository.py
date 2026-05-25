@@ -1,16 +1,16 @@
 from core.enums import TarefaStatus, UserRole
-from db.base_repository import BaseRepository
+from db.base_repository import RepositorioBase
 from modules.projetos.model import Projeto, ProjetoFuncionario
 from modules.tarefas.model import Anexo, Comentario, Tarefa
 from sqlalchemy import or_, select
 
 
-class TarefaRepository(BaseRepository[Tarefa]):
+class RepositorioTarefa(RepositorioBase[Tarefa]):
 	"""Classe responsável pelo acesso aos dados de tarefa."""
 
 	model = Tarefa
 
-	async def list_by_projeto(self, projeto_id: int) -> list[Tarefa]:
+	async def listar_por_projeto(self, projeto_id: int) -> list[Tarefa]:
 		"""Função para listar registros vinculados a um projeto."""
 		stmt = (
 			select(Tarefa).where(Tarefa.projeto_id == projeto_id).order_by(Tarefa.ordem)
@@ -18,7 +18,7 @@ class TarefaRepository(BaseRepository[Tarefa]):
 		result = await self.session.execute(stmt)
 		return list(result.scalars().all())
 
-	async def list_filtered(
+	async def listar_filtrados(
 		self,
 		offset: int,
 		limit: int,
@@ -38,7 +38,7 @@ class TarefaRepository(BaseRepository[Tarefa]):
 		result = await self.session.execute(stmt)
 		return list(result.scalars().all())
 
-	async def list_visible(
+	async def listar_visible(
 		self,
 		usuario_id: int,
 		role: str,
@@ -78,12 +78,12 @@ class TarefaRepository(BaseRepository[Tarefa]):
 		return list(result.scalars().all())
 
 
-class ComentarioRepository(BaseRepository[Comentario]):
+class RepositorioComentario(RepositorioBase[Comentario]):
 	"""Classe responsável pelo acesso aos dados de comentário."""
 
 	model = Comentario
 
-	async def list_by_tarefa(self, tarefa_id: int) -> list[Comentario]:
+	async def listar_por_tarefa(self, tarefa_id: int) -> list[Comentario]:
 		"""Função para listar registros vinculados a uma tarefa."""
 		stmt = (
 			select(Comentario)
@@ -94,12 +94,12 @@ class ComentarioRepository(BaseRepository[Comentario]):
 		return list(result.scalars().all())
 
 
-class AnexoRepository(BaseRepository[Anexo]):
+class RepositorioAnexo(RepositorioBase[Anexo]):
 	"""Classe responsável pelo acesso aos dados de anexo."""
 
 	model = Anexo
 
-	async def list_by_tarefa(self, tarefa_id: int) -> list[Anexo]:
+	async def listar_por_tarefa(self, tarefa_id: int) -> list[Anexo]:
 		"""Função para listar registros vinculados a uma tarefa."""
 		stmt = select(Anexo).where(Anexo.tarefa_id == tarefa_id)
 		result = await self.session.execute(stmt)

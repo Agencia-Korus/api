@@ -1,16 +1,16 @@
 from core.enums import ProjetoStatus
-from db.base_repository import BaseRepository
+from db.base_repository import RepositorioBase
 from modules.projetos.model import Projeto, ProjetoFuncionario
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class ProjetoRepository(BaseRepository[Projeto]):
+class RepositorioProjeto(RepositorioBase[Projeto]):
 	"""Classe responsável pelo acesso aos dados de projeto."""
 
 	model = Projeto
 
-	async def list_for_funcionario(
+	async def listar_for_funcionario(
 		self,
 		funcionario_id: int,
 		offset: int,
@@ -30,21 +30,21 @@ class ProjetoRepository(BaseRepository[Projeto]):
 		return list(result.scalars().all())
 
 
-class ProjetoFuncionarioRepository:
+class RepositorioProjetoFuncionario:
 	"""Classe responsável pelo acesso aos dados de membro do projeto."""
 
 	def __init__(self, session: AsyncSession):
 		"""Função para inicializar a instância com suas dependências."""
 		self.session = session
 
-	async def add(self, entry: ProjetoFuncionario) -> ProjetoFuncionario:
+	async def adicionar(self, entry: ProjetoFuncionario) -> ProjetoFuncionario:
 		"""Função para salvar um registro no banco de dados."""
 		self.session.add(entry)
 		await self.session.flush()
 		await self.session.refresh(entry)
 		return entry
 
-	async def list_by_projeto(self, projeto_id: int) -> list[ProjetoFuncionario]:
+	async def listar_por_projeto(self, projeto_id: int) -> list[ProjetoFuncionario]:
 		"""Função para listar registros vinculados a um projeto."""
 		stmt = select(ProjetoFuncionario).where(
 			ProjetoFuncionario.projeto_id == projeto_id

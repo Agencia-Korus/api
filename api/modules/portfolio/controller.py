@@ -2,14 +2,14 @@ from typing import Annotated
 
 from core.enums import UserRole
 from core.security import require_role
-from deps import PaginationDep, SessionDep
+from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, status
 from modules.portfolio.schema import (
-	PortfolioCreate,
-	PortfolioResponse,
-	PortfolioUpdate,
+	PortfolioCriar,
+	PortfolioResposta,
+	PortfolioAtualizar,
 )
-from modules.portfolio.service import PortfolioService
+from modules.portfolio.service import ServicoPortfolio
 
 router = APIRouter(
 	prefix='/portfolio',
@@ -18,52 +18,52 @@ router = APIRouter(
 )
 
 
-def _service(session: SessionDep) -> PortfolioService:
+def _service(session: DependenciaSessao) -> ServicoPortfolio:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return PortfolioService(session)
+	return ServicoPortfolio(session)
 
 
-ServiceDep = Annotated[PortfolioService, Depends(_service)]
+DependenciaServico = Annotated[ServicoPortfolio, Depends(_service)]
 
 
-@router.post('', response_model=PortfolioResponse, status_code=status.HTTP_201_CREATED)
-async def criar(payload: PortfolioCreate, service: ServiceDep):
+@router.post('', response_model=PortfolioResposta, status_code=status.HTTP_201_CREATED)
+async def criar(dados: PortfolioCriar, servico: DependenciaServico):
 	"""Função para criar um novo registro."""
-	return await service.create(payload)
+	return await servico.criar(dados)
 
 
 DestaquesQuery = Annotated[bool, Query(description='Listar apenas destaques.')]
 
 
-@router.get('', response_model=list[PortfolioResponse])
+@router.get('', response_model=list[PortfolioResposta])
 async def listar(
-	service: ServiceDep,
-	page: PaginationDep,
+	servico: DependenciaServico,
+	pagina: DependenciaPaginacao,
 	destaques: DestaquesQuery = False,
 	categoria: str | None = None,
 ):
 	"""Função para listar registros."""
-	return await service.list_filtered(
-		offset=page.offset,
-		limit=page.limit,
+	return await servico.listar_filtrados(
+		offset=pagina.offset,
+		limit=pagina.limit,
 		destaques=destaques,
 		categoria=categoria,
 	)
 
 
-@router.get('/{item_id}', response_model=PortfolioResponse)
-async def obter(item_id: int, service: ServiceDep):
+@router.get('/{item_id}', response_model=PortfolioResposta)
+async def obter(item_id: int, servico: DependenciaServico):
 	"""Função para obter um registro pelo ID."""
-	return await service.get(item_id)
+	return await servico.obter(item_id)
 
 
-@router.patch('/{item_id}', response_model=PortfolioResponse)
-async def atualizar(item_id: int, payload: PortfolioUpdate, service: ServiceDep):
+@router.patch('/{item_id}', response_model=PortfolioResposta)
+async def atualizar(item_id: int, dados: PortfolioAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
-	return await service.update(item_id, payload)
+	return await servico.atualizar(item_id, dados)
 
 
 @router.delete('/{item_id}', status_code=status.HTTP_204_NO_CONTENT)
-async def deletar(item_id: int, service: ServiceDep):
+async def deletar(item_id: int, servico: DependenciaServico):
 	"""Função para excluir um registro pelo ID."""
-	await service.delete(item_id)
+	await servico.deletar(item_id)

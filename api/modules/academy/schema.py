@@ -18,7 +18,7 @@ class AcademyBase(BaseModel):
 	publicado: bool = False
 
 
-class AcademyCreate(AcademyBase):
+class AcademyCriar(AcademyBase):
 	"""Classe que define os dados de conteúdo da Academy usados pela API."""
 
 	model_config = ConfigDict(
@@ -36,7 +36,7 @@ class AcademyCreate(AcademyBase):
 	)
 
 
-class AcademyUpdate(BaseModel):
+class AcademyAtualizar(BaseModel):
 	"""Classe que define os dados de conteúdo da Academy usados pela API."""
 
 	titulo: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
@@ -59,7 +59,7 @@ class AcademyUpdate(BaseModel):
 	)
 
 
-class AcademyResponse(AcademyBase):
+class AcademyResposta(AcademyBase):
 	"""Classe que define os dados de conteúdo da Academy usados pela API."""
 
 	id: int

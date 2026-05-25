@@ -38,11 +38,11 @@ def _payload_funcionario():
 async def test_admin_cria_usuarios_de_tipos_diversos(
 	client: AsyncClient, admin_headers: dict[str, str], payload_builder
 ):
-	payload = payload_builder()
-	resp = await client.post('/api/v1/usuarios', json=payload, headers=admin_headers)
+	dados = payload_builder()
+	resp = await client.post('/api/v1/usuarios', json=dados, headers=admin_headers)
 	assert resp.status_code == 201, resp.text
 	criado = resp.json()
-	assert criado['email'] == payload['email']
+	assert criado['email'] == dados['email']
 	assert criado['status'] == 'ativo'
 	assert 'senha' not in criado
 
@@ -70,18 +70,18 @@ async def test_criar_usuario_com_role_nao_admin_retorna_403(
 async def test_email_duplicado_retorna_409(
 	client: AsyncClient, admin_headers: dict[str, str]
 ):
-	payload = _payload_cliente()
-	first = await client.post('/api/v1/usuarios', json=payload, headers=admin_headers)
+	dados = _payload_cliente()
+	first = await client.post('/api/v1/usuarios', json=dados, headers=admin_headers)
 	assert first.status_code == 201
-	second = await client.post('/api/v1/usuarios', json=payload, headers=admin_headers)
+	second = await client.post('/api/v1/usuarios', json=dados, headers=admin_headers)
 	assert second.status_code == 409
 
 
 @pytest.mark.asyncio
 @requires_db
 async def test_registro_publico_cria_usuario_pendente(client: AsyncClient):
-	payload = _payload_cliente()
-	resp = await client.post('/api/v1/usuarios/registro', json=payload)
+	dados = _payload_cliente()
+	resp = await client.post('/api/v1/usuarios/registro', json=dados)
 	assert resp.status_code == 201, resp.text
 	criado = resp.json()
 	assert criado['status'] == 'pendente'
@@ -90,9 +90,9 @@ async def test_registro_publico_cria_usuario_pendente(client: AsyncClient):
 @pytest.mark.asyncio
 @requires_db
 async def test_registro_publico_nao_permite_admin(client: AsyncClient):
-	payload = _payload_cliente()
-	payload['role'] = 'admin'
-	resp = await client.post('/api/v1/usuarios/registro', json=payload)
+	dados = _payload_cliente()
+	dados['role'] = 'admin'
+	resp = await client.post('/api/v1/usuarios/registro', json=dados)
 	assert resp.status_code == 400
 
 

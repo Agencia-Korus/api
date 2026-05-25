@@ -13,7 +13,7 @@ class ComunicadoBase(BaseModel):
 	alvo: ComunicadoAlvo = ComunicadoAlvo.TODOS
 
 
-class ComunicadoCreate(ComunicadoBase):
+class ComunicadoCriar(ComunicadoBase):
 	"""Classe que define os dados de comunicado usados pela API."""
 
 	autor_id: int
@@ -33,7 +33,7 @@ class ComunicadoCreate(ComunicadoBase):
 	)
 
 
-class ComunicadoUpdate(BaseModel):
+class ComunicadoAtualizar(BaseModel):
 	"""Classe que define os dados de comunicado usados pela API."""
 
 	titulo: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
@@ -41,7 +41,7 @@ class ComunicadoUpdate(BaseModel):
 	alvo: ComunicadoAlvo | None = None
 
 
-class ComunicadoResponse(ComunicadoBase):
+class ComunicadoResposta(ComunicadoBase):
 	"""Classe que define os dados de comunicado usados pela API."""
 
 	id: int
@@ -50,7 +50,7 @@ class ComunicadoResponse(ComunicadoBase):
 	model_config = ConfigDict(from_attributes=True)
 
 
-class ComunicadoLeituraResponse(BaseModel):
+class ComunicadoLeituraResposta(BaseModel):
 	"""Classe que define os dados de leitura de comunicado usados pela API."""
 
 	comunicado_id: int

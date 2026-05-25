@@ -32,5 +32,5 @@ class Pagination:
 		self.limit = limit
 
 
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
-PaginationDep = Annotated[Pagination, Depends(Pagination)]
+DependenciaSessao = Annotated[AsyncSession, Depends(get_session)]
+DependenciaPaginacao = Annotated[Pagination, Depends(Pagination)]

@@ -8,13 +8,13 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from core.database import normalize_async_database_url
-from core.config import get_settings
+from core.config import obter_settings
 from db.base import Base
 
 # Models 
 from db.registro import ALL_MODELS
 
-settings = get_settings()
+settings = obter_settings()
 
 
 

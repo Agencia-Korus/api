@@ -1,10 +1,10 @@
 from collections.abc import AsyncGenerator
 
-from core.config import get_settings
+from core.config import obter_settings
 from core.database import normalize_async_database_url
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-settings = get_settings()
+settings = obter_settings()
 database_url, connect_args = normalize_async_database_url(settings.database_url)
 
 engine = create_async_engine(

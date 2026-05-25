@@ -23,7 +23,7 @@ class LeadBase(BaseModel):
 	servico_id: int | None = None
 
 
-class LeadCreate(LeadBase):
+class LeadCriar(LeadBase):
 	"""Classe que define os dados de lead usados pela API."""
 
 	status: LeadStatus = LeadStatus.NOVO
@@ -31,7 +31,7 @@ class LeadCreate(LeadBase):
 	termos_aceitos: bool = False
 
 
-class LeadUpdate(BaseModel):
+class LeadAtualizar(BaseModel):
 	"""Classe que define os dados de lead usados pela API."""
 
 	nome: str | None = Field(default=None, max_length=NOME_MAX_LENGTH)
@@ -47,7 +47,7 @@ class LeadUpdate(BaseModel):
 	termos_aceitos: bool | None = None
 
 
-class LeadResponse(LeadBase):
+class LeadResposta(LeadBase):
 	"""Classe que define os dados de lead usados pela API."""
 
 	id: int

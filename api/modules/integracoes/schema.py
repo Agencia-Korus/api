@@ -16,7 +16,7 @@ class IntegracaoBase(BaseModel):
 	status: IntegracaoStatus = IntegracaoStatus.DESCONECTADO
 
 
-class IntegracaoCreate(IntegracaoBase):
+class IntegracaoCriar(IntegracaoBase):
 	"""Classe que define os dados de integração usados pela API."""
 
 	nome: Literal['google_calendar'] = Field(
@@ -39,7 +39,7 @@ class IntegracaoCreate(IntegracaoBase):
 	)
 
 
-class IntegracaoUpdate(BaseModel):
+class IntegracaoAtualizar(BaseModel):
 	"""Classe que define os dados de integração usados pela API."""
 
 	chave: str | None = Field(
@@ -53,7 +53,7 @@ class IntegracaoUpdate(BaseModel):
 	)
 
 
-class IntegracaoResponse(IntegracaoBase):
+class IntegracaoResposta(IntegracaoBase):
 	"""Classe que define os dados de integração usados pela API."""
 
 	id: int

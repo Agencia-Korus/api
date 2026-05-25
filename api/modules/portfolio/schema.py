@@ -23,13 +23,13 @@ class PortfolioBase(BaseModel):
 	tags: list[str] = Field(default_factory=list)
 
 
-class PortfolioCreate(PortfolioBase):
+class PortfolioCriar(PortfolioBase):
 	"""Classe que define os dados de portfólio usados pela API."""
 
 	pass
 
 
-class PortfolioUpdate(BaseModel):
+class PortfolioAtualizar(BaseModel):
 	"""Classe que define os dados de portfólio usados pela API."""
 
 	nome: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
@@ -42,7 +42,7 @@ class PortfolioUpdate(BaseModel):
 	tags: list[str] | None = None
 
 
-class PortfolioResponse(PortfolioBase):
+class PortfolioResposta(PortfolioBase):
 	"""Classe que define os dados de portfólio usados pela API."""
 
 	id: int

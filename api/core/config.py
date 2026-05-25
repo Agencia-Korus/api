@@ -64,6 +64,6 @@ class Settings(BaseSettings):
 
 
 @lru_cache
-def get_settings() -> Settings:
+def obter_settings() -> Settings:
 	"""Função para obter as configurações carregadas do ambiente."""
 	return Settings()

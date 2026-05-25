@@ -21,14 +21,14 @@ class ProjetoBase(BaseModel):
 	data_fim: date | None = None
 
 
-class ProjetoCreate(ProjetoBase):
+class ProjetoCriar(ProjetoBase):
 	"""Classe que define os dados de projeto usados pela API."""
 
 	status: ProjetoStatus = ProjetoStatus.PLANEJAMENTO
 	progresso: int = Field(default=PROGRESSO_MIN, ge=PROGRESSO_MIN, le=PROGRESSO_MAX)
 
 
-class ProjetoUpdate(BaseModel):
+class ProjetoAtualizar(BaseModel):
 	"""Classe que define os dados de projeto usados pela API."""
 
 	nome: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
@@ -40,7 +40,7 @@ class ProjetoUpdate(BaseModel):
 	progresso: int | None = Field(default=None, ge=PROGRESSO_MIN, le=PROGRESSO_MAX)
 
 
-class ProjetoResponse(ProjetoBase):
+class ProjetoResposta(ProjetoBase):
 	"""Classe que define os dados de projeto usados pela API."""
 
 	id: int
@@ -50,14 +50,14 @@ class ProjetoResponse(ProjetoBase):
 	model_config = ConfigDict(from_attributes=True)
 
 
-class ProjetoFuncionarioCreate(BaseModel):
+class ProjetoFuncionarioCriar(BaseModel):
 	"""Classe que define os dados de membro do projeto usados pela API."""
 
 	funcionario_id: int
 	papel: str | None = Field(default=None, max_length=PAPEL_MAX_LENGTH)
 
 
-class ProjetoFuncionarioResponse(BaseModel):
+class ProjetoFuncionarioResposta(BaseModel):
 	"""Classe que define os dados de membro do projeto usados pela API."""
 
 	projeto_id: int
