@@ -6,32 +6,32 @@ from pydantic import ValidationError
 
 
 def test_servico_create_define_status_ativo_por_padrao():
-	payload = ServicoCriar(
+	dados = ServicoCriar(
 		nome='Identidade Visual',
 		slug='identidade-visual',
 		descricao='Branding completo.',
 	)
 
-	assert payload.status == ServicoStatus.ATIVO
+	assert dados.status == ServicoStatus.ATIVO
 
 
 def test_servico_update_permite_patch_parcial():
-	payload = ServicoAtualizar(descricao='Nova descricao')
+	dados = ServicoAtualizar(descricao='Nova descricao')
 
-	assert payload.nome is None
-	assert payload.descricao == 'Nova descricao'
+	assert dados.nome is None
+	assert dados.descricao == 'Nova descricao'
 
 
 def test_lead_create_define_status_e_prioridade_padrao():
-	payload = LeadCriar(
+	dados = LeadCriar(
 		nome='Cliente Teste',
 		email='cliente@example.com',
 		mensagem='Quero conhecer os serviços.',
 	)
 
-	assert payload.status == LeadStatus.NOVO
-	assert payload.prioridade == LeadPrioridade.MEDIA
-	assert payload.termos_aceitos is False
+	assert dados.status == LeadStatus.NOVO
+	assert dados.prioridade == LeadPrioridade.MEDIA
+	assert dados.termos_aceitos is False
 
 
 def test_lead_create_valida_email():

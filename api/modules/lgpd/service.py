@@ -14,9 +14,9 @@ class ServicoLgpd:
 		self.session = session
 		self.repo = RepositorioConsentimentoLgpd(session)
 
-	async def registrar(self, payload: ConsentimentoLgpdCriar) -> ConsentimentoLgpd:
+	async def registrar(self, dados: ConsentimentoLgpdCriar) -> ConsentimentoLgpd:
 		"""Função para registrar um consentimento LGPD."""
-		consentimento = ConsentimentoLgpd(**payload.model_dump())
+		consentimento = ConsentimentoLgpd(**dados.model_dump())
 		consentimento = await self.repo.adicionar(consentimento)
 		await self.session.commit()
 		return consentimento

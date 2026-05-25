@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from core.config import get_settings
+from core.config import obter_settings
 from core.exceptions import NotFoundError
 from modules.agenda.google_calendar import ClienteGoogleCalendar, EventoGoogleCalendar
 from modules.agenda.model import EventoAgenda, SolicitacaoReuniao
@@ -32,11 +32,11 @@ class ServicoAgenda:
 		self.session = session
 		self.eventos = RepositorioEventoAgenda(session)
 		self.solicitacoes = RepositorioSolicitacaoReuniao(session)
-		self.calendario_google = ClienteGoogleCalendar(get_settings())
+		self.calendario_google = ClienteGoogleCalendar(obter_settings())
 
-	async def criar_evento(self, payload: EventoAgendaCriar) -> EventoAgenda:
+	async def criar_evento(self, dados: EventoAgendaCriar) -> EventoAgenda:
 		"""Função para criar um evento na agenda."""
-		evento = EventoAgenda(**payload.model_dump())
+		evento = EventoAgenda(**dados.model_dump())
 		evento = await self.eventos.adicionar(evento)
 		evento_google = await self.calendario_google.criar_evento(
 			titulo=evento.titulo,
@@ -106,7 +106,7 @@ class ServicoAgenda:
 	@staticmethod
 	def _evento_local_para_site(evento: EventoAgenda) -> AgendaEventoSiteResposta:
 		"""Função interna para converter evento local para a resposta do site."""
-		fuso_horario = ZoneInfo(get_settings().google_calendar_timezone)
+		fuso_horario = ZoneInfo(obter_settings().google_calendar_timezone)
 		hora = (evento.hora or time.min).replace(tzinfo=None)
 		inicio = datetime.combine(evento.data, hora, tzinfo=fuso_horario)
 		fim = inicio + timedelta(minutes=evento.duracao_min)
@@ -153,14 +153,14 @@ class ServicoAgenda:
 		)
 
 	async def atualizar_evento(
-		self, evento_id: int, payload: EventoAgendaAtualizar
+		self, evento_id: int, dados: EventoAgendaAtualizar
 	) -> EventoAgenda:
 		"""Função para atualizar um evento da agenda."""
 		evento_atual = await self.eventos.obter(evento_id)
 		if not evento_atual:
 			raise NotFoundError(_ENTITY_EVENTO, evento_id)
 		evento = await self.eventos.atualizar(
-			evento_id, payload.model_dump(exclude_none=True)
+			evento_id, dados.model_dump(exclude_none=True)
 		)
 		if evento.google_event_id:
 			evento_google = await self.calendario_google.atualizar_evento(
@@ -197,10 +197,10 @@ class ServicoAgenda:
 		await self.session.commit()
 
 	async def criar_solicitacao(
-		self, payload: SolicitacaoReuniaoCriar
+		self, dados: SolicitacaoReuniaoCriar
 	) -> SolicitacaoReuniao:
 		"""Função para criar uma solicitação de reunião."""
-		solicitacao = SolicitacaoReuniao(**payload.model_dump())
+		solicitacao = SolicitacaoReuniao(**dados.model_dump())
 		solicitacao = await self.solicitacoes.adicionar(solicitacao)
 		await self.session.commit()
 		return solicitacao
@@ -219,11 +219,11 @@ class ServicoAgenda:
 		return await self.solicitacoes.listar_recebidas(destinatario_id)
 
 	async def atualizar_solicitacao(
-		self, solicitacao_id: int, payload: SolicitacaoReuniaoAtualizar
+		self, solicitacao_id: int, dados: SolicitacaoReuniaoAtualizar
 	) -> SolicitacaoReuniao:
 		"""Função para atualizar uma solicitação de reunião."""
 		solicitacao = await self.solicitacoes.atualizar(
-			solicitacao_id, payload.model_dump(exclude_none=True)
+			solicitacao_id, dados.model_dump(exclude_none=True)
 		)
 		if not solicitacao:
 			raise NotFoundError(_ENTITY_SOLICITACAO, solicitacao_id)

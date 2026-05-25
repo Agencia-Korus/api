@@ -25,11 +25,11 @@ class ServicoServico:
 		self.repo = RepositorioServico(session)
 		self.entregaveis = RepositorioEntregavel(session)
 
-	async def criar(self, payload: ServicoCriar) -> Servico:
+	async def criar(self, dados: ServicoCriar) -> Servico:
 		"""Função para criar um novo registro."""
-		if await self.repo.obter_por_slug(payload.slug):
+		if await self.repo.obter_por_slug(dados.slug):
 			raise ConflictError('Slug já utilizado')
-		servico = Servico(**payload.model_dump())
+		servico = Servico(**dados.model_dump())
 		servico = await self.repo.adicionar(servico)
 		await self.session.commit()
 		return servico
@@ -53,10 +53,10 @@ class ServicoServico:
 			offset=offset, limit=limit, filters={'status': status}
 		)
 
-	async def atualizar(self, servico_id: int, payload: ServicoAtualizar) -> Servico:
+	async def atualizar(self, servico_id: int, dados: ServicoAtualizar) -> Servico:
 		"""Função para atualizar um registro pelo ID."""
 		servico = await self.repo.atualizar(
-			servico_id, payload.model_dump(exclude_none=True)
+			servico_id, dados.model_dump(exclude_none=True)
 		)
 		if not servico:
 			raise NotFoundError(_ENTITY_SERVICO, servico_id)
@@ -69,10 +69,10 @@ class ServicoServico:
 			raise NotFoundError(_ENTITY_SERVICO, servico_id)
 		await self.session.commit()
 
-	async def criar_entregavel(self, payload: EntregavelCriar) -> Entregavel:
+	async def criar_entregavel(self, dados: EntregavelCriar) -> Entregavel:
 		"""Função para criar um entregável de serviço."""
-		await self.obter(payload.servico_id)
-		entregavel = Entregavel(**payload.model_dump())
+		await self.obter(dados.servico_id)
+		entregavel = Entregavel(**dados.model_dump())
 		entregavel = await self.entregaveis.adicionar(entregavel)
 		await self.session.commit()
 		return entregavel
@@ -83,11 +83,11 @@ class ServicoServico:
 		return await self.entregaveis.listar_por_servico(servico_id)
 
 	async def atualizar_entregavel(
-		self, entregavel_id: int, payload: EntregavelAtualizar
+		self, entregavel_id: int, dados: EntregavelAtualizar
 	) -> Entregavel:
 		"""Função para atualizar um entregável de serviço."""
 		entregavel = await self.entregaveis.atualizar(
-			entregavel_id, payload.model_dump(exclude_none=True)
+			entregavel_id, dados.model_dump(exclude_none=True)
 		)
 		if not entregavel:
 			raise NotFoundError(_ENTITY_ENTREGAVEL, entregavel_id)

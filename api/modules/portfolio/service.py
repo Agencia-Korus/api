@@ -17,9 +17,9 @@ class ServicoPortfolio:
 		self.session = session
 		self.repo = RepositorioPortfolio(session)
 
-	async def criar(self, payload: PortfolioCriar) -> Portfolio:
+	async def criar(self, dados: PortfolioCriar) -> Portfolio:
 		"""Função para criar um novo registro."""
-		item = Portfolio(**payload.model_dump())
+		item = Portfolio(**dados.model_dump())
 		item = await self.repo.adicionar(item)
 		await self.session.commit()
 		return item
@@ -52,9 +52,9 @@ class ServicoPortfolio:
 			categoria=categoria,
 		)
 
-	async def atualizar(self, item_id: int, payload: PortfolioAtualizar) -> Portfolio:
+	async def atualizar(self, item_id: int, dados: PortfolioAtualizar) -> Portfolio:
 		"""Função para atualizar um registro pelo ID."""
-		item = await self.repo.atualizar(item_id, payload.model_dump(exclude_none=True))
+		item = await self.repo.atualizar(item_id, dados.model_dump(exclude_none=True))
 		if not item:
 			raise NotFoundError(_ENTITY, item_id)
 		await self.session.commit()

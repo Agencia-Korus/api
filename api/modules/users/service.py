@@ -27,23 +27,23 @@ class ServicoUsuario:
 		self.funcionarios = RepositorioFuncionario(session)
 		self.admins = RepositorioAdmin(session)
 
-	async def criar(self, payload: UsuarioCriar) -> Usuario:
+	async def criar(self, dados: UsuarioCriar) -> Usuario:
 		"""Função para criar um novo registro."""
-		if await self.usuarios.obter_por_email(payload.email):
+		if await self.usuarios.obter_por_email(dados.email):
 			raise ConflictError('Email já cadastrado')
 
 		usuario = Usuario(
-			nome=payload.nome,
-			email=payload.email,
-			senha_hash=hash_password(payload.senha),
-			role=payload.role,
-			telefone=payload.telefone,
-			avatar=payload.avatar,
-			status=payload.status,
+			nome=dados.nome,
+			email=dados.email,
+			senha_hash=hash_password(dados.senha),
+			role=dados.role,
+			telefone=dados.telefone,
+			avatar=dados.avatar,
+			status=dados.status,
 		)
 		usuario = await self.usuarios.adicionar(usuario)
-		if payload.role == UserRole.CLIENTE:
-			cliente_payload = payload.cliente
+		if dados.role == UserRole.CLIENTE:
+			cliente_payload = dados.cliente
 			cliente = Cliente(
 				id=usuario.id,
 				razao_social=cliente_payload.razao_social
@@ -56,8 +56,8 @@ class ServicoUsuario:
 			)
 			await self.clientes.adicionar(cliente)
 
-		if payload.role == UserRole.FUNCIONARIO:
-			funcionario_payload = payload.funcionario
+		if dados.role == UserRole.FUNCIONARIO:
+			funcionario_payload = dados.funcionario
 			funcionario = Funcionario(
 				id=usuario.id,
 				cargo=funcionario_payload.cargo
@@ -69,10 +69,10 @@ class ServicoUsuario:
 			)
 			await self.funcionarios.adicionar(funcionario)
 
-		if payload.role == UserRole.ADMIN:
+		if dados.role == UserRole.ADMIN:
 			admin = Admin(
 				id=usuario.id,
-				nivel_acesso=payload.admin.nivel_acesso if payload.admin else 1,
+				nivel_acesso=dados.admin.nivel_acesso if dados.admin else 1,
 			)
 			await self.admins.adicionar(admin)
 
@@ -104,10 +104,10 @@ class ServicoUsuario:
 			offset=offset, limit=limit, role=role, status=status, search=search
 		)
 
-	async def atualizar(self, usuario_id: int, payload: UsuarioAtualizar) -> Usuario:
+	async def atualizar(self, usuario_id: int, dados: UsuarioAtualizar) -> Usuario:
 		"""Função para atualizar um registro pelo ID."""
 		usuario = await self.usuarios.atualizar(
-			usuario_id, payload.model_dump(exclude_none=True)
+			usuario_id, dados.model_dump(exclude_none=True)
 		)
 		if not usuario:
 			raise NotFoundError(_ENTITY, usuario_id)
@@ -121,23 +121,23 @@ class ServicoUsuario:
 			raise NotFoundError(_ENTITY, usuario_id)
 		await self.session.commit()
 
-	async def registrar(self, payload: UsuarioRegistrar) -> Usuario:
+	async def registrar(self, dados: UsuarioRegistrar) -> Usuario:
 		"""Função para registrar um novo usuário."""
-		if payload.role == UserRole.ADMIN:
+		if dados.role == UserRole.ADMIN:
 			raise BadRequestError(
 				'Auto-cadastro como admin não é pertmitido. '
 				'Apenas admins podem promover usuários'
 			)
 		create_payload = UsuarioCriar(
-			nome=payload.nome,
-			email=payload.email,
-			senha=payload.senha,
-			role=payload.role,
-			telefone=payload.telefone,
-			avatar=payload.avatar,
+			nome=dados.nome,
+			email=dados.email,
+			senha=dados.senha,
+			role=dados.role,
+			telefone=dados.telefone,
+			avatar=dados.avatar,
 			status=UserStatus.PENDENTE,
-			cliente=payload.cliente,
-			funcionario=payload.funcionario,
+			cliente=dados.cliente,
+			funcionario=dados.funcionario,
 		)
 		return await self.criar(create_payload)
 

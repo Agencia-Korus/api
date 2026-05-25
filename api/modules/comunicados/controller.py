@@ -1,8 +1,8 @@
 from typing import Annotated
 
 from core.enums import ComunicadoAlvo, UserRole
-from core.security import get_current_user_id, require_role
-from deps import PaginationDep, SessionDep
+from core.security import obter_usuario_atual_id, require_role
+from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, status
 from modules.comunicados.schema import (
 	ComunicadoCriar,
@@ -15,13 +15,13 @@ from modules.comunicados.service import ServicoComunicado
 router = APIRouter(prefix='/comunicados', tags=['Comunicados'])
 
 
-def _service(session: SessionDep) -> ServicoComunicado:
+def _service(session: DependenciaSessao) -> ServicoComunicado:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return ServicoComunicado(session)
 
 
-ServiceDep = Annotated[ServicoComunicado, Depends(_service)]
-CurrentUserId = Annotated[int, Depends(get_current_user_id)]
+DependenciaServico = Annotated[ServicoComunicado, Depends(_service)]
+CurrentUserId = Annotated[int, Depends(obter_usuario_atual_id)]
 AdminGuard = Depends(require_role(UserRole.ADMIN.value))
 AuthenticatedGuard = Depends(
 	require_role(
@@ -39,9 +39,9 @@ AuthenticatedGuard = Depends(
 	dependencies=[AdminGuard],
 	summary='Cria comunicado (somente admin)',
 )
-async def criar(payload: ComunicadoCriar, service: ServiceDep):
+async def criar(dados: ComunicadoCriar, servico: DependenciaServico):
 	"""Função para criar um novo registro."""
-	return await service.criar(payload)
+	return await servico.criar(dados)
 
 
 @router.get(
@@ -51,12 +51,12 @@ async def criar(payload: ComunicadoCriar, service: ServiceDep):
 	summary='Lista comunicados (clientes, funcionários e admins)',
 )
 async def listar(
-	service: ServiceDep,
-	page: PaginationDep,
+	servico: DependenciaServico,
+	pagina: DependenciaPaginacao,
 	alvo: Annotated[ComunicadoAlvo | None, Query()] = None,
 ):
 	"""Função para listar registros."""
-	return await service.listar_filtrados(offset=page.offset, limit=page.limit, alvo=alvo)
+	return await servico.listar_filtrados(offset=pagina.offset, limit=pagina.limit, alvo=alvo)
 
 
 @router.get(
@@ -65,9 +65,9 @@ async def listar(
 	dependencies=[AuthenticatedGuard],
 	summary='Obtém comunicado (clientes, funcionários e admins)',
 )
-async def obter(comunicado_id: int, service: ServiceDep):
+async def obter(comunicado_id: int, servico: DependenciaServico):
 	"""Função para obter um registro pelo ID."""
-	return await service.obter(comunicado_id)
+	return await servico.obter(comunicado_id)
 
 
 @router.patch(
@@ -76,9 +76,9 @@ async def obter(comunicado_id: int, service: ServiceDep):
 	dependencies=[AdminGuard],
 	summary='Atualiza comunicado (somente admin)',
 )
-async def atualizar(comunicado_id: int, payload: ComunicadoAtualizar, service: ServiceDep):
+async def atualizar(comunicado_id: int, dados: ComunicadoAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
-	return await service.atualizar(comunicado_id, payload)
+	return await servico.atualizar(comunicado_id, dados)
 
 
 @router.delete(
@@ -87,9 +87,9 @@ async def atualizar(comunicado_id: int, payload: ComunicadoAtualizar, service: S
 	dependencies=[AdminGuard],
 	summary='Remove comunicado (somente admin)',
 )
-async def deletar(comunicado_id: int, service: ServiceDep):
+async def deletar(comunicado_id: int, servico: DependenciaServico):
 	"""Função para excluir um registro pelo ID."""
-	await service.deletar(comunicado_id)
+	await servico.deletar(comunicado_id)
 
 
 @router.post(
@@ -99,10 +99,10 @@ async def deletar(comunicado_id: int, service: ServiceDep):
 	summary='Marca comunicado como lido (usuário autenticado)',
 )
 async def marcar_lido(
-	comunicado_id: int, service: ServiceDep, current_user_id: CurrentUserId
+	comunicado_id: int, servico: DependenciaServico, current_user_id: CurrentUserId
 ):
 	"""Função para registrar a leitura de um comunicado."""
-	return await service.marcar_lido(comunicado_id, current_user_id)
+	return await servico.marcar_lido(comunicado_id, current_user_id)
 
 
 @router.get(
@@ -111,6 +111,6 @@ async def marcar_lido(
 	dependencies=[AdminGuard],
 	summary='Lista leituras do comunicado (somente admin)',
 )
-async def listar_leituras(comunicado_id: int, service: ServiceDep):
+async def listar_leituras(comunicado_id: int, servico: DependenciaServico):
 	"""Função para listar leituras de um comunicado."""
-	return await service.listar_leituras(comunicado_id)
+	return await servico.listar_leituras(comunicado_id)

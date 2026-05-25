@@ -13,7 +13,7 @@ os.environ.setdefault(
 )
 os.environ.setdefault('JWT_SECRET_KEY', 'test-secret')
 
-from core.security import create_access_token
+from core.security import criar_access_token
 from db.session import engine
 from main import app
 from sqlalchemy import text
@@ -48,7 +48,7 @@ async def client(base_url: str | None) -> AsyncGenerator[AsyncClient, None]:
 
 @pytest.fixture
 def admin_token() -> str:
-	return create_access_token(subject=1, extra={'role': 'admin'})
+	return criar_access_token(subject=1, extra={'role': 'admin'})
 
 
 @pytest.fixture
@@ -80,7 +80,7 @@ async def admin_client(
 
 @pytest.fixture
 def cliente_token() -> str:
-	return create_access_token(subject=2, extra={'role': 'cliente'})
+	return criar_access_token(subject=2, extra={'role': 'cliente'})
 
 
 @pytest.fixture
@@ -103,7 +103,7 @@ def is_postgres_available() -> bool:
 	host = os.environ.get('TEST_DB_HOST', 'localhost')
 	port = int(os.environ.get('TEST_DB_PORT', str(DEFAULT_DB_PORT)))
 	try:
-		with socket.criar_connection((host, port), timeout=SOCKET_CHECK_TIMEOUT):
+		with socket.create_connection((host, port), timeout=SOCKET_CHECK_TIMEOUT):
 			pass
 	except OSError:
 		return False

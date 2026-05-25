@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from deps import SessionDep
+from deps import DependenciaSessao
 from fastapi import APIRouter
 from sqlalchemy import text
 
@@ -8,7 +8,7 @@ router = APIRouter(prefix='/health/db', tags=['Saúde'])
 
 
 @router.get('', status_code=HTTPStatus.OK)
-async def health(session: SessionDep):
+async def health(session: DependenciaSessao):
 	"""Função para verificar se o serviço está disponível."""
 	await session.execute(text('SELECT 1'))
 	return {'status': 'ok'}

@@ -36,9 +36,9 @@ class ServicoTarefa:
 		self.comentarios = RepositorioComentario(session)
 		self.anexos = RepositorioAnexo(session)
 
-	async def criar(self, payload: TarefaCriar) -> Tarefa:
+	async def criar(self, dados: TarefaCriar) -> Tarefa:
 		"""Função para criar um novo registro."""
-		tarefa = Tarefa(**payload.model_dump())
+		tarefa = Tarefa(**dados.model_dump())
 		tarefa = await self.repo.adicionar(tarefa)
 		await self.session.commit()
 		return tarefa
@@ -159,9 +159,9 @@ class ServicoTarefa:
 		result = await self.session.execute(stmt)
 		return result.scalar_one_or_none() is not None
 
-	async def atualizar(self, tarefa_id: int, payload: TarefaAtualizar) -> Tarefa:
+	async def atualizar(self, tarefa_id: int, dados: TarefaAtualizar) -> Tarefa:
 		"""Função para atualizar um registro pelo ID."""
-		data = payload.model_dump(exclude_none=True)
+		data = dados.model_dump(exclude_none=True)
 		if data.get('status') == TarefaStatus.CONCLUIDO:
 			data['concluido_em'] = datetime.now(timezone.utc)
 		tarefa = await self.repo.atualizar(tarefa_id, data)
@@ -177,14 +177,14 @@ class ServicoTarefa:
 		await self.session.commit()
 
 	async def adicionar_comentario(
-		self, payload: ComentarioCriar, autor_id: int
+		self, dados: ComentarioCriar, autor_id: int
 	) -> Comentario:
 		"""Função para adicionar um comentário a uma tarefa."""
-		await self.obter(payload.tarefa_id)
+		await self.obter(dados.tarefa_id)
 		comentario = Comentario(
-			tarefa_id=payload.tarefa_id,
+			tarefa_id=dados.tarefa_id,
 			autor_id=autor_id,
-			conteudo=payload.conteudo,
+			conteudo=dados.conteudo,
 		)
 		comentario = await self.comentarios.adicionar(comentario)
 		await self.session.commit()
@@ -201,10 +201,10 @@ class ServicoTarefa:
 			raise NotFoundError(_ENTITY_COMENTARIO, comentario_id)
 		await self.session.commit()
 
-	async def adicionar_anexo(self, payload: AnexoCriar) -> Anexo:
+	async def adicionar_anexo(self, dados: AnexoCriar) -> Anexo:
 		"""Função para adicionar um anexo a uma tarefa."""
-		await self.obter(payload.tarefa_id)
-		anexo = Anexo(**payload.model_dump())
+		await self.obter(dados.tarefa_id)
+		anexo = Anexo(**dados.model_dump())
 		anexo = await self.anexos.adicionar(anexo)
 		await self.session.commit()
 		return anexo

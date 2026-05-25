@@ -18,9 +18,9 @@ class ServicoAcademy:
 		self.session = session
 		self.repo = RepositorioAcademy(session)
 
-	async def criar(self, payload: AcademyCriar) -> Academy:
+	async def criar(self, dados: AcademyCriar) -> Academy:
 		"""Função para criar um novo registro."""
-		item = Academy(**payload.model_dump())
+		item = Academy(**dados.model_dump())
 		item = await self.repo.adicionar(item)
 		await self.session.commit()
 		return item
@@ -48,9 +48,9 @@ class ServicoAcademy:
 			offset=offset, limit=limit, filters={'tipo': tipo, 'publicado': publicado}
 		)
 
-	async def atualizar(self, item_id: int, payload: AcademyAtualizar) -> Academy:
+	async def atualizar(self, item_id: int, dados: AcademyAtualizar) -> Academy:
 		"""Função para atualizar um registro pelo ID."""
-		item = await self.repo.atualizar(item_id, payload.model_dump(exclude_none=True))
+		item = await self.repo.atualizar(item_id, dados.model_dump(exclude_none=True))
 		if not item:
 			raise NotFoundError(_ENTITY, item_id)
 		await self.session.commit()

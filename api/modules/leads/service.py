@@ -18,9 +18,9 @@ class ServicoLead:
 		self.session = session
 		self.repo = RepositorioLead(session)
 
-	async def criar(self, payload: LeadCriar) -> Lead:
+	async def criar(self, dados: LeadCriar) -> Lead:
 		"""Função para criar um novo registro."""
-		lead = Lead(**payload.model_dump())
+		lead = Lead(**dados.model_dump())
 		lead = await self.repo.adicionar(lead)
 		await self.session.commit()
 		return lead
@@ -55,9 +55,9 @@ class ServicoLead:
 			search=search,
 		)
 
-	async def atualizar(self, lead_id: int, payload: LeadAtualizar) -> Lead:
+	async def atualizar(self, lead_id: int, dados: LeadAtualizar) -> Lead:
 		"""Função para atualizar um registro pelo ID."""
-		lead = await self.repo.atualizar(lead_id, payload.model_dump(exclude_none=True))
+		lead = await self.repo.atualizar(lead_id, dados.model_dump(exclude_none=True))
 		if not lead:
 			raise NotFoundError(_ENTITY, lead_id)
 		await self.session.commit()

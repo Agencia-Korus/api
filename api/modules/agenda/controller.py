@@ -2,8 +2,8 @@ from datetime import date
 from typing import Annotated
 
 from core.enums import UserRole
-from core.security import CurrentUser, get_current_user, require_role
-from deps import SessionDep
+from core.security import UsuarioAtual, obter_usuario_atual, require_role
+from deps import DependenciaSessao
 from fastapi import APIRouter, Depends, status
 from modules.agenda.schema import (
 	AgendaEventoSiteResposta,
@@ -24,17 +24,17 @@ LoggedUserGuard = Depends(
 		UserRole.ADMIN.value,
 	)
 )
-CurrentUserDep = Annotated[CurrentUser, Depends(get_current_user)]
+DependenciaUsuarioAtual = Annotated[UsuarioAtual, Depends(obter_usuario_atual)]
 
 router = APIRouter(prefix='/agenda', tags=['Agenda'], dependencies=[LoggedUserGuard])
 
 
-def _service(session: SessionDep) -> ServicoAgenda:
+def _service(session: DependenciaSessao) -> ServicoAgenda:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return ServicoAgenda(session)
 
 
-ServiceDep = Annotated[ServicoAgenda, Depends(_service)]
+DependenciaServico = Annotated[ServicoAgenda, Depends(_service)]
 
 
 @router.post(
@@ -43,9 +43,9 @@ ServiceDep = Annotated[ServicoAgenda, Depends(_service)]
 	status_code=status.HTTP_201_CREATED,
 	summary='Cria evento na agenda (usuário autenticado)',
 )
-async def criar_evento(payload: EventoAgendaCriar, service: ServiceDep):
+async def criar_evento(dados: EventoAgendaCriar, servico: DependenciaServico):
 	"""Função para criar um evento na agenda."""
-	return await service.criar_evento(payload)
+	return await servico.criar_evento(dados)
 
 
 @router.get(
@@ -58,13 +58,13 @@ async def criar_evento(payload: EventoAgendaCriar, service: ServiceDep):
 	),
 )
 async def listar_eventos_site(
-	current_user: CurrentUserDep,
-	service: ServiceDep,
+	usuario_atual: DependenciaUsuarioAtual,
+	servico: DependenciaServico,
 	data_inicio: date | None = None,
 	data_fim: date | None = None,
 ):
 	"""Função para listar eventos públicos exibidos no site."""
-	return await service.listar_eventos_site(current_user.id, data_inicio, data_fim)
+	return await servico.listar_eventos_site(usuario_atual.id, data_inicio, data_fim)
 
 
 @router.get(
@@ -72,9 +72,9 @@ async def listar_eventos_site(
 	response_model=list[EventoAgendaResposta],
 	summary='Lista eventos locais de um usuário (usuário autenticado)',
 )
-async def listar_eventos(usuario_id: int, service: ServiceDep):
+async def listar_eventos(usuario_id: int, servico: DependenciaServico):
 	"""Função para listar eventos de um usuário."""
-	return await service.listar_eventos(usuario_id)
+	return await servico.listar_eventos(usuario_id)
 
 
 @router.get(
@@ -87,12 +87,12 @@ async def listar_eventos(usuario_id: int, service: ServiceDep):
 	),
 )
 async def listar_eventos_calendario_google(
-	service: ServiceDep,
+	servico: DependenciaServico,
 	data_inicio: date | None = None,
 	data_fim: date | None = None,
 ):
 	"""Função para listar eventos sincronizados do Google Calendar."""
-	return await service.listar_eventos_calendario_google(data_inicio, data_fim)
+	return await servico.listar_eventos_calendario_google(data_inicio, data_fim)
 
 
 @router.get(
@@ -100,9 +100,9 @@ async def listar_eventos_calendario_google(
 	response_model=EventoAgendaResposta,
 	summary='Obtém evento da agenda (usuário autenticado)',
 )
-async def obter_evento(evento_id: int, service: ServiceDep):
+async def obter_evento(evento_id: int, servico: DependenciaServico):
 	"""Função para obter um evento da agenda pelo ID."""
-	return await service.obter_evento(evento_id)
+	return await servico.obter_evento(evento_id)
 
 
 @router.patch(
@@ -111,10 +111,10 @@ async def obter_evento(evento_id: int, service: ServiceDep):
 	summary='Atualiza evento da agenda (usuário autenticado)',
 )
 async def atualizar_evento(
-	evento_id: int, payload: EventoAgendaAtualizar, service: ServiceDep
+	evento_id: int, dados: EventoAgendaAtualizar, servico: DependenciaServico
 ):
 	"""Função para atualizar um evento da agenda."""
-	return await service.atualizar_evento(evento_id, payload)
+	return await servico.atualizar_evento(evento_id, dados)
 
 
 @router.delete(
@@ -122,9 +122,9 @@ async def atualizar_evento(
 	status_code=status.HTTP_204_NO_CONTENT,
 	summary='Remove evento da agenda (usuário autenticado)',
 )
-async def deletar_evento(evento_id: int, service: ServiceDep):
+async def deletar_evento(evento_id: int, servico: DependenciaServico):
 	"""Função para excluir um evento da agenda."""
-	await service.deletar_evento(evento_id)
+	await servico.deletar_evento(evento_id)
 
 
 @router.post(
@@ -133,9 +133,9 @@ async def deletar_evento(evento_id: int, service: ServiceDep):
 	status_code=status.HTTP_201_CREATED,
 	summary='Solicita reunião (usuário autenticado)',
 )
-async def criar_solicitacao(payload: SolicitacaoReuniaoCriar, service: ServiceDep):
+async def criar_solicitacao(dados: SolicitacaoReuniaoCriar, servico: DependenciaServico):
 	"""Função para criar uma solicitação de reunião."""
-	return await service.criar_solicitacao(payload)
+	return await servico.criar_solicitacao(dados)
 
 
 @router.get(
@@ -143,9 +143,9 @@ async def criar_solicitacao(payload: SolicitacaoReuniaoCriar, service: ServiceDe
 	response_model=list[SolicitacaoReuniaoResposta],
 	summary='Lista solicitações recebidas (usuário autenticado)',
 )
-async def listar_solicitacoes(destinatario_id: int, service: ServiceDep):
+async def listar_solicitacoes(destinatario_id: int, servico: DependenciaServico):
 	"""Função para listar solicitações de reunião recebidas."""
-	return await service.listar_solicitacoes_recebidas(destinatario_id)
+	return await servico.listar_solicitacoes_recebidas(destinatario_id)
 
 
 @router.patch(
@@ -155,11 +155,11 @@ async def listar_solicitacoes(destinatario_id: int, service: ServiceDep):
 )
 async def atualizar_solicitacao(
 	solicitacao_id: int,
-	payload: SolicitacaoReuniaoAtualizar,
-	service: ServiceDep,
+	dados: SolicitacaoReuniaoAtualizar,
+	servico: DependenciaServico,
 ):
 	"""Função para atualizar uma solicitação de reunião."""
-	return await service.atualizar_solicitacao(solicitacao_id, payload)
+	return await servico.atualizar_solicitacao(solicitacao_id, dados)
 
 
 @router.delete(
@@ -167,6 +167,6 @@ async def atualizar_solicitacao(
 	status_code=status.HTTP_204_NO_CONTENT,
 	summary='Remove solicitação de reunião (usuário autenticado)',
 )
-async def deletar_solicitacao(solicitacao_id: int, service: ServiceDep):
+async def deletar_solicitacao(solicitacao_id: int, servico: DependenciaServico):
 	"""Função para excluir uma solicitação de reunião."""
-	await service.deletar_solicitacao(solicitacao_id)
+	await servico.deletar_solicitacao(solicitacao_id)

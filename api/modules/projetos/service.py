@@ -27,9 +27,9 @@ class ServicoProjeto:
 		self.repo = RepositorioProjeto(session)
 		self.equipe = RepositorioProjetoFuncionario(session)
 
-	async def criar(self, payload: ProjetoCriar) -> Projeto:
+	async def criar(self, dados: ProjetoCriar) -> Projeto:
 		"""Função para criar um novo registro."""
-		projeto = Projeto(**payload.model_dump())
+		projeto = Projeto(**dados.model_dump())
 		projeto = await self.repo.adicionar(projeto)
 		await self.session.commit()
 		return projeto
@@ -105,10 +105,10 @@ class ServicoProjeto:
 			detail='Acesso negado para projetos',
 		)
 
-	async def atualizar(self, projeto_id: int, payload: ProjetoAtualizar) -> Projeto:
+	async def atualizar(self, projeto_id: int, dados: ProjetoAtualizar) -> Projeto:
 		"""Função para atualizar um registro pelo ID."""
 		projeto = await self.repo.atualizar(
-			projeto_id, payload.model_dump(exclude_none=True)
+			projeto_id, dados.model_dump(exclude_none=True)
 		)
 		if not projeto:
 			raise NotFoundError(_ENTITY, projeto_id)
@@ -122,14 +122,14 @@ class ServicoProjeto:
 		await self.session.commit()
 
 	async def adicionar_membro(
-		self, projeto_id: int, payload: ProjetoFuncionarioCriar
+		self, projeto_id: int, dados: ProjetoFuncionarioCriar
 	) -> ProjetoFuncionario:
 		"""Função para adicionar um funcionário à equipe do projeto."""
 		await self.obter(projeto_id)
 		entry = ProjetoFuncionario(
 			projeto_id=projeto_id,
-			funcionario_id=payload.funcionario_id,
-			papel=payload.papel,
+			funcionario_id=dados.funcionario_id,
+			papel=dados.papel,
 		)
 		entry = await self.equipe.adicionar(entry)
 		await self.session.commit()

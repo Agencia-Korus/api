@@ -2,12 +2,12 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Any
 
-from core.config import get_settings
+from core.config import obter_settings
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 
-settings = get_settings()
+settings = obter_settings()
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -19,7 +19,7 @@ CREDENTIALS_EXCEPTION = HTTPException(
 
 
 @dataclass(frozen=True)
-class CurrentUser:
+class UsuarioAtual:
 	"""Classe que representa o usuário autenticado extraído do token."""
 
 	id: int
@@ -31,11 +31,11 @@ def criar_access_token(subject: str | int, extra: dict[str, Any] | None = None) 
 	expire = datetime.now(timezone.utc) + timedelta(
 		minutes=settings.jwt_access_token_expire_minutes
 	)
-	payload: dict[str, Any] = {'sub': str(subject), 'exp': expire, 'type': 'access'}
+	dados: dict[str, Any] = {'sub': str(subject), 'exp': expire, 'type': 'access'}
 	if extra:
-		payload.update(extra)
+		dados.update(extra)
 	return jwt.encode(
-		payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm
+		dados, settings.jwt_secret_key, algorithm=settings.jwt_algorithm
 	)
 
 
@@ -44,9 +44,9 @@ def criar_refresh_token(subject: str | int) -> str:
 	expire = datetime.now(timezone.utc) + timedelta(
 		days=settings.jwt_refresh_token_expire_days
 	)
-	payload = {'sub': str(subject), 'exp': expire, 'type': 'refresh'}
+	dados = {'sub': str(subject), 'exp': expire, 'type': 'refresh'}
 	return jwt.encode(
-		payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm
+		dados, settings.jwt_secret_key, algorithm=settings.jwt_algorithm
 	)
 
 
@@ -69,7 +69,7 @@ def _extract_bearer_token(
 	return credentials.credentials
 
 
-def obter_current_user_id(
+def obter_usuario_atual_id(
 	credentials: Annotated[
 		HTTPAuthorizationCredentials | None,
 		Depends(bearer_scheme),
@@ -77,27 +77,27 @@ def obter_current_user_id(
 ) -> int:
 	"""Função para obter o ID do usuário autenticado."""
 	token = _extract_bearer_token(credentials)
-	payload = decode_token(token)
-	subject = payload.get('sub')
+	dados = decode_token(token)
+	subject = dados.get('sub')
 	if not subject:
 		raise CREDENTIALS_EXCEPTION
 	return int(subject)
 
 
-def obter_current_user(
+def obter_usuario_atual(
 	credentials: Annotated[
 		HTTPAuthorizationCredentials | None,
 		Depends(bearer_scheme),
 	],
-) -> CurrentUser:
+) -> UsuarioAtual:
 	"""Função para obter os dados do usuário autenticado."""
 	token = _extract_bearer_token(credentials)
-	payload = decode_token(token)
-	subject = payload.get('sub')
-	role = payload.get('role')
+	dados = decode_token(token)
+	subject = dados.get('sub')
+	role = dados.get('role')
 	if not subject or not role:
 		raise CREDENTIALS_EXCEPTION
-	return CurrentUser(id=int(subject), role=str(role))
+	return UsuarioAtual(id=int(subject), role=str(role))
 
 
 def require_role(*allowed_roles: str):
@@ -111,13 +111,13 @@ def require_role(*allowed_roles: str):
 	) -> int:
 		"""Função interna para validar o perfil do token recebido."""
 		token = _extract_bearer_token(credentials)
-		payload = decode_token(token)
-		role = payload.get('role')
+		dados = decode_token(token)
+		role = dados.get('role')
 		if role not in allowed_roles:
 			raise HTTPException(
 				status_code=status.HTTP_403_FORBIDDEN,
 				detail='Acesso negado para este recurso',
 			)
-		return int(payload['sub'])
+		return int(dados['sub'])
 
 	return _checker

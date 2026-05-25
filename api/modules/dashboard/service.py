@@ -420,7 +420,7 @@ class ServicoDashboard:
 
 	@staticmethod
 	def _task_payload(tarefa: Tarefa) -> dict[str, Any]:
-		"""Função interna para montar o payload de uma tarefa."""
+		"""Função interna para montar o dados de uma tarefa."""
 		return {
 			'id': tarefa.id,
 			'projeto_id': tarefa.projeto_id,

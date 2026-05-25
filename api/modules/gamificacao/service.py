@@ -38,9 +38,9 @@ class ServicoGamificacao:
 		self.conquistas = RepositorioConquista(session)
 		self.fc = RepositorioFuncionarioConquista(session)
 
-	async def criar_regra(self, payload: RegraXpCriar) -> RegraXp:
+	async def criar_regra(self, dados: RegraXpCriar) -> RegraXp:
 		"""Função para criar uma regra de XP."""
-		regra = RegraXp(**payload.model_dump())
+		regra = RegraXp(**dados.model_dump())
 		regra = await self.regras.adicionar(regra)
 		await self.session.commit()
 		return regra
@@ -49,10 +49,10 @@ class ServicoGamificacao:
 		"""Função para listar regras de XP."""
 		return await self.regras.listar_todos(offset=offset, limit=limit)
 
-	async def atualizar_regra(self, regra_id: int, payload: RegraXpAtualizar) -> RegraXp:
+	async def atualizar_regra(self, regra_id: int, dados: RegraXpAtualizar) -> RegraXp:
 		"""Função para atualizar uma regra de XP."""
 		regra = await self.regras.atualizar(
-			regra_id, payload.model_dump(exclude_none=True)
+			regra_id, dados.model_dump(exclude_none=True)
 		)
 		if not regra:
 			raise NotFoundError(_ENTITY_REGRA, regra_id)
@@ -65,14 +65,14 @@ class ServicoGamificacao:
 			raise NotFoundError(_ENTITY_REGRA, regra_id)
 		await self.session.commit()
 
-	async def registrar_xp(self, payload: HistoricoXpCriar) -> HistoricoXp:
+	async def registrar_xp(self, dados: HistoricoXpCriar) -> HistoricoXp:
 		"""Função para registrar XP para um funcionário."""
-		funcionario = await self.session.obter(Funcionario, payload.funcionario_id)
+		funcionario = await self.session.obter(Funcionario, dados.funcionario_id)
 		if not funcionario:
-			raise NotFoundError('Funcionario', payload.funcionario_id)
-		registro = HistoricoXp(**payload.model_dump())
+			raise NotFoundError('Funcionario', dados.funcionario_id)
+		registro = HistoricoXp(**dados.model_dump())
 		registro = await self.historicos.adicionar(registro)
-		funcionario.xp_total += payload.xp
+		funcionario.xp_total += dados.xp
 		funcionario.nivel = max(1, (funcionario.xp_total // 500) + 1)
 		await self.session.commit()
 		return registro
@@ -81,9 +81,9 @@ class ServicoGamificacao:
 		"""Função para listar o histórico de XP de um funcionário."""
 		return await self.historicos.listar_por_funcionario(funcionario_id)
 
-	async def criar_conquista(self, payload: ConquistaCriar) -> Conquista:
+	async def criar_conquista(self, dados: ConquistaCriar) -> Conquista:
 		"""Função para criar uma conquista."""
-		conquista = Conquista(**payload.model_dump())
+		conquista = Conquista(**dados.model_dump())
 		conquista = await self.conquistas.adicionar(conquista)
 		await self.session.commit()
 		return conquista
@@ -93,11 +93,11 @@ class ServicoGamificacao:
 		return await self.conquistas.listar_todos(offset=offset, limit=limit)
 
 	async def atualizar_conquista(
-		self, conquista_id: int, payload: ConquistaAtualizar
+		self, conquista_id: int, dados: ConquistaAtualizar
 	) -> Conquista:
 		"""Função para atualizar uma conquista."""
 		conquista = await self.conquistas.atualizar(
-			conquista_id, payload.model_dump(exclude_none=True)
+			conquista_id, dados.model_dump(exclude_none=True)
 		)
 		if not conquista:
 			raise NotFoundError(_ENTITY_CONQUISTA, conquista_id)

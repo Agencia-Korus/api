@@ -21,11 +21,11 @@ class ServicoIntegracao:
 		self.session = session
 		self.repo = RepositorioIntegracao(session)
 
-	async def criar(self, payload: IntegracaoCriar) -> Integracao:
+	async def criar(self, dados: IntegracaoCriar) -> Integracao:
 		"""Função para criar um novo registro."""
 		if await self.repo.obter_por_nome(GOOGLE_CALENDAR_INTEGRATION):
 			raise ConflictError('Integração com Google Calendar já cadastrada')
-		integracao = Integracao(**payload.model_dump())
+		integracao = Integracao(**dados.model_dump())
 		integracao = await self.repo.adicionar(integracao)
 		await self.session.commit()
 		return integracao
@@ -41,11 +41,11 @@ class ServicoIntegracao:
 		"""Função para listar registros."""
 		return await self.repo.listar_google_calendar(offset=offset, limit=limit)
 
-	async def atualizar(self, integracao_id: int, payload: IntegracaoAtualizar) -> Integracao:
+	async def atualizar(self, integracao_id: int, dados: IntegracaoAtualizar) -> Integracao:
 		"""Função para atualizar um registro pelo ID."""
 		await self.obter(integracao_id)
 		integracao = await self.repo.atualizar(
-			integracao_id, payload.model_dump(exclude_none=True)
+			integracao_id, dados.model_dump(exclude_none=True)
 		)
 		if not integracao:
 			raise NotFoundError(_ENTITY, integracao_id)

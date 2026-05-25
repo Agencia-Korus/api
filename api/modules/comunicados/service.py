@@ -22,9 +22,9 @@ class ServicoComunicado:
 		self.repo = RepositorioComunicado(session)
 		self.leituras = RepositorioComunicadoLeitura(session)
 
-	async def criar(self, payload: ComunicadoCriar) -> Comunicado:
+	async def criar(self, dados: ComunicadoCriar) -> Comunicado:
 		"""Função para criar um novo registro."""
-		comunicado = Comunicado(**payload.model_dump())
+		comunicado = Comunicado(**dados.model_dump())
 		comunicado = await self.repo.adicionar(comunicado)
 		await self.session.commit()
 		return comunicado
@@ -48,10 +48,10 @@ class ServicoComunicado:
 			offset=offset, limit=limit, filters={'alvo': alvo}
 		)
 
-	async def atualizar(self, comunicado_id: int, payload: ComunicadoAtualizar) -> Comunicado:
+	async def atualizar(self, comunicado_id: int, dados: ComunicadoAtualizar) -> Comunicado:
 		"""Função para atualizar um registro pelo ID."""
 		comunicado = await self.repo.atualizar(
-			comunicado_id, payload.model_dump(exclude_none=True)
+			comunicado_id, dados.model_dump(exclude_none=True)
 		)
 		if not comunicado:
 			raise NotFoundError(_ENTITY, comunicado_id)

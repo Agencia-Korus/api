@@ -7,7 +7,7 @@ from core.security import (
 	decode_token,
 	require_role,
 )
-from deps import PaginationDep, SessionDep
+from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials
 from modules.gamificacao.schema import (
@@ -26,12 +26,12 @@ from modules.gamificacao.service import ServicoGamificacao
 router = APIRouter(prefix='/gamificacao', tags=['Gamificação'])
 
 
-def _service(session: SessionDep) -> ServicoGamificacao:
+def _service(session: DependenciaSessao) -> ServicoGamificacao:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
 	return ServicoGamificacao(session)
 
 
-ServiceDep = Annotated[ServicoGamificacao, Depends(_service)]
+DependenciaServico = Annotated[ServicoGamificacao, Depends(_service)]
 AdminGuard = Depends(require_role(UserRole.ADMIN.value))
 
 
@@ -45,14 +45,14 @@ def _admin_or_funcionario(
 	if not credentials:
 		raise CREDENTIALS_EXCEPTION
 	token = credentials.credentials
-	payload = decode_token(token)
-	role = payload.get('role')
+	dados = decode_token(token)
+	role = dados.get('role')
 	if role not in {UserRole.ADMIN.value, UserRole.FUNCIONARIO.value}:
 		raise HTTPException(
 			status_code=status.HTTP_403_FORBIDDEN,
 			detail='Acesso negado para este recurso',
 		)
-	return int(payload['sub']), role
+	return int(dados['sub']), role
 
 
 CallerDep = Annotated[tuple[int, str], Depends(_admin_or_funcionario)]
@@ -65,9 +65,9 @@ CallerDep = Annotated[tuple[int, str], Depends(_admin_or_funcionario)]
 	dependencies=[AdminGuard],
 	summary='Cria regra de XP (somente admin)',
 )
-async def criar_regra(payload: RegraXpCriar, service: ServiceDep):
+async def criar_regra(dados: RegraXpCriar, servico: DependenciaServico):
 	"""Função para criar uma regra de XP."""
-	return await service.criar_regra(payload)
+	return await servico.criar_regra(dados)
 
 
 @router.get(
@@ -76,9 +76,9 @@ async def criar_regra(payload: RegraXpCriar, service: ServiceDep):
 	dependencies=[AdminGuard],
 	summary='Lista regras de XP (somente admin)',
 )
-async def listar_regras(service: ServiceDep, page: PaginationDep):
+async def listar_regras(servico: DependenciaServico, pagina: DependenciaPaginacao):
 	"""Função para listar regras de XP."""
-	return await service.listar_regras(offset=page.offset, limit=page.limit)
+	return await servico.listar_regras(offset=pagina.offset, limit=pagina.limit)
 
 
 @router.patch(
@@ -87,9 +87,9 @@ async def listar_regras(service: ServiceDep, page: PaginationDep):
 	dependencies=[AdminGuard],
 	summary='Atualiza regra de XP (somente admin)',
 )
-async def atualizar_regra(regra_id: int, payload: RegraXpAtualizar, service: ServiceDep):
+async def atualizar_regra(regra_id: int, dados: RegraXpAtualizar, servico: DependenciaServico):
 	"""Função para atualizar uma regra de XP."""
-	return await service.atualizar_regra(regra_id, payload)
+	return await servico.atualizar_regra(regra_id, dados)
 
 
 @router.delete(
@@ -98,9 +98,9 @@ async def atualizar_regra(regra_id: int, payload: RegraXpAtualizar, service: Ser
 	dependencies=[AdminGuard],
 	summary='Remove regra de XP (somente admin)',
 )
-async def deletar_regra(regra_id: int, service: ServiceDep):
+async def deletar_regra(regra_id: int, servico: DependenciaServico):
 	"""Função para excluir uma regra de XP."""
-	await service.deletar_regra(regra_id)
+	await servico.deletar_regra(regra_id)
 
 
 @router.post(
@@ -110,9 +110,9 @@ async def deletar_regra(regra_id: int, service: ServiceDep):
 	dependencies=[AdminGuard],
 	summary='Registra XP para funcionário (somente admin)',
 )
-async def registrar_xp(payload: HistoricoXpCriar, service: ServiceDep):
+async def registrar_xp(dados: HistoricoXpCriar, servico: DependenciaServico):
 	"""Função para registrar XP para um funcionário."""
-	return await service.registrar_xp(payload)
+	return await servico.registrar_xp(dados)
 
 
 @router.get(
@@ -120,7 +120,7 @@ async def registrar_xp(payload: HistoricoXpCriar, service: ServiceDep):
 	response_model=list[HistoricoXpResposta],
 	summary='Lista XP do funcionário (admin ou o próprio funcionário)',
 )
-async def listar_historico(funcionario_id: int, service: ServiceDep, caller: CallerDep):
+async def listar_historico(funcionario_id: int, servico: DependenciaServico, caller: CallerDep):
 	"""Função para listar o histórico de XP de um funcionário."""
 	caller_id, caller_role = caller
 	if caller_role == UserRole.FUNCIONARIO.value and caller_id != funcionario_id:
@@ -128,7 +128,7 @@ async def listar_historico(funcionario_id: int, service: ServiceDep, caller: Cal
 			status_code=status.HTTP_403_FORBIDDEN,
 			detail='Funcionário só pode listar o próprio XP',
 		)
-	return await service.listar_historico(funcionario_id)
+	return await servico.listar_historico(funcionario_id)
 
 
 @router.post(
@@ -138,9 +138,9 @@ async def listar_historico(funcionario_id: int, service: ServiceDep, caller: Cal
 	dependencies=[AdminGuard],
 	summary='Cria conquista (somente admin)',
 )
-async def criar_conquista(payload: ConquistaCriar, service: ServiceDep):
+async def criar_conquista(dados: ConquistaCriar, servico: DependenciaServico):
 	"""Função para criar uma conquista."""
-	return await service.criar_conquista(payload)
+	return await servico.criar_conquista(dados)
 
 
 @router.get(
@@ -149,10 +149,10 @@ async def criar_conquista(payload: ConquistaCriar, service: ServiceDep):
 	summary='Lista conquistas disponíveis (admin ou funcionário)',
 )
 async def listar_conquistas(
-	service: ServiceDep, page: PaginationDep, caller: CallerDep
+	servico: DependenciaServico, pagina: DependenciaPaginacao, caller: CallerDep
 ):
 	"""Função para listar conquistas."""
-	return await service.listar_conquistas(offset=page.offset, limit=page.limit)
+	return await servico.listar_conquistas(offset=pagina.offset, limit=pagina.limit)
 
 
 @router.patch(
@@ -162,10 +162,10 @@ async def listar_conquistas(
 	summary='Atualiza conquista (somente admin)',
 )
 async def atualizar_conquista(
-	conquista_id: int, payload: ConquistaAtualizar, service: ServiceDep
+	conquista_id: int, dados: ConquistaAtualizar, servico: DependenciaServico
 ):
 	"""Função para atualizar uma conquista."""
-	return await service.atualizar_conquista(conquista_id, payload)
+	return await servico.atualizar_conquista(conquista_id, dados)
 
 
 @router.delete(
@@ -174,9 +174,9 @@ async def atualizar_conquista(
 	dependencies=[AdminGuard],
 	summary='Remove conquista (somente admin)',
 )
-async def deletar_conquista(conquista_id: int, service: ServiceDep):
+async def deletar_conquista(conquista_id: int, servico: DependenciaServico):
 	"""Função para excluir uma conquista."""
-	await service.deletar_conquista(conquista_id)
+	await servico.deletar_conquista(conquista_id)
 
 
 @router.post(
@@ -186,9 +186,9 @@ async def deletar_conquista(conquista_id: int, service: ServiceDep):
 	dependencies=[AdminGuard],
 	summary='Desbloqueia conquista para funcionário (somente admin)',
 )
-async def desbloquear(funcionario_id: int, conquista_id: int, service: ServiceDep):
+async def desbloquear(funcionario_id: int, conquista_id: int, servico: DependenciaServico):
 	"""Função para registrar uma conquista desbloqueada por um funcionário."""
-	return await service.desbloquear_conquista(funcionario_id, conquista_id)
+	return await servico.desbloquear_conquista(funcionario_id, conquista_id)
 
 
 @router.get(
@@ -196,7 +196,7 @@ async def desbloquear(funcionario_id: int, conquista_id: int, service: ServiceDe
 	response_model=list[FuncionarioConquistaResposta],
 )
 async def listar_funcionario_conquistas(
-	funcionario_id: int, service: ServiceDep, caller: CallerDep
+	funcionario_id: int, servico: DependenciaServico, caller: CallerDep
 ):
 	"""Função para listar conquistas de um funcionário."""
 	caller_id, caller_role = caller
@@ -205,4 +205,4 @@ async def listar_funcionario_conquistas(
 			status_code=status.HTTP_403_FORBIDDEN,
 			detail='Funcionário só pode listar conquistas próprias',
 		)
-	return await service.listar_conquistas_funcionario(funcionario_id)
+	return await servico.listar_conquistas_funcionario(funcionario_id)
