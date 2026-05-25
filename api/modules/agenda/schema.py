@@ -17,7 +17,7 @@ class EventoAgendaBase(BaseModel):
 	duracao_min: int = DURACAO_EVENTO_PADRAO_MIN
 
 
-class EventoAgendaCreate(EventoAgendaBase):
+class EventoAgendaCriar(EventoAgendaBase):
 	"""Classe que define os dados de evento de agenda usados pela API."""
 
 	usuario_id: int
@@ -37,7 +37,7 @@ class EventoAgendaCreate(EventoAgendaBase):
 	)
 
 
-class EventoAgendaUpdate(BaseModel):
+class EventoAgendaAtualizar(BaseModel):
 	"""Classe que define os dados de evento de agenda usados pela API."""
 
 	titulo: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
@@ -59,7 +59,7 @@ class EventoAgendaUpdate(BaseModel):
 	)
 
 
-class EventoAgendaResponse(EventoAgendaBase):
+class EventoAgendaResposta(EventoAgendaBase):
 	"""Classe que define os dados de evento de agenda usados pela API."""
 
 	id: int
@@ -70,7 +70,7 @@ class EventoAgendaResponse(EventoAgendaBase):
 	model_config = ConfigDict(from_attributes=True)
 
 
-class AgendaEventoSiteResponse(BaseModel):
+class AgendaEventoSiteResposta(BaseModel):
 	"""Classe que define os dados de agenda evento site usados pela API."""
 
 	id: str
@@ -110,7 +110,7 @@ class AgendaEventoSiteResponse(BaseModel):
 	)
 
 
-class EventoGoogleCalendarResponse(BaseModel):
+class EventoGoogleCalendarResposta(BaseModel):
 	"""Classe que define os dados de evento google calendar usados pela API."""
 
 	id: str
@@ -154,7 +154,7 @@ class SolicitacaoReuniaoBase(BaseModel):
 		return self
 
 
-class SolicitacaoReuniaoCreate(SolicitacaoReuniaoBase):
+class SolicitacaoReuniaoCriar(SolicitacaoReuniaoBase):
 	"""Classe que define os dados de solicitação de reunião usados pela API."""
 
 	status: SolicitacaoStatus = SolicitacaoStatus.PENDENTE
@@ -174,7 +174,7 @@ class SolicitacaoReuniaoCreate(SolicitacaoReuniaoBase):
 	)
 
 
-class SolicitacaoReuniaoUpdate(BaseModel):
+class SolicitacaoReuniaoAtualizar(BaseModel):
 	"""Classe que define os dados de solicitação de reunião usados pela API."""
 
 	titulo: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
@@ -194,7 +194,7 @@ class SolicitacaoReuniaoUpdate(BaseModel):
 	)
 
 
-class SolicitacaoReuniaoResponse(BaseModel):
+class SolicitacaoReuniaoResposta(BaseModel):
 	"""Classe que define os dados de solicitação de reunião usados pela API."""
 
 	id: int

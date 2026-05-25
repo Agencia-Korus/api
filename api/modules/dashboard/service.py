@@ -17,7 +17,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class DashboardService:
+class ServicoDashboard:
 	"""Classe responsável pelas regras de negócio de dashboard."""
 
 	def __init__(self, session: AsyncSession):
@@ -134,7 +134,7 @@ class DashboardService:
 		self, projeto_id: int, usuario_id: int | None = None, role: str | None = None
 	) -> dict[str, Any]:
 		"""Função para montar os dados do quadro Kanban de um projeto."""
-		projeto = await self.session.get(Projeto, projeto_id)
+		projeto = await self.session.obter(Projeto, projeto_id)
 		if not projeto:
 			raise NotFoundError('Projeto', projeto_id)
 		await self._ensure_can_view_projeto(projeto, usuario_id, role)
@@ -217,14 +217,14 @@ class DashboardService:
 
 	async def _ensure_cliente(self, cliente_id: int) -> Cliente:
 		"""Função interna para garantir que o cliente existe."""
-		cliente = await self.session.get(Cliente, cliente_id)
+		cliente = await self.session.obter(Cliente, cliente_id)
 		if not cliente:
 			raise NotFoundError('Cliente', cliente_id)
 		return cliente
 
 	async def _ensure_funcionario(self, funcionario_id: int) -> Funcionario:
 		"""Função interna para garantir que o funcionário existe."""
-		funcionario = await self.session.get(Funcionario, funcionario_id)
+		funcionario = await self.session.obter(Funcionario, funcionario_id)
 		if not funcionario:
 			raise NotFoundError('Funcionario', funcionario_id)
 		return funcionario

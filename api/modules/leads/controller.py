@@ -6,8 +6,8 @@ from core.enums import LeadPrioridade, LeadStatus, UserRole
 from core.security import require_role
 from deps import PaginationDep, SessionDep
 from fastapi import APIRouter, Depends, Query, Response, status
-from modules.leads.schema import LeadCreate, LeadResponse, LeadUpdate
-from modules.leads.service import LeadService
+from modules.leads.schema import LeadCriar, LeadResposta, LeadAtualizar
+from modules.leads.service import ServicoLead
 
 router = APIRouter(
 	prefix='/leads',
@@ -16,21 +16,21 @@ router = APIRouter(
 )
 
 
-def _service(session: SessionDep) -> LeadService:
+def _service(session: SessionDep) -> ServicoLead:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return LeadService(session)
+	return ServicoLead(session)
 
 
-ServiceDep = Annotated[LeadService, Depends(_service)]
+ServiceDep = Annotated[ServicoLead, Depends(_service)]
 
 
-@router.post('', response_model=LeadResponse, status_code=status.HTTP_201_CREATED)
-async def criar(payload: LeadCreate, service: ServiceDep):
+@router.post('', response_model=LeadResposta, status_code=status.HTTP_201_CREATED)
+async def criar(payload: LeadCriar, service: ServiceDep):
 	"""Função para criar um novo registro."""
-	return await service.create(payload)
+	return await service.criar(payload)
 
 
-@router.get('', response_model=list[LeadResponse])
+@router.get('', response_model=list[LeadResposta])
 async def listar(
 	service: ServiceDep,
 	page: PaginationDep,
@@ -40,7 +40,7 @@ async def listar(
 	search: str | None = None,
 ):
 	"""Função para listar registros."""
-	return await service.list_filtered(
+	return await service.listar_filtrados(
 		offset=page.offset,
 		limit=page.limit,
 		status=status_filter,
@@ -59,7 +59,7 @@ async def exportar_csv(
 	search: str | None = None,
 ):
 	"""Função para exportar registros em formato CSV."""
-	leads = await service.list_filtered(
+	leads = await service.listar_filtrados(
 		offset=0,
 		limit=10_000,
 		status=status_filter,
@@ -103,19 +103,19 @@ async def exportar_csv(
 	)
 
 
-@router.get('/{lead_id}', response_model=LeadResponse)
+@router.get('/{lead_id}', response_model=LeadResposta)
 async def obter(lead_id: int, service: ServiceDep):
 	"""Função para obter um registro pelo ID."""
-	return await service.get(lead_id)
+	return await service.obter(lead_id)
 
 
-@router.patch('/{lead_id}', response_model=LeadResponse)
-async def atualizar(lead_id: int, payload: LeadUpdate, service: ServiceDep):
+@router.patch('/{lead_id}', response_model=LeadResposta)
+async def atualizar(lead_id: int, payload: LeadAtualizar, service: ServiceDep):
 	"""Função para atualizar um registro pelo ID."""
-	return await service.update(lead_id, payload)
+	return await service.atualizar(lead_id, payload)
 
 
 @router.delete('/{lead_id}', status_code=status.HTTP_204_NO_CONTENT)
 async def deletar(lead_id: int, service: ServiceDep):
 	"""Função para excluir um registro pelo ID."""
-	await service.delete(lead_id)
+	await service.deletar(lead_id)

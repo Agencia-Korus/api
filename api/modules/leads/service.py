@@ -3,40 +3,40 @@ from __future__ import annotations
 from core.enums import LeadPrioridade, LeadStatus
 from core.exceptions import NotFoundError
 from modules.leads.model import Lead
-from modules.leads.repository import LeadRepository
-from modules.leads.schema import LeadCreate, LeadUpdate
+from modules.leads.repository import RepositorioLead
+from modules.leads.schema import LeadCriar, LeadAtualizar
 from sqlalchemy.ext.asyncio import AsyncSession
 
 _ENTITY = 'Lead'
 
 
-class LeadService:
+class ServicoLead:
 	"""Classe responsável pelas regras de negócio de lead."""
 
 	def __init__(self, session: AsyncSession):
 		"""Função para inicializar a instância com suas dependências."""
 		self.session = session
-		self.repo = LeadRepository(session)
+		self.repo = RepositorioLead(session)
 
-	async def create(self, payload: LeadCreate) -> Lead:
+	async def criar(self, payload: LeadCriar) -> Lead:
 		"""Função para criar um novo registro."""
 		lead = Lead(**payload.model_dump())
-		lead = await self.repo.add(lead)
+		lead = await self.repo.adicionar(lead)
 		await self.session.commit()
 		return lead
 
-	async def get(self, lead_id: int) -> Lead:
+	async def obter(self, lead_id: int) -> Lead:
 		"""Função para obter um registro pelo ID."""
-		lead = await self.repo.get(lead_id)
+		lead = await self.repo.obter(lead_id)
 		if not lead:
 			raise NotFoundError(_ENTITY, lead_id)
 		return lead
 
-	async def list(self, offset: int, limit: int) -> list[Lead]:
+	async def listar(self, offset: int, limit: int) -> list[Lead]:
 		"""Função para listar registros."""
-		return await self.repo.list_all(offset=offset, limit=limit)
+		return await self.repo.listar_todos(offset=offset, limit=limit)
 
-	async def list_filtered(
+	async def listar_filtrados(
 		self,
 		offset: int,
 		limit: int,
@@ -46,7 +46,7 @@ class LeadService:
 		search: str | None = None,
 	) -> list[Lead]:
 		"""Função para listar registros aplicando filtros e paginação."""
-		return await self.repo.list_filtered(
+		return await self.repo.listar_filtrados(
 			offset=offset,
 			limit=limit,
 			status=status,
@@ -55,16 +55,16 @@ class LeadService:
 			search=search,
 		)
 
-	async def update(self, lead_id: int, payload: LeadUpdate) -> Lead:
+	async def atualizar(self, lead_id: int, payload: LeadAtualizar) -> Lead:
 		"""Função para atualizar um registro pelo ID."""
-		lead = await self.repo.update(lead_id, payload.model_dump(exclude_none=True))
+		lead = await self.repo.atualizar(lead_id, payload.model_dump(exclude_none=True))
 		if not lead:
 			raise NotFoundError(_ENTITY, lead_id)
 		await self.session.commit()
 		return lead
 
-	async def delete(self, lead_id: int) -> None:
+	async def deletar(self, lead_id: int) -> None:
 		"""Função para excluir um registro pelo ID."""
-		if not await self.repo.delete(lead_id):
+		if not await self.repo.deletar(lead_id):
 			raise NotFoundError(_ENTITY, lead_id)
 		await self.session.commit()

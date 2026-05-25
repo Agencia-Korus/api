@@ -4,17 +4,17 @@ from core.enums import UserRole
 from core.security import CurrentUser, get_current_user, require_role
 from deps import SessionDep
 from fastapi import APIRouter, Depends
-from modules.dashboard.service import DashboardService
+from modules.dashboard.service import ServicoDashboard
 
 router = APIRouter(prefix='/dashboard', tags=['Dashboard'])
 
 
-def _service(session: SessionDep) -> DashboardService:
+def _service(session: SessionDep) -> ServicoDashboard:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return DashboardService(session)
+	return ServicoDashboard(session)
 
 
-ServiceDep = Annotated[DashboardService, Depends(_service)]
+ServiceDep = Annotated[ServicoDashboard, Depends(_service)]
 AdminGuard = Depends(require_role(UserRole.ADMIN.value))
 CurrentUserDep = Annotated[CurrentUser, Depends(get_current_user)]
 

@@ -5,11 +5,11 @@ from core.security import require_role
 from deps import PaginationDep, SessionDep
 from fastapi import APIRouter, Depends, Query, status
 from modules.portfolio.schema import (
-	PortfolioCreate,
-	PortfolioResponse,
-	PortfolioUpdate,
+	PortfolioCriar,
+	PortfolioResposta,
+	PortfolioAtualizar,
 )
-from modules.portfolio.service import PortfolioService
+from modules.portfolio.service import ServicoPortfolio
 
 router = APIRouter(
 	prefix='/portfolio',
@@ -18,24 +18,24 @@ router = APIRouter(
 )
 
 
-def _service(session: SessionDep) -> PortfolioService:
+def _service(session: SessionDep) -> ServicoPortfolio:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return PortfolioService(session)
+	return ServicoPortfolio(session)
 
 
-ServiceDep = Annotated[PortfolioService, Depends(_service)]
+ServiceDep = Annotated[ServicoPortfolio, Depends(_service)]
 
 
-@router.post('', response_model=PortfolioResponse, status_code=status.HTTP_201_CREATED)
-async def criar(payload: PortfolioCreate, service: ServiceDep):
+@router.post('', response_model=PortfolioResposta, status_code=status.HTTP_201_CREATED)
+async def criar(payload: PortfolioCriar, service: ServiceDep):
 	"""Função para criar um novo registro."""
-	return await service.create(payload)
+	return await service.criar(payload)
 
 
 DestaquesQuery = Annotated[bool, Query(description='Listar apenas destaques.')]
 
 
-@router.get('', response_model=list[PortfolioResponse])
+@router.get('', response_model=list[PortfolioResposta])
 async def listar(
 	service: ServiceDep,
 	page: PaginationDep,
@@ -43,7 +43,7 @@ async def listar(
 	categoria: str | None = None,
 ):
 	"""Função para listar registros."""
-	return await service.list_filtered(
+	return await service.listar_filtrados(
 		offset=page.offset,
 		limit=page.limit,
 		destaques=destaques,
@@ -51,19 +51,19 @@ async def listar(
 	)
 
 
-@router.get('/{item_id}', response_model=PortfolioResponse)
+@router.get('/{item_id}', response_model=PortfolioResposta)
 async def obter(item_id: int, service: ServiceDep):
 	"""Função para obter um registro pelo ID."""
-	return await service.get(item_id)
+	return await service.obter(item_id)
 
 
-@router.patch('/{item_id}', response_model=PortfolioResponse)
-async def atualizar(item_id: int, payload: PortfolioUpdate, service: ServiceDep):
+@router.patch('/{item_id}', response_model=PortfolioResposta)
+async def atualizar(item_id: int, payload: PortfolioAtualizar, service: ServiceDep):
 	"""Função para atualizar um registro pelo ID."""
-	return await service.update(item_id, payload)
+	return await service.atualizar(item_id, payload)
 
 
 @router.delete('/{item_id}', status_code=status.HTTP_204_NO_CONTENT)
 async def deletar(item_id: int, service: ServiceDep):
 	"""Função para excluir um registro pelo ID."""
-	await service.delete(item_id)
+	await service.deletar(item_id)

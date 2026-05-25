@@ -5,7 +5,7 @@ from core.enums import ConsentimentoTipo
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class ConsentimentoLgpdCreate(BaseModel):
+class ConsentimentoLgpdCriar(BaseModel):
 	"""Classe que define os dados de consentimento LGPD usados pela API."""
 
 	usuario_id: int | None = None
@@ -15,7 +15,7 @@ class ConsentimentoLgpdCreate(BaseModel):
 	user_agent: str | None = Field(default=None, max_length=USER_AGENT_MAX_LENGTH)
 
 
-class ConsentimentoLgpdResponse(BaseModel):
+class ConsentimentoLgpdResposta(BaseModel):
 	"""Classe que define os dados de consentimento LGPD usados pela API."""
 
 	id: int

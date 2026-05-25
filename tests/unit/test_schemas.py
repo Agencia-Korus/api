@@ -1,12 +1,12 @@
 import pytest
 from core.enums import LeadPrioridade, LeadStatus, ServicoStatus
-from modules.leads.schema import LeadCreate
-from modules.servicos.schema import ServicoCreate, ServicoUpdate
+from modules.leads.schema import LeadCriar
+from modules.servicos.schema import ServicoCriar, ServicoAtualizar
 from pydantic import ValidationError
 
 
 def test_servico_create_define_status_ativo_por_padrao():
-	payload = ServicoCreate(
+	payload = ServicoCriar(
 		nome='Identidade Visual',
 		slug='identidade-visual',
 		descricao='Branding completo.',
@@ -16,14 +16,14 @@ def test_servico_create_define_status_ativo_por_padrao():
 
 
 def test_servico_update_permite_patch_parcial():
-	payload = ServicoUpdate(descricao='Nova descricao')
+	payload = ServicoAtualizar(descricao='Nova descricao')
 
 	assert payload.nome is None
 	assert payload.descricao == 'Nova descricao'
 
 
 def test_lead_create_define_status_e_prioridade_padrao():
-	payload = LeadCreate(
+	payload = LeadCriar(
 		nome='Cliente Teste',
 		email='cliente@example.com',
 		mensagem='Quero conhecer os serviços.',
@@ -36,4 +36,4 @@ def test_lead_create_define_status_e_prioridade_padrao():
 
 def test_lead_create_valida_email():
 	with pytest.raises(ValidationError):
-		LeadCreate(nome='Cliente Teste', email='email-invalido')
+		LeadCriar(nome='Cliente Teste', email='email-invalido')

@@ -103,7 +103,7 @@ def is_postgres_available() -> bool:
 	host = os.environ.get('TEST_DB_HOST', 'localhost')
 	port = int(os.environ.get('TEST_DB_PORT', str(DEFAULT_DB_PORT)))
 	try:
-		with socket.create_connection((host, port), timeout=SOCKET_CHECK_TIMEOUT):
+		with socket.criar_connection((host, port), timeout=SOCKET_CHECK_TIMEOUT):
 			pass
 	except OSError:
 		return False

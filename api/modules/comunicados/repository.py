@@ -1,17 +1,17 @@
-from db.base_repository import BaseRepository
+from db.base_repository import RepositorioBase
 from modules.comunicados.model import Comunicado, ComunicadoLeitura
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class ComunicadoRepository(BaseRepository[Comunicado]):
+class RepositorioComunicado(RepositorioBase[Comunicado]):
 	"""Classe responsável pelo acesso aos dados de comunicado."""
 
 	model = Comunicado
 
 
-class ComunicadoLeituraRepository:
+class RepositorioComunicadoLeitura:
 	"""Classe responsável pelo acesso aos dados de leitura de comunicado."""
 
 	def __init__(self, session: AsyncSession):
@@ -36,7 +36,7 @@ class ComunicadoLeituraRepository:
 		result = await self.session.execute(select_stmt)
 		return result.scalar_one()
 
-	async def list_by_comunicado(self, comunicado_id: int) -> list[ComunicadoLeitura]:
+	async def listar_por_comunicado(self, comunicado_id: int) -> list[ComunicadoLeitura]:
 		"""Função para listar leituras vinculadas a um comunicado."""
 		stmt = select(ComunicadoLeitura).where(
 			ComunicadoLeitura.comunicado_id == comunicado_id

@@ -1,22 +1,22 @@
 from core.enums import UserRole, UserStatus
-from db.base_repository import BaseRepository
+from db.base_repository import RepositorioBase
 from modules.users.model import Admin, Cliente, Funcionario, Usuario
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class UsuarioRepository(BaseRepository[Usuario]):
+class RepositorioUsuario(RepositorioBase[Usuario]):
 	"""Classe responsável pelo acesso aos dados de usuário."""
 
 	model = Usuario
 
-	async def get_by_email(self, email: str) -> Usuario | None:
+	async def obter_por_email(self, email: str) -> Usuario | None:
 		"""Função para buscar um usuário pelo email."""
 		stmt = select(Usuario).where(Usuario.email == email)
 		result = await self.session.execute(stmt)
 		return result.scalar_one_or_none()
 
-	async def list_filtered(
+	async def listar_filtrados(
 		self,
 		offset: int,
 		limit: int,
@@ -38,7 +38,7 @@ class UsuarioRepository(BaseRepository[Usuario]):
 		return list(result.scalars().all())
 
 
-class ClienteRepository(BaseRepository[Cliente]):
+class RepositorioCliente(RepositorioBase[Cliente]):
 	"""Classe responsável pelo acesso aos dados de cliente."""
 
 	model = Cliente
@@ -47,20 +47,20 @@ class ClienteRepository(BaseRepository[Cliente]):
 		"""Função para inicializar a instância com suas dependências."""
 		super().__init__(session)
 
-	async def get_by_documento(self, documento: str) -> Cliente | None:
+	async def obter_por_documento(self, documento: str) -> Cliente | None:
 		"""Função para buscar um cliente pelo documento."""
 		stmt = select(Cliente).where(Cliente.cnpj_cpf == documento)
 		result = await self.session.execute(stmt)
 		return result.scalar_one_or_none()
 
 
-class FuncionarioRepository(BaseRepository[Funcionario]):
+class RepositorioFuncionario(RepositorioBase[Funcionario]):
 	"""Classe responsável pelo acesso aos dados de funcionário."""
 
 	model = Funcionario
 
 
-class AdminRepository(BaseRepository[Admin]):
+class RepositorioAdmin(RepositorioBase[Admin]):
 	"""Classe responsável pelo acesso aos dados de admin."""
 
 	model = Admin

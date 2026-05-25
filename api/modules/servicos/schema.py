@@ -20,13 +20,13 @@ class ServicoBase(BaseModel):
 	status: ServicoStatus = ServicoStatus.ATIVO
 
 
-class ServicoCreate(ServicoBase):
+class ServicoCriar(ServicoBase):
 	"""Classe que define os dados de serviço usados pela API."""
 
 	pass
 
 
-class ServicoUpdate(BaseModel):
+class ServicoAtualizar(BaseModel):
 	"""Classe que define os dados de serviço usados pela API."""
 
 	nome: str | None = Field(default=None, max_length=NOME_MAX_LENGTH)
@@ -36,7 +36,7 @@ class ServicoUpdate(BaseModel):
 	status: ServicoStatus | None = None
 
 
-class ServicoResponse(ServicoBase):
+class ServicoResposta(ServicoBase):
 	"""Classe que define os dados de serviço usados pela API."""
 
 	id: int
@@ -51,20 +51,20 @@ class EntregavelBase(BaseModel):
 	ordem: int = 0
 
 
-class EntregavelCreate(EntregavelBase):
+class EntregavelCriar(EntregavelBase):
 	"""Classe que define os dados de entregável usados pela API."""
 
 	servico_id: int
 
 
-class EntregavelUpdate(BaseModel):
+class EntregavelAtualizar(BaseModel):
 	"""Classe que define os dados de entregável usados pela API."""
 
 	descricao: str | None = Field(default=None, max_length=URL_MAX_LENGTH)
 	ordem: int | None = None
 
 
-class EntregavelResponse(EntregavelBase):
+class EntregavelResposta(EntregavelBase):
 	"""Classe que define os dados de entregável usados pela API."""
 
 	id: int

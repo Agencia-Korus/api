@@ -5,22 +5,22 @@ from core.security import get_current_user_id, require_role
 from deps import PaginationDep, SessionDep
 from fastapi import APIRouter, Depends, Query, status
 from modules.comunicados.schema import (
-	ComunicadoCreate,
-	ComunicadoLeituraResponse,
-	ComunicadoResponse,
-	ComunicadoUpdate,
+	ComunicadoCriar,
+	ComunicadoLeituraResposta,
+	ComunicadoResposta,
+	ComunicadoAtualizar,
 )
-from modules.comunicados.service import ComunicadoService
+from modules.comunicados.service import ServicoComunicado
 
 router = APIRouter(prefix='/comunicados', tags=['Comunicados'])
 
 
-def _service(session: SessionDep) -> ComunicadoService:
+def _service(session: SessionDep) -> ServicoComunicado:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return ComunicadoService(session)
+	return ServicoComunicado(session)
 
 
-ServiceDep = Annotated[ComunicadoService, Depends(_service)]
+ServiceDep = Annotated[ServicoComunicado, Depends(_service)]
 CurrentUserId = Annotated[int, Depends(get_current_user_id)]
 AdminGuard = Depends(require_role(UserRole.ADMIN.value))
 AuthenticatedGuard = Depends(
@@ -34,19 +34,19 @@ AuthenticatedGuard = Depends(
 
 @router.post(
 	'',
-	response_model=ComunicadoResponse,
+	response_model=ComunicadoResposta,
 	status_code=status.HTTP_201_CREATED,
 	dependencies=[AdminGuard],
 	summary='Cria comunicado (somente admin)',
 )
-async def criar(payload: ComunicadoCreate, service: ServiceDep):
+async def criar(payload: ComunicadoCriar, service: ServiceDep):
 	"""Função para criar um novo registro."""
-	return await service.create(payload)
+	return await service.criar(payload)
 
 
 @router.get(
 	'',
-	response_model=list[ComunicadoResponse],
+	response_model=list[ComunicadoResposta],
 	dependencies=[AuthenticatedGuard],
 	summary='Lista comunicados (clientes, funcionários e admins)',
 )
@@ -56,29 +56,29 @@ async def listar(
 	alvo: Annotated[ComunicadoAlvo | None, Query()] = None,
 ):
 	"""Função para listar registros."""
-	return await service.list_filtered(offset=page.offset, limit=page.limit, alvo=alvo)
+	return await service.listar_filtrados(offset=page.offset, limit=page.limit, alvo=alvo)
 
 
 @router.get(
 	'/{comunicado_id}',
-	response_model=ComunicadoResponse,
+	response_model=ComunicadoResposta,
 	dependencies=[AuthenticatedGuard],
 	summary='Obtém comunicado (clientes, funcionários e admins)',
 )
 async def obter(comunicado_id: int, service: ServiceDep):
 	"""Função para obter um registro pelo ID."""
-	return await service.get(comunicado_id)
+	return await service.obter(comunicado_id)
 
 
 @router.patch(
 	'/{comunicado_id}',
-	response_model=ComunicadoResponse,
+	response_model=ComunicadoResposta,
 	dependencies=[AdminGuard],
 	summary='Atualiza comunicado (somente admin)',
 )
-async def atualizar(comunicado_id: int, payload: ComunicadoUpdate, service: ServiceDep):
+async def atualizar(comunicado_id: int, payload: ComunicadoAtualizar, service: ServiceDep):
 	"""Função para atualizar um registro pelo ID."""
-	return await service.update(comunicado_id, payload)
+	return await service.atualizar(comunicado_id, payload)
 
 
 @router.delete(
@@ -89,12 +89,12 @@ async def atualizar(comunicado_id: int, payload: ComunicadoUpdate, service: Serv
 )
 async def deletar(comunicado_id: int, service: ServiceDep):
 	"""Função para excluir um registro pelo ID."""
-	await service.delete(comunicado_id)
+	await service.deletar(comunicado_id)
 
 
 @router.post(
 	'/{comunicado_id}/leituras',
-	response_model=ComunicadoLeituraResponse,
+	response_model=ComunicadoLeituraResposta,
 	status_code=status.HTTP_201_CREATED,
 	summary='Marca comunicado como lido (usuário autenticado)',
 )
@@ -107,10 +107,10 @@ async def marcar_lido(
 
 @router.get(
 	'/{comunicado_id}/leituras',
-	response_model=list[ComunicadoLeituraResponse],
+	response_model=list[ComunicadoLeituraResposta],
 	dependencies=[AdminGuard],
 	summary='Lista leituras do comunicado (somente admin)',
 )
 async def listar_leituras(comunicado_id: int, service: ServiceDep):
 	"""Função para listar leituras de um comunicado."""
-	return await service.list_leituras(comunicado_id)
+	return await service.listar_leituras(comunicado_id)

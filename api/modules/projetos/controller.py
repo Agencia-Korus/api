@@ -5,42 +5,42 @@ from core.security import CurrentUser, get_current_user, require_role
 from deps import PaginationDep, SessionDep
 from fastapi import APIRouter, Depends, Query, status
 from modules.projetos.schema import (
-	ProjetoCreate,
-	ProjetoFuncionarioCreate,
-	ProjetoFuncionarioResponse,
-	ProjetoResponse,
-	ProjetoUpdate,
+	ProjetoCriar,
+	ProjetoFuncionarioCriar,
+	ProjetoFuncionarioResposta,
+	ProjetoResposta,
+	ProjetoAtualizar,
 )
-from modules.projetos.service import ProjetoService
+from modules.projetos.service import ServicoProjeto
 
 router = APIRouter(prefix='/projetos', tags=['Projetos'])
 
 
-def _service(session: SessionDep) -> ProjetoService:
+def _service(session: SessionDep) -> ServicoProjeto:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return ProjetoService(session)
+	return ServicoProjeto(session)
 
 
-ServiceDep = Annotated[ProjetoService, Depends(_service)]
+ServiceDep = Annotated[ServicoProjeto, Depends(_service)]
 AdminGuard = Depends(require_role(UserRole.ADMIN.value))
 CurrentUserDep = Annotated[CurrentUser, Depends(get_current_user)]
 
 
 @router.post(
 	'',
-	response_model=ProjetoResponse,
+	response_model=ProjetoResposta,
 	status_code=status.HTTP_201_CREATED,
 	dependencies=[AdminGuard],
 	summary='Cria projeto e define cliente vinculado (somente admin)',
 )
-async def criar(payload: ProjetoCreate, service: ServiceDep):
+async def criar(payload: ProjetoCriar, service: ServiceDep):
 	"""Função para criar um novo registro."""
-	return await service.create(payload)
+	return await service.criar(payload)
 
 
 @router.get(
 	'',
-	response_model=list[ProjetoResponse],
+	response_model=list[ProjetoResposta],
 	summary='Lista projetos visíveis ao usuário autenticado',
 	description=(
 		'Admin lista todos. Cliente lista os próprios projetos. Funcionário '
@@ -55,7 +55,7 @@ async def listar(
 	status_filter: Annotated[ProjetoStatus | None, Query(alias='status')] = None,
 ):
 	"""Função para listar registros."""
-	return await service.list_visible(
+	return await service.listar_visible(
 		offset=page.offset,
 		limit=page.limit,
 		usuario_id=current_user.id,
@@ -67,23 +67,23 @@ async def listar(
 
 @router.get(
 	'/{projeto_id}',
-	response_model=ProjetoResponse,
+	response_model=ProjetoResposta,
 	summary='Obtém projeto visível ao usuário autenticado',
 )
 async def obter(projeto_id: int, service: ServiceDep, current_user: CurrentUserDep):
 	"""Função para obter um registro pelo ID."""
-	return await service.get_visible(projeto_id, current_user.id, current_user.role)
+	return await service.obter_visible(projeto_id, current_user.id, current_user.role)
 
 
 @router.patch(
 	'/{projeto_id}',
-	response_model=ProjetoResponse,
+	response_model=ProjetoResposta,
 	dependencies=[AdminGuard],
 	summary='Atualiza projeto (somente admin)',
 )
-async def atualizar(projeto_id: int, payload: ProjetoUpdate, service: ServiceDep):
+async def atualizar(projeto_id: int, payload: ProjetoAtualizar, service: ServiceDep):
 	"""Função para atualizar um registro pelo ID."""
-	return await service.update(projeto_id, payload)
+	return await service.atualizar(projeto_id, payload)
 
 
 @router.delete(
@@ -94,18 +94,18 @@ async def atualizar(projeto_id: int, payload: ProjetoUpdate, service: ServiceDep
 )
 async def deletar(projeto_id: int, service: ServiceDep):
 	"""Função para excluir um registro pelo ID."""
-	await service.delete(projeto_id)
+	await service.deletar(projeto_id)
 
 
 @router.post(
 	'/{projeto_id}/equipe',
-	response_model=ProjetoFuncionarioResponse,
+	response_model=ProjetoFuncionarioResposta,
 	status_code=status.HTTP_201_CREATED,
 	dependencies=[AdminGuard],
 	summary='Adiciona funcionário ao projeto (somente admin)',
 )
 async def adicionar_membro(
-	projeto_id: int, payload: ProjetoFuncionarioCreate, service: ServiceDep
+	projeto_id: int, payload: ProjetoFuncionarioCriar, service: ServiceDep
 ):
 	"""Função para adicionar um funcionário à equipe do projeto."""
 	return await service.adicionar_membro(projeto_id, payload)
@@ -113,14 +113,14 @@ async def adicionar_membro(
 
 @router.get(
 	'/{projeto_id}/equipe',
-	response_model=list[ProjetoFuncionarioResponse],
+	response_model=list[ProjetoFuncionarioResposta],
 	summary='Lista equipe do projeto visível ao usuário autenticado',
 )
 async def listar_equipe(
 	projeto_id: int, service: ServiceDep, current_user: CurrentUserDep
 ):
 	"""Função para listar a equipe de um projeto."""
-	await service.get_visible(projeto_id, current_user.id, current_user.role)
+	await service.obter_visible(projeto_id, current_user.id, current_user.role)
 	return await service.listar_equipe(projeto_id)
 
 

@@ -18,13 +18,13 @@ class RegraXpBase(BaseModel):
 	xp: int = Field(ge=XP_MIN)
 
 
-class RegraXpCreate(RegraXpBase):
+class RegraXpCriar(RegraXpBase):
 	"""Classe que define os dados de regra de XP usados pela API."""
 
 	pass
 
 
-class RegraXpUpdate(BaseModel):
+class RegraXpAtualizar(BaseModel):
 	"""Classe que define os dados de regra de XP usados pela API."""
 
 	tarefa: str | None = Field(default=None, max_length=NOME_MAX_LENGTH)
@@ -32,14 +32,14 @@ class RegraXpUpdate(BaseModel):
 	xp: int | None = Field(default=None, ge=XP_MIN)
 
 
-class RegraXpResponse(RegraXpBase):
+class RegraXpResposta(RegraXpBase):
 	"""Classe que define os dados de regra de XP usados pela API."""
 
 	id: int
 	model_config = ConfigDict(from_attributes=True)
 
 
-class HistoricoXpCreate(BaseModel):
+class HistoricoXpCriar(BaseModel):
 	"""Classe que define os dados de histórico de XP usados pela API."""
 
 	funcionario_id: int
@@ -49,7 +49,7 @@ class HistoricoXpCreate(BaseModel):
 	xp: int
 
 
-class HistoricoXpResponse(HistoricoXpCreate):
+class HistoricoXpResposta(HistoricoXpCriar):
 	"""Classe que define os dados de histórico de XP usados pela API."""
 
 	id: int
@@ -66,13 +66,13 @@ class ConquistaBase(BaseModel):
 	xp_bonus: int = 0
 
 
-class ConquistaCreate(ConquistaBase):
+class ConquistaCriar(ConquistaBase):
 	"""Classe que define os dados de conquista usados pela API."""
 
 	pass
 
 
-class ConquistaUpdate(BaseModel):
+class ConquistaAtualizar(BaseModel):
 	"""Classe que define os dados de conquista usados pela API."""
 
 	nome: str | None = Field(default=None, max_length=NOME_MAX_LENGTH)
@@ -81,14 +81,14 @@ class ConquistaUpdate(BaseModel):
 	xp_bonus: int | None = None
 
 
-class ConquistaResponse(ConquistaBase):
+class ConquistaResposta(ConquistaBase):
 	"""Classe que define os dados de conquista usados pela API."""
 
 	id: int
 	model_config = ConfigDict(from_attributes=True)
 
 
-class FuncionarioConquistaResponse(BaseModel):
+class FuncionarioConquistaResposta(BaseModel):
 	"""Classe que define os dados de conquista do funcionário usados pela API."""
 
 	funcionario_id: int

@@ -26,7 +26,7 @@ class CurrentUser:
 	role: str
 
 
-def create_access_token(subject: str | int, extra: dict[str, Any] | None = None) -> str:
+def criar_access_token(subject: str | int, extra: dict[str, Any] | None = None) -> str:
 	"""Função para criar um token JWT de acesso."""
 	expire = datetime.now(timezone.utc) + timedelta(
 		minutes=settings.jwt_access_token_expire_minutes
@@ -39,7 +39,7 @@ def create_access_token(subject: str | int, extra: dict[str, Any] | None = None)
 	)
 
 
-def create_refresh_token(subject: str | int) -> str:
+def criar_refresh_token(subject: str | int) -> str:
 	"""Função para criar um token JWT de renovação."""
 	expire = datetime.now(timezone.utc) + timedelta(
 		days=settings.jwt_refresh_token_expire_days
@@ -69,7 +69,7 @@ def _extract_bearer_token(
 	return credentials.credentials
 
 
-def get_current_user_id(
+def obter_current_user_id(
 	credentials: Annotated[
 		HTTPAuthorizationCredentials | None,
 		Depends(bearer_scheme),
@@ -84,7 +84,7 @@ def get_current_user_id(
 	return int(subject)
 
 
-def get_current_user(
+def obter_current_user(
 	credentials: Annotated[
 		HTTPAuthorizationCredentials | None,
 		Depends(bearer_scheme),

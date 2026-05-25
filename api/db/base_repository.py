@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 ModelT = TypeVar('ModelT', bound=Base)
 
 
-class BaseRepository(Generic[ModelT]):
+class RepositorioBase(Generic[ModelT]):
 	"""Classe responsável pelo acesso aos dados de base."""
 
 	model: type[ModelT]
@@ -19,18 +19,18 @@ class BaseRepository(Generic[ModelT]):
 		"""Função para inicializar a instância com suas dependências."""
 		self.session = session
 
-	async def add(self, entity: ModelT) -> ModelT:
+	async def adicionar(self, entity: ModelT) -> ModelT:
 		"""Função para salvar um registro no banco de dados."""
 		self.session.add(entity)
 		await self.session.flush()
 		await self.session.refresh(entity)
 		return entity
 
-	async def get(self, entity_id: int) -> ModelT | None:
+	async def obter(self, entity_id: int) -> ModelT | None:
 		"""Função para obter um registro pelo ID."""
-		return await self.session.get(self.model, entity_id)
+		return await self.session.obter(self.model, entity_id)
 
-	async def list_all(
+	async def listar_todos(
 		self,
 		offset: int = PAGINATION_DEFAULT_OFFSET,
 		limit: int = PAGINATION_DEFAULT_LIMIT,
@@ -46,11 +46,11 @@ class BaseRepository(Generic[ModelT]):
 		result = await self.session.execute(stmt)
 		return list(result.scalars().all())
 
-	async def update(self, entity_id: int, data: dict[str, Any]) -> ModelT | None:
+	async def atualizar(self, entity_id: int, data: dict[str, Any]) -> ModelT | None:
 		"""Função para atualizar um registro pelo ID."""
-		update_data = self._remove_empty_values(data)
+		update_data = self._remover_valores_vazios(data)
 		if not update_data:
-			return await self.get(entity_id)
+			return await self.obter(entity_id)
 		id_field = getattr(self.model, 'id')
 		statement = (
 			sa_update(self.model)
@@ -65,7 +65,7 @@ class BaseRepository(Generic[ModelT]):
 
 		return result.scalar_one_or_none()
 
-	async def delete(self, entity_id: int) -> bool:
+	async def deletar(self, entity_id: int) -> bool:
 		"""Função para excluir um registro pelo ID."""
 		id_field = getattr(self.model, 'id')
 		statement = (
@@ -75,7 +75,7 @@ class BaseRepository(Generic[ModelT]):
 		await self.session.flush()
 		return result.scalar_one_or_none() is not None
 
-	def _apply_filters(self, statement: Any, filters: dict[str, Any] | None) -> Any:
+	def _aplicar_filtros(self, statement: Any, filters: dict[str, Any] | None) -> Any:
 		"""Função interna para aplicar filtros em uma consulta."""
 		if not filters:
 			return statement
@@ -93,6 +93,6 @@ class BaseRepository(Generic[ModelT]):
 		return statement
 
 	@staticmethod
-	def _remove_empty_values(data: dict[str, Any]) -> dict[str, Any]:
+	def _remover_valores_vazios(data: dict[str, Any]) -> dict[str, Any]:
 		"""Função interna para remover campos vazios de um dicionário."""
 		return {field: value for field, value in data.items() if value is not None}

@@ -1,4 +1,4 @@
-from db.base_repository import BaseRepository
+from db.base_repository import RepositorioBase
 from modules.gamificacao.model import (
 	Conquista,
 	FuncionarioConquista,
@@ -10,18 +10,18 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class RegraXpRepository(BaseRepository[RegraXp]):
+class RepositorioRegraXp(RepositorioBase[RegraXp]):
 	"""Classe responsável pelo acesso aos dados de regra de XP."""
 
 	model = RegraXp
 
 
-class HistoricoXpRepository(BaseRepository[HistoricoXp]):
+class RepositorioHistoricoXp(RepositorioBase[HistoricoXp]):
 	"""Classe responsável pelo acesso aos dados de histórico de XP."""
 
 	model = HistoricoXp
 
-	async def list_by_funcionario(self, funcionario_id: int) -> list[HistoricoXp]:
+	async def listar_por_funcionario(self, funcionario_id: int) -> list[HistoricoXp]:
 		"""Função para listar registros vinculados a um funcionário."""
 		stmt = (
 			select(HistoricoXp)
@@ -32,13 +32,13 @@ class HistoricoXpRepository(BaseRepository[HistoricoXp]):
 		return list(result.scalars().all())
 
 
-class ConquistaRepository(BaseRepository[Conquista]):
+class RepositorioConquista(RepositorioBase[Conquista]):
 	"""Classe responsável pelo acesso aos dados de conquista."""
 
 	model = Conquista
 
 
-class FuncionarioConquistaRepository:
+class RepositorioFuncionarioConquista:
 	"""Classe responsável pelo acesso aos dados de conquista do funcionário."""
 
 	def __init__(self, session: AsyncSession):
@@ -63,7 +63,7 @@ class FuncionarioConquistaRepository:
 		result = await self.session.execute(select_stmt)
 		return result.scalar_one()
 
-	async def list_by_funcionario(
+	async def listar_por_funcionario(
 		self, funcionario_id: int
 	) -> list[FuncionarioConquista]:
 		"""Função para listar registros vinculados a um funcionário."""
