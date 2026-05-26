@@ -6,6 +6,7 @@ from core.password import gerar_hash_senha, verificar_senha
 	'senha_plana', ['secreta-123', 'outra-coisa-segura!', 'çãoéàü']
 )
 def test_hash_senha_e_verifica(senha_plana: str):
+	"""Valida que hash senha e verifica."""
 	hash_gerado = gerar_hash_senha(senha_plana)
 	assert hash_gerado != senha_plana
 	assert verificar_senha(senha_plana, hash_gerado) is True
@@ -13,5 +14,6 @@ def test_hash_senha_e_verifica(senha_plana: str):
 
 
 def test_hash_senha_gera_hashes_distintos_para_mesma_senha():
+	"""Valida que hash senha gera hashes distintos para mesma senha."""
 	senha_plana = 'mesma-senha'
 	assert gerar_hash_senha(senha_plana) != gerar_hash_senha(senha_plana)

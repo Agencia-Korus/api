@@ -10,6 +10,7 @@ from modules.agenda.service import ServicoAgenda
 
 
 def test_caminho_conta_servico_prioriza_arquivo_local(tmp_path: Path):
+	"""Valida que caminho conta servico prioriza arquivo local."""
 	arquivo_local = tmp_path / 'conta-servico.json'
 	arquivo_local.write_text('{"client_email":"x","private_key":"y"}', encoding='utf-8')
 	arquivo_docker = tmp_path / 'docker.json'
@@ -23,6 +24,7 @@ def test_caminho_conta_servico_prioriza_arquivo_local(tmp_path: Path):
 
 
 def test_criar_evento_ignora_google_quando_arquivo_credencial_nao_existe():
+	"""Valida que criar evento ignora google quando arquivo credencial nao existe."""
 	cliente = ClienteGoogleCalendar(
 		Configuracoes(
 			google_calendar_enabled=True,
@@ -36,6 +38,7 @@ def test_criar_evento_ignora_google_quando_arquivo_credencial_nao_existe():
 
 @pytest.mark.asyncio
 async def test_criar_evento_retorna_none_sem_credenciais_validas():
+	"""Valida que criar evento retorna none sem credenciais validas."""
 	cliente = ClienteGoogleCalendar(
 		Configuracoes(
 			google_calendar_enabled=True,
@@ -55,6 +58,7 @@ async def test_criar_evento_retorna_none_sem_credenciais_validas():
 
 
 def test_evento_local_para_site_usa_fuso_horario_configurado():
+	"""Valida que evento local para site usa fuso horario configurado."""
 	evento = EventoAgenda(
 		id=1,
 		usuario_id=1,

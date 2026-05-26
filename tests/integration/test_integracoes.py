@@ -13,6 +13,7 @@ from tests.conftest import exige_banco
 async def test_criar_integracao_status(
 	cliente_admin: AsyncClient, situacao_entrada: str
 ):
+	"""Valida que criar integracao status."""
 	dados = {
 		'nome': 'google_calendar',
 		'status': situacao_entrada,
@@ -26,6 +27,7 @@ async def test_criar_integracao_status(
 @pytest.mark.asyncio
 @exige_banco
 async def test_listar_integracoes(cliente_admin: AsyncClient):
+	"""Valida que listar integracoes."""
 	resposta = await cliente_admin.get('/api/v1/integracoes')
 	assert resposta.status_code == 200
 	assert isinstance(resposta.json(), list)
