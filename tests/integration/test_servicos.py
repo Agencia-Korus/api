@@ -22,6 +22,7 @@ def _dados_servico(**substituicoes):
 @exige_banco
 @pytest.mark.parametrize('status', ['ativo', 'inativo'])
 async def test_criar_servico_com_status(cliente_admin: AsyncClient, status: str):
+	"""Valida que criar servico com status."""
 	resposta = await cliente_admin.post(
 		'/api/v1/servicos', json=_dados_servico(status=status)
 	)
@@ -33,6 +34,7 @@ async def test_criar_servico_com_status(cliente_admin: AsyncClient, status: str)
 @pytest.mark.asyncio
 @exige_banco
 async def test_adicionar_listar_e_atualizar_entregavel(cliente_admin: AsyncClient):
+	"""Valida que adicionar listar e atualizar entregavel."""
 	servico = (
 		await cliente_admin.post('/api/v1/servicos', json=_dados_servico())
 	).json()
@@ -59,5 +61,6 @@ async def test_adicionar_listar_e_atualizar_entregavel(cliente_admin: AsyncClien
 @pytest.mark.asyncio
 @exige_banco
 async def test_servico_nao_encontrado_retorna_404(cliente_admin: AsyncClient):
+	"""Valida que servico nao encontrado retorna 404."""
 	resposta = await cliente_admin.get('/api/v1/servicos/99999999')
 	assert resposta.status_code == 404

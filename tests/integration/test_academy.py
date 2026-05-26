@@ -23,6 +23,7 @@ def _dados(tipo: str) -> dict[str, object]:
 async def test_listar_academia_filtra_body_json(
 	cliente_admin: AsyncClient, cliente_http: AsyncClient
 ):
+	"""Valida que listar academia filtra body json."""
 	ebook = (await cliente_admin.post('/api/v1/academy', json=_dados('ebook'))).json()
 	await cliente_admin.post('/api/v1/academy', json=_dados('curso'))
 

@@ -6,6 +6,7 @@ from modules.agenda.service import ServicoAgenda
 
 
 def test_evento_local_para_site_usa_fuso_horario_configurado():
+	"""Valida que evento local para site usa fuso horario configurado."""
 	evento = EventoAgenda(
 		id=1,
 		usuario_id=1,

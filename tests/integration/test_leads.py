@@ -24,6 +24,7 @@ def _dados(**substituicoes):
 @exige_banco
 @pytest.mark.parametrize('prioridade', ['baixa', 'media', 'alta'])
 async def test_criar_lead_com_prioridades(cliente_admin: AsyncClient, prioridade: str):
+	"""Valida que criar lead com prioridades."""
 	resposta = await cliente_admin.post(
 		'/api/v1/leads', json=_dados(prioridade=prioridade)
 	)
@@ -44,6 +45,7 @@ async def test_criar_lead_com_prioridades(cliente_admin: AsyncClient, prioridade
 async def test_atualizar_status_lead(
 	cliente_admin: AsyncClient, situacao_inicial: str, nova_situacao: str
 ):
+	"""Valida que atualizar status lead."""
 	criado = (
 		await cliente_admin.post('/api/v1/leads', json=_dados(status=situacao_inicial))
 	).json()
@@ -57,5 +59,6 @@ async def test_atualizar_status_lead(
 @pytest.mark.asyncio
 @exige_banco
 async def test_lead_nao_encontrado_retorna_404(cliente_admin: AsyncClient):
+	"""Valida que lead nao encontrado retorna 404."""
 	resposta = await cliente_admin.get('/api/v1/leads/99999999')
 	assert resposta.status_code == 404
