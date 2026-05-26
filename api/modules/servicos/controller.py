@@ -2,6 +2,7 @@ from typing import Annotated
 
 from core.enums import PapelUsuario, SituacaoServico
 from core.security import exigir_papel
+from core.swagger import exemplo_requisicao_json
 from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, status
 from modules.servicos.schema import (
@@ -14,7 +15,7 @@ from modules.servicos.schema import (
 )
 from modules.servicos.service import ServicoServico
 
-roteador = APIRouter(
+router = APIRouter(
 	prefix='/servicos',
 	tags=['Serviços'],
 	dependencies=[Depends(exigir_papel(PapelUsuario.ADMIN.value))],
@@ -29,13 +30,21 @@ def _servico(sessao: DependenciaSessao) -> ServicoServico:
 DependenciaServico = Annotated[ServicoServico, Depends(_servico)]
 
 
-@roteador.post('', response_model=ServicoResposta, status_code=status.HTTP_201_CREATED)
+@router.post('', response_model=ServicoResposta, status_code=status.HTTP_201_CREATED)
 async def criar(dados: ServicoCriar, servico: DependenciaServico):
 	"""Função para criar um novo registro."""
 	return await servico.criar(dados)
 
 
-@roteador.get('', response_model=list[ServicoResposta])
+@router.get(
+	'',
+	response_model=list[ServicoResposta],
+	openapi_extra=exemplo_requisicao_json({
+		'offset': 0,
+		'limit': 20,
+		'status': 'ativo',
+	}),
+)
 async def listar(
 	servico: DependenciaServico,
 	pagina: DependenciaPaginacao,
@@ -47,13 +56,17 @@ async def listar(
 	)
 
 
-@roteador.get('/{servico_id}', response_model=ServicoResposta)
+@router.get(
+	'/{servico_id}',
+	response_model=ServicoResposta,
+	openapi_extra=exemplo_requisicao_json({'servico_id': 1}),
+)
 async def obter(servico_id: int, servico: DependenciaServico):
 	"""Função para obter um registro pelo ID."""
 	return await servico.obter(servico_id)
 
 
-@roteador.patch('/{servico_id}', response_model=ServicoResposta)
+@router.patch('/{servico_id}', response_model=ServicoResposta)
 async def atualizar(
 	servico_id: int, dados: ServicoAtualizar, servico: DependenciaServico
 ):
@@ -61,13 +74,17 @@ async def atualizar(
 	return await servico.atualizar(servico_id, dados)
 
 
-@roteador.delete('/{servico_id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+	'/{servico_id}',
+	status_code=status.HTTP_204_NO_CONTENT,
+	openapi_extra=exemplo_requisicao_json({'servico_id': 1}),
+)
 async def deletar(servico_id: int, servico: DependenciaServico):
 	"""Função para excluir um registro pelo ID."""
 	await servico.deletar(servico_id)
 
 
-@roteador.post(
+@router.post(
 	'/{servico_id}/entregaveis',
 	response_model=EntregavelResposta,
 	status_code=status.HTTP_201_CREATED,
@@ -80,13 +97,17 @@ async def adicionar_entregavel(
 	return await servico.criar_entregavel(payload_with_id)
 
 
-@roteador.get('/{servico_id}/entregaveis', response_model=list[EntregavelResposta])
+@router.get(
+	'/{servico_id}/entregaveis',
+	response_model=list[EntregavelResposta],
+	openapi_extra=exemplo_requisicao_json({'servico_id': 1}),
+)
 async def listar_entregaveis(servico_id: int, servico: DependenciaServico):
 	"""Função para listar entregáveis de um serviço."""
 	return await servico.listar_entregaveis(servico_id)
 
 
-@roteador.patch('/entregaveis/{entregavel_id}', response_model=EntregavelResposta)
+@router.patch('/entregaveis/{entregavel_id}', response_model=EntregavelResposta)
 async def atualizar_entregavel(
 	entregavel_id: int, dados: EntregavelAtualizar, servico: DependenciaServico
 ):
@@ -94,7 +115,11 @@ async def atualizar_entregavel(
 	return await servico.atualizar_entregavel(entregavel_id, dados)
 
 
-@roteador.delete('/entregaveis/{entregavel_id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+	'/entregaveis/{entregavel_id}',
+	status_code=status.HTTP_204_NO_CONTENT,
+	openapi_extra=exemplo_requisicao_json({'entregavel_id': 1}),
+)
 async def remover_entregavel(entregavel_id: int, servico: DependenciaServico):
 	"""Função para remover um entregável pelo ID."""
 	await servico.deletar_entregavel(entregavel_id)

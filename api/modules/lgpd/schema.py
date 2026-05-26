@@ -16,6 +16,18 @@ class ConsentimentoLgpdCriar(BaseModel):
 		default=None, max_length=TAMANHO_MAXIMO_AGENTE_USUARIO
 	)
 
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'usuario_id': 1,
+				'tipo': 'essencial',
+				'aceito': True,
+				'ip': '203.0.113.10',
+				'user_agent': 'Mozilla/5.0',
+			}
+		}
+	)
+
 
 class ConsentimentoLgpdResposta(BaseModel):
 	"""Classe que define os dados de consentimento LGPD usados pela API."""

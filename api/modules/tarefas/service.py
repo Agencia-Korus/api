@@ -145,7 +145,7 @@ class ServicoTarefa:
 	) -> bool:
 		"""Função interna para validar acesso a uma tarefa."""
 		if papel == PapelUsuario.CLIENTE.value:
-			projeto = await self.sessao.obter(Projeto, tarefa.projeto_id)
+			projeto = await self.sessao.get(Projeto, tarefa.projeto_id)
 			return bool(projeto and projeto.cliente_id == usuario_id)
 		if papel == PapelUsuario.FUNCIONARIO.value:
 			return await self._funcionario_envolvido(tarefa, usuario_id)

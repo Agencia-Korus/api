@@ -2,6 +2,7 @@ from typing import Annotated
 
 from core.enums import PapelUsuario, SituacaoProjeto
 from core.security import UsuarioAtual, exigir_papel, obter_usuario_atual
+from core.swagger import exemplo_requisicao_json
 from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, status
 from modules.projetos.schema import (
@@ -13,7 +14,7 @@ from modules.projetos.schema import (
 )
 from modules.projetos.service import ServicoProjeto
 
-roteador = APIRouter(prefix='/projetos', tags=['Projetos'])
+router = APIRouter(prefix='/projetos', tags=['Projetos'])
 
 
 def _servico(sessao: DependenciaSessao) -> ServicoProjeto:
@@ -26,7 +27,7 @@ GuardaAdmin = Depends(exigir_papel(PapelUsuario.ADMIN.value))
 DependenciaUsuarioAtual = Annotated[UsuarioAtual, Depends(obter_usuario_atual)]
 
 
-@roteador.post(
+@router.post(
 	'',
 	response_model=ProjetoResposta,
 	status_code=status.HTTP_201_CREATED,
@@ -38,7 +39,7 @@ async def criar(dados: ProjetoCriar, servico: DependenciaServico):
 	return await servico.criar(dados)
 
 
-@roteador.get(
+@router.get(
 	'',
 	response_model=list[ProjetoResposta],
 	summary='Lista projetos visíveis ao usuário autenticado',
@@ -46,6 +47,12 @@ async def criar(dados: ProjetoCriar, servico: DependenciaServico):
 		'Admin lista todos. Cliente lista os próprios projetos. Funcionário '
 		'lista projetos onde participa da equipe.'
 	),
+	openapi_extra=exemplo_requisicao_json({
+		'offset': 0,
+		'limit': 20,
+		'cliente_id': 1,
+		'status': 'em_andamento',
+	}),
 )
 async def listar(
 	servico: DependenciaServico,
@@ -65,10 +72,11 @@ async def listar(
 	)
 
 
-@roteador.get(
+@router.get(
 	'/{projeto_id}',
 	response_model=ProjetoResposta,
 	summary='Obtém projeto visível ao usuário autenticado',
+	openapi_extra=exemplo_requisicao_json({'projeto_id': 1}),
 )
 async def obter(
 	projeto_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual
@@ -79,7 +87,7 @@ async def obter(
 	)
 
 
-@roteador.patch(
+@router.patch(
 	'/{projeto_id}',
 	response_model=ProjetoResposta,
 	dependencies=[GuardaAdmin],
@@ -92,18 +100,19 @@ async def atualizar(
 	return await servico.atualizar(projeto_id, dados)
 
 
-@roteador.delete(
+@router.delete(
 	'/{projeto_id}',
 	status_code=status.HTTP_204_NO_CONTENT,
 	dependencies=[GuardaAdmin],
 	summary='Remove projeto (somente admin)',
+	openapi_extra=exemplo_requisicao_json({'projeto_id': 1}),
 )
 async def deletar(projeto_id: int, servico: DependenciaServico):
 	"""Função para excluir um registro pelo ID."""
 	await servico.deletar(projeto_id)
 
 
-@roteador.post(
+@router.post(
 	'/{projeto_id}/equipe',
 	response_model=ProjetoFuncionarioResposta,
 	status_code=status.HTTP_201_CREATED,
@@ -117,10 +126,11 @@ async def adicionar_membro(
 	return await servico.adicionar_membro(projeto_id, dados)
 
 
-@roteador.get(
+@router.get(
 	'/{projeto_id}/equipe',
 	response_model=list[ProjetoFuncionarioResposta],
 	summary='Lista equipe do projeto visível ao usuário autenticado',
+	openapi_extra=exemplo_requisicao_json({'projeto_id': 1}),
 )
 async def listar_equipe(
 	projeto_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual
@@ -130,11 +140,15 @@ async def listar_equipe(
 	return await servico.listar_equipe(projeto_id)
 
 
-@roteador.delete(
+@router.delete(
 	'/{projeto_id}/equipe/{funcionario_id}',
 	status_code=status.HTTP_204_NO_CONTENT,
 	dependencies=[GuardaAdmin],
 	summary='Remove funcionário do projeto (somente admin)',
+	openapi_extra=exemplo_requisicao_json({
+		'projeto_id': 1,
+		'funcionario_id': 2,
+	}),
 )
 async def remover_membro(
 	projeto_id: int, funcionario_id: int, servico: DependenciaServico

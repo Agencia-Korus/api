@@ -29,6 +29,21 @@ class ProjetoCriar(ProjetoBase):
 		default=PROGRESSO_MINIMO, ge=PROGRESSO_MINIMO, le=PROGRESSO_MAXIMO
 	)
 
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'nome': 'Redesign do site institucional',
+				'descricao': 'Atualização visual e técnica do site.',
+				'cliente_id': 1,
+				'servico_id': 2,
+				'data_inicio': '2026-05-01',
+				'data_fim': '2026-07-15',
+				'status': 'planejamento',
+				'progresso': 0,
+			}
+		}
+	)
+
 
 class ProjetoAtualizar(BaseModel):
 	"""Classe que define os dados de projeto usados pela API."""
@@ -41,6 +56,16 @@ class ProjetoAtualizar(BaseModel):
 	status: SituacaoProjeto | None = None
 	progresso: int | None = Field(
 		default=None, ge=PROGRESSO_MINIMO, le=PROGRESSO_MAXIMO
+	)
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'status': 'em_andamento',
+				'progresso': 45,
+				'data_fim': '2026-07-30',
+			}
+		}
 	)
 
 
@@ -59,6 +84,15 @@ class ProjetoFuncionarioCriar(BaseModel):
 
 	funcionario_id: int
 	papel: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_PAPEL)
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'funcionario_id': 2,
+				'papel': 'Designer responsável',
+			}
+		}
+	)
 
 
 class ProjetoFuncionarioResposta(BaseModel):

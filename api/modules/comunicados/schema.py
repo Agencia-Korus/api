@@ -40,6 +40,16 @@ class ComunicadoAtualizar(BaseModel):
 	conteudo: str | None = None
 	alvo: ComunicadoAlvo | None = None
 
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'titulo': 'Novo cronograma publicado',
+				'conteudo': 'Atualizamos as datas de entrega do projeto.',
+				'alvo': 'clientes',
+			}
+		}
+	)
+
 
 class ComunicadoResposta(ComunicadoBase):
 	"""Classe que define os dados de comunicado usados pela API."""

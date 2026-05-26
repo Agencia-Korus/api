@@ -2,12 +2,13 @@ from typing import Annotated
 
 from core.enums import PapelUsuario, TipoAcademia
 from core.security import exigir_papel
+from core.swagger import exemplo_requisicao_json
 from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, status
 from modules.academy.schema import AcademiaAtualizar, AcademiaCriar, AcademiaResposta
 from modules.academy.service import ServicoAcademia
 
-roteador = APIRouter(prefix='/academy', tags=['Academia'])
+router = APIRouter(prefix='/academy', tags=['Academia'])
 
 
 def _servico(sessao: DependenciaSessao) -> ServicoAcademia:
@@ -19,7 +20,7 @@ DependenciaServico = Annotated[ServicoAcademia, Depends(_servico)]
 GuardaAdmin = Depends(exigir_papel(PapelUsuario.ADMIN.value))
 
 
-@roteador.post(
+@router.post(
 	'',
 	response_model=AcademiaResposta,
 	status_code=status.HTTP_201_CREATED,
@@ -31,10 +32,16 @@ async def criar(dados: AcademiaCriar, servico: DependenciaServico):
 	return await servico.criar(dados)
 
 
-@roteador.get(
+@router.get(
 	'',
 	response_model=list[AcademiaResposta],
 	summary='Lista conteúdos publicados do Academia (público/home)',
+	openapi_extra=exemplo_requisicao_json({
+		'offset': 0,
+		'limit': 20,
+		'tipo': 'curso',
+		'publicado': True,
+	}),
 )
 async def listar(
 	servico: DependenciaServico,
@@ -51,11 +58,17 @@ async def listar(
 	)
 
 
-@roteador.get(
+@router.get(
 	'/admin',
 	response_model=list[AcademiaResposta],
 	dependencies=[GuardaAdmin],
 	summary='Lista todos os conteúdos do Academia para gestão (somente admin)',
+	openapi_extra=exemplo_requisicao_json({
+		'offset': 0,
+		'limit': 20,
+		'tipo': 'curso',
+		'publicado': True,
+	}),
 )
 async def listar_admin(
 	servico: DependenciaServico,
@@ -69,17 +82,18 @@ async def listar_admin(
 	)
 
 
-@roteador.get(
+@router.get(
 	'/{item_id}',
 	response_model=AcademiaResposta,
 	summary='Obtém conteúdo do Academia (público/home)',
+	openapi_extra=exemplo_requisicao_json({'item_id': 1}),
 )
 async def obter(item_id: int, servico: DependenciaServico):
 	"""Função para obter um registro pelo ID."""
 	return await servico.obter(item_id)
 
 
-@roteador.patch(
+@router.patch(
 	'/{item_id}',
 	response_model=AcademiaResposta,
 	dependencies=[GuardaAdmin],
@@ -92,11 +106,12 @@ async def atualizar(
 	return await servico.atualizar(item_id, dados)
 
 
-@roteador.delete(
+@router.delete(
 	'/{item_id}',
 	status_code=status.HTTP_204_NO_CONTENT,
 	dependencies=[GuardaAdmin],
 	summary='Remove conteúdo do Academia (somente admin)',
+	openapi_extra=exemplo_requisicao_json({'item_id': 1}),
 )
 async def deletar(item_id: int, servico: DependenciaServico):
 	"""Função para excluir um registro pelo ID."""

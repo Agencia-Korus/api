@@ -26,7 +26,21 @@ class PortfolioBase(BaseModel):
 class PortfolioCriar(PortfolioBase):
 	"""Classe que define os dados de portfólio usados pela API."""
 
-	pass
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'nome': 'Identidade Visual Aurora',
+				'projeto_id': 1,
+				'cliente': 'Aurora Café',
+				'categoria': 'Branding',
+				'descricao': 'Projeto completo de identidade visual.',
+				'imagem': 'https://cdn.korus.com.br/portfolio/aurora.png',
+				'ano': 2026,
+				'destaque': True,
+				'tags': ['branding', 'identidade visual'],
+			}
+		}
+	)
 
 
 class PortfolioAtualizar(BaseModel):
@@ -40,6 +54,16 @@ class PortfolioAtualizar(BaseModel):
 	ano: int | None = None
 	destaque: bool | None = None
 	tags: list[str] | None = None
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'destaque': True,
+				'tags': ['branding', 'case'],
+				'descricao': 'Case atualizado com novos resultados.',
+			}
+		}
+	)
 
 
 class PortfolioResposta(PortfolioBase):

@@ -139,7 +139,7 @@ class ServicoPainel:
 		self, projeto_id: int, usuario_id: int | None = None, papel: str | None = None
 	) -> dict[str, Any]:
 		"""Função para montar os dados do quadro Kanban de um projeto."""
-		projeto = await self.sessao.obter(Projeto, projeto_id)
+		projeto = await self.sessao.get(Projeto, projeto_id)
 		if not projeto:
 			raise ErroNaoEncontrado('Projeto', projeto_id)
 		await self._garantir_acesso_projeto(projeto, usuario_id, papel)
@@ -222,14 +222,14 @@ class ServicoPainel:
 
 	async def _garantir_cliente(self, cliente_id: int) -> Cliente:
 		"""Função interna para garantir que o cliente existe."""
-		cliente = await self.sessao.obter(Cliente, cliente_id)
+		cliente = await self.sessao.get(Cliente, cliente_id)
 		if not cliente:
 			raise ErroNaoEncontrado('Cliente', cliente_id)
 		return cliente
 
 	async def _garantir_funcionario(self, funcionario_id: int) -> Funcionario:
 		"""Função interna para garantir que o funcionário existe."""
-		funcionario = await self.sessao.obter(Funcionario, funcionario_id)
+		funcionario = await self.sessao.get(Funcionario, funcionario_id)
 		if not funcionario:
 			raise ErroNaoEncontrado('Funcionario', funcionario_id)
 		return funcionario

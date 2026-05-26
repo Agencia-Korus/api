@@ -20,6 +20,16 @@ class DadosCliente(BaseModel):
 	cnpj_cpf: str = Field(max_length=TAMANHO_MAXIMO_DOCUMENTO)
 	segmento: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_SEGMENTO)
 
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'razao_social': 'Empresa Exemplo LTDA',
+				'cnpj_cpf': '12.345.678/0001-90',
+				'segmento': 'Tecnologia',
+			}
+		}
+	)
+
 
 class DadosFuncionario(BaseModel):
 	"""Classe que define os dados de funcionário usados pela API."""
@@ -27,11 +37,22 @@ class DadosFuncionario(BaseModel):
 	cargo: str = Field(max_length=TAMANHO_MAXIMO_CARGO)
 	especialidade: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_CARGO)
 
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'cargo': 'Designer',
+				'especialidade': 'Identidade visual',
+			}
+		}
+	)
+
 
 class DadosAdmin(BaseModel):
 	"""Classe que define os dados de admin usados pela API."""
 
 	nivel_acesso: int = 1
+
+	model_config = ConfigDict(json_schema_extra={'example': {'nivel_acesso': 1}})
 
 
 class UsuarioCriar(BaseModel):
@@ -48,6 +69,27 @@ class UsuarioCriar(BaseModel):
 	funcionario: DadosFuncionario | None = None
 	admin: DadosAdmin | None = None
 
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'nome': 'Ana Cliente',
+				'email': 'ana.cliente@empresa.com.br',
+				'senha': 'senha-segura-123',
+				'role': 'cliente',
+				'telefone': '+5511999999999',
+				'avatar': 'https://cdn.korus.com.br/avatars/ana.png',
+				'status': 'ativo',
+				'cliente': {
+					'razao_social': 'Empresa Exemplo LTDA',
+					'cnpj_cpf': '12.345.678/0001-90',
+					'segmento': 'Tecnologia',
+				},
+				'funcionario': None,
+				'admin': None,
+			}
+		}
+	)
+
 
 class UsuarioRegistrar(BaseModel):
 	"""Classe que define os dados de usuario register usados pela API."""
@@ -61,6 +103,24 @@ class UsuarioRegistrar(BaseModel):
 	cliente: DadosCliente | None = None
 	funcionario: DadosFuncionario | None = None
 
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'nome': 'Bruno Designer',
+				'email': 'bruno@korus.com.br',
+				'senha': 'senha-segura-123',
+				'role': 'funcionario',
+				'telefone': '+5511888888888',
+				'avatar': 'https://cdn.korus.com.br/avatars/bruno.png',
+				'cliente': None,
+				'funcionario': {
+					'cargo': 'Designer',
+					'especialidade': 'Branding',
+				},
+			}
+		}
+	)
+
 
 class UsuarioAtualizar(BaseModel):
 	"""Classe que define os dados de usuário usados pela API."""
@@ -71,6 +131,16 @@ class UsuarioAtualizar(BaseModel):
 	telefone: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_TELEFONE)
 	avatar: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_URL)
 	status: SituacaoUsuario | None = None
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'nome': 'Ana Cliente Atualizada',
+				'telefone': '+5511977777777',
+				'status': 'ativo',
+			}
+		}
+	)
 
 
 class UsuarioResposta(BaseModel):

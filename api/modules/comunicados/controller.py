@@ -2,6 +2,7 @@ from typing import Annotated
 
 from core.enums import ComunicadoAlvo, PapelUsuario
 from core.security import exigir_papel, obter_usuario_atual_id
+from core.swagger import exemplo_requisicao_json
 from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, status
 from modules.comunicados.schema import (
@@ -12,7 +13,7 @@ from modules.comunicados.schema import (
 )
 from modules.comunicados.service import ServicoComunicado
 
-roteador = APIRouter(prefix='/comunicados', tags=['Comunicados'])
+router = APIRouter(prefix='/comunicados', tags=['Comunicados'])
 
 
 def _servico(sessao: DependenciaSessao) -> ServicoComunicado:
@@ -32,7 +33,7 @@ AuthenticatedGuard = Depends(
 )
 
 
-@roteador.post(
+@router.post(
 	'',
 	response_model=ComunicadoResposta,
 	status_code=status.HTTP_201_CREATED,
@@ -44,11 +45,16 @@ async def criar(dados: ComunicadoCriar, servico: DependenciaServico):
 	return await servico.criar(dados)
 
 
-@roteador.get(
+@router.get(
 	'',
 	response_model=list[ComunicadoResposta],
 	dependencies=[AuthenticatedGuard],
 	summary='Lista comunicados (clientes, funcionários e admins)',
+	openapi_extra=exemplo_requisicao_json({
+		'offset': 0,
+		'limit': 20,
+		'alvo': 'todos',
+	}),
 )
 async def listar(
 	servico: DependenciaServico,
@@ -61,18 +67,19 @@ async def listar(
 	)
 
 
-@roteador.get(
+@router.get(
 	'/{comunicado_id}',
 	response_model=ComunicadoResposta,
 	dependencies=[AuthenticatedGuard],
 	summary='Obtém comunicado (clientes, funcionários e admins)',
+	openapi_extra=exemplo_requisicao_json({'comunicado_id': 1}),
 )
 async def obter(comunicado_id: int, servico: DependenciaServico):
 	"""Função para obter um registro pelo ID."""
 	return await servico.obter(comunicado_id)
 
 
-@roteador.patch(
+@router.patch(
 	'/{comunicado_id}',
 	response_model=ComunicadoResposta,
 	dependencies=[GuardaAdmin],
@@ -85,22 +92,24 @@ async def atualizar(
 	return await servico.atualizar(comunicado_id, dados)
 
 
-@roteador.delete(
+@router.delete(
 	'/{comunicado_id}',
 	status_code=status.HTTP_204_NO_CONTENT,
 	dependencies=[GuardaAdmin],
 	summary='Remove comunicado (somente admin)',
+	openapi_extra=exemplo_requisicao_json({'comunicado_id': 1}),
 )
 async def deletar(comunicado_id: int, servico: DependenciaServico):
 	"""Função para excluir um registro pelo ID."""
 	await servico.deletar(comunicado_id)
 
 
-@roteador.post(
+@router.post(
 	'/{comunicado_id}/leituras',
 	response_model=ComunicadoLeituraResposta,
 	status_code=status.HTTP_201_CREATED,
 	summary='Marca comunicado como lido (usuário autenticado)',
+	openapi_extra=exemplo_requisicao_json({'comunicado_id': 1}),
 )
 async def marcar_lido(
 	comunicado_id: int, servico: DependenciaServico, id_usuario_atual: IdUsuarioAtual
@@ -109,11 +118,12 @@ async def marcar_lido(
 	return await servico.marcar_lido(comunicado_id, id_usuario_atual)
 
 
-@roteador.get(
+@router.get(
 	'/{comunicado_id}/leituras',
 	response_model=list[ComunicadoLeituraResposta],
 	dependencies=[GuardaAdmin],
 	summary='Lista leituras do comunicado (somente admin)',
+	openapi_extra=exemplo_requisicao_json({'comunicado_id': 1}),
 )
 async def listar_leituras(comunicado_id: int, servico: DependenciaServico):
 	"""Função para listar leituras de um comunicado."""

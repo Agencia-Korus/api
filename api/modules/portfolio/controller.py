@@ -2,6 +2,7 @@ from typing import Annotated
 
 from core.enums import PapelUsuario
 from core.security import exigir_papel
+from core.swagger import exemplo_requisicao_json
 from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, status
 from modules.portfolio.schema import (
@@ -11,7 +12,7 @@ from modules.portfolio.schema import (
 )
 from modules.portfolio.service import ServicoPortfolio
 
-roteador = APIRouter(
+router = APIRouter(
 	prefix='/portfolio',
 	tags=['Portfólio'],
 	dependencies=[Depends(exigir_papel(PapelUsuario.ADMIN.value))],
@@ -26,7 +27,7 @@ def _servico(sessao: DependenciaSessao) -> ServicoPortfolio:
 DependenciaServico = Annotated[ServicoPortfolio, Depends(_servico)]
 
 
-@roteador.post(
+@router.post(
 	'', response_model=PortfolioResposta, status_code=status.HTTP_201_CREATED
 )
 async def criar(dados: PortfolioCriar, servico: DependenciaServico):
@@ -37,7 +38,16 @@ async def criar(dados: PortfolioCriar, servico: DependenciaServico):
 DestaquesQuery = Annotated[bool, Query(description='Listar apenas destaques.')]
 
 
-@roteador.get('', response_model=list[PortfolioResposta])
+@router.get(
+	'',
+	response_model=list[PortfolioResposta],
+	openapi_extra=exemplo_requisicao_json({
+		'offset': 0,
+		'limit': 20,
+		'destaques': True,
+		'categoria': 'Branding',
+	}),
+)
 async def listar(
 	servico: DependenciaServico,
 	pagina: DependenciaPaginacao,
@@ -53,13 +63,17 @@ async def listar(
 	)
 
 
-@roteador.get('/{item_id}', response_model=PortfolioResposta)
+@router.get(
+	'/{item_id}',
+	response_model=PortfolioResposta,
+	openapi_extra=exemplo_requisicao_json({'item_id': 1}),
+)
 async def obter(item_id: int, servico: DependenciaServico):
 	"""Função para obter um registro pelo ID."""
 	return await servico.obter(item_id)
 
 
-@roteador.patch('/{item_id}', response_model=PortfolioResposta)
+@router.patch('/{item_id}', response_model=PortfolioResposta)
 async def atualizar(
 	item_id: int, dados: PortfolioAtualizar, servico: DependenciaServico
 ):
@@ -67,7 +81,11 @@ async def atualizar(
 	return await servico.atualizar(item_id, dados)
 
 
-@roteador.delete('/{item_id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+	'/{item_id}',
+	status_code=status.HTTP_204_NO_CONTENT,
+	openapi_extra=exemplo_requisicao_json({'item_id': 1}),
+)
 async def deletar(item_id: int, servico: DependenciaServico):
 	"""Função para excluir um registro pelo ID."""
 	await servico.deletar(item_id)

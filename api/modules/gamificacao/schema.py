@@ -21,7 +21,15 @@ class RegraXpBase(BaseModel):
 class RegraXpCriar(RegraXpBase):
 	"""Classe que define os dados de regra de XP usados pela API."""
 
-	pass
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'tarefa': 'Entrega no prazo',
+				'complexidade': 'media',
+				'xp': 50,
+			}
+		}
+	)
 
 
 class RegraXpAtualizar(BaseModel):
@@ -30,6 +38,16 @@ class RegraXpAtualizar(BaseModel):
 	tarefa: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_NOME)
 	complexidade: Complexidade | None = None
 	xp: int | None = Field(default=None, ge=XP_MINIMO)
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'tarefa': 'Entrega antecipada',
+				'complexidade': 'alta',
+				'xp': 80,
+			}
+		}
+	)
 
 
 class RegraXpResposta(RegraXpBase):
@@ -47,6 +65,18 @@ class HistoricoXpCriar(BaseModel):
 	regra_id: int | None = None
 	acao: str = Field(max_length=TAMANHO_MAXIMO_ACAO_XP)
 	xp: int
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'funcionario_id': 2,
+				'tarefa_id': 10,
+				'regra_id': 1,
+				'acao': 'Tarefa concluída',
+				'xp': 50,
+			}
+		}
+	)
 
 
 class HistoricoXpResposta(HistoricoXpCriar):
@@ -69,7 +99,16 @@ class ConquistaBase(BaseModel):
 class ConquistaCriar(ConquistaBase):
 	"""Classe que define os dados de conquista usados pela API."""
 
-	pass
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'nome': 'Primeira entrega',
+				'icone': 'trofeu',
+				'descricao': 'Concedida ao concluir a primeira tarefa.',
+				'xp_bonus': 100,
+			}
+		}
+	)
 
 
 class ConquistaAtualizar(BaseModel):
@@ -79,6 +118,17 @@ class ConquistaAtualizar(BaseModel):
 	icone: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_ICONE)
 	descricao: str | None = None
 	xp_bonus: int | None = None
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'nome': 'Entrega lendária',
+				'icone': 'estrela',
+				'descricao': 'Atualização da conquista.',
+				'xp_bonus': 150,
+			}
+		}
+	)
 
 
 class ConquistaResposta(ConquistaBase):

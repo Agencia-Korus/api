@@ -28,7 +28,7 @@ class RepositorioBase(Generic[ModelT]):
 
 	async def obter(self, entidade_id: int) -> ModelT | None:
 		"""Função para obter um registro pelo ID."""
-		return await self.sessao.obter(self.model, entidade_id)
+		return await self.sessao.get(self.modelo, entidade_id)
 
 	async def listar_todos(
 		self,
@@ -37,11 +37,11 @@ class RepositorioBase(Generic[ModelT]):
 		filtros: dict[str, Any] | None = None,
 	) -> list[ModelT]:
 		"""Função para listar registros com paginação e filtros opcionais."""
-		consulta = select(self.model)
+		consulta = select(self.modelo)
 		if filtros:
 			for campo, valor in filtros.items():
-				if valor is not None and hasattr(self.model, campo):
-					consulta = consulta.where(getattr(self.model, campo) == valor)
+				if valor is not None and hasattr(self.modelo, campo):
+					consulta = consulta.where(getattr(self.modelo, campo) == valor)
 		consulta = consulta.offset(offset).limit(limit)
 		resultado = await self.sessao.execute(consulta)
 		return list(resultado.scalars().all())
@@ -51,12 +51,12 @@ class RepositorioBase(Generic[ModelT]):
 		dados_atualizacao = self._remover_valores_vazios(dados)
 		if not dados_atualizacao:
 			return await self.obter(entidade_id)
-		campo_id = getattr(self.model, 'id')
+		campo_id = getattr(self.modelo, 'id')
 		instrucao = (
-			sa_update(self.model)
+			sa_update(self.modelo)
 			.where(campo_id == entidade_id)
 			.values(**dados_atualizacao)
-			.returning(self.model)
+			.returning(self.modelo)
 		)
 
 		resultado = await self.sessao.execute(instrucao)
@@ -67,9 +67,9 @@ class RepositorioBase(Generic[ModelT]):
 
 	async def deletar(self, entidade_id: int) -> bool:
 		"""Função para excluir um registro pelo ID."""
-		campo_id = getattr(self.model, 'id')
+		campo_id = getattr(self.modelo, 'id')
 		instrucao = (
-			sa_delete(self.model).where(campo_id == entidade_id).returning(campo_id)
+			sa_delete(self.modelo).where(campo_id == entidade_id).returning(campo_id)
 		)
 		resultado = await self.sessao.execute(instrucao)
 		await self.sessao.flush()
@@ -84,10 +84,10 @@ class RepositorioBase(Generic[ModelT]):
 			if valor is None:
 				continue
 
-			if not hasattr(self.model, campo):
+			if not hasattr(self.modelo, campo):
 				continue
 
-			campo_modelo = getattr(self.model, campo)
+			campo_modelo = getattr(self.modelo, campo)
 			instrucao = instrucao.where(campo_modelo == valor)
 
 		return instrucao

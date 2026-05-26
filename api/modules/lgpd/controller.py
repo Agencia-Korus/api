@@ -2,12 +2,13 @@ from typing import Annotated
 
 from core.enums import PapelUsuario
 from core.security import exigir_papel
+from core.swagger import exemplo_requisicao_json
 from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, status
 from modules.lgpd.schema import ConsentimentoLgpdCriar, ConsentimentoLgpdResposta
 from modules.lgpd.service import ServicoLgpd
 
-roteador = APIRouter(prefix='/lgpd', tags=['LGPD'])
+router = APIRouter(prefix='/lgpd', tags=['LGPD'])
 
 
 def _servico(sessao: DependenciaSessao) -> ServicoLgpd:
@@ -19,7 +20,7 @@ DependenciaServico = Annotated[ServicoLgpd, Depends(_servico)]
 GuardaAdmin = Depends(exigir_papel(PapelUsuario.ADMIN.value))
 
 
-@roteador.post(
+@router.post(
 	'/consentimentos',
 	response_model=ConsentimentoLgpdResposta,
 	status_code=status.HTTP_201_CREATED,
@@ -34,11 +35,12 @@ async def registrar(dados: ConsentimentoLgpdCriar, servico: DependenciaServico):
 	return await servico.registrar(dados)
 
 
-@roteador.get(
+@router.get(
 	'/consentimentos',
 	response_model=list[ConsentimentoLgpdResposta],
 	dependencies=[GuardaAdmin],
 	summary='Lista consentimentos LGPD (somente admin)',
+	openapi_extra=exemplo_requisicao_json({'offset': 0, 'limit': 20}),
 )
 async def listar(servico: DependenciaServico, pagina: DependenciaPaginacao):
 	"""Função para listar registros."""

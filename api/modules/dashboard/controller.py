@@ -2,11 +2,12 @@ from typing import Annotated
 
 from core.enums import PapelUsuario
 from core.security import UsuarioAtual, exigir_papel, obter_usuario_atual
+from core.swagger import exemplo_requisicao_json
 from deps import DependenciaSessao
 from fastapi import APIRouter, Depends
 from modules.dashboard.service import ServicoPainel
 
-roteador = APIRouter(prefix='/dashboard', tags=['Painel'])
+router = APIRouter(prefix='/dashboard', tags=['Painel'])
 
 
 def _servico(sessao: DependenciaSessao) -> ServicoPainel:
@@ -19,23 +20,25 @@ GuardaAdmin = Depends(exigir_papel(PapelUsuario.ADMIN.value))
 DependenciaUsuarioAtual = Annotated[UsuarioAtual, Depends(obter_usuario_atual)]
 
 
-@roteador.get(
+@router.get(
 	'/admin',
 	dependencies=[GuardaAdmin],
 	summary='Painel geral da agência (somente admin)',
+	openapi_extra=exemplo_requisicao_json({}),
 )
 async def admin(servico: DependenciaServico):
 	"""Função para montar os indicadores do painel administrativo."""
 	return await servico.admin()
 
 
-@roteador.get(
+@router.get(
 	'/clientes/{cliente_id}',
 	summary='Painel do cliente autenticado ou admin',
 	description=(
 		'Admin pode consultar qualquer cliente. Cliente consulta apenas o próprio '
 		'painel.'
 	),
+	openapi_extra=exemplo_requisicao_json({'cliente_id': 1}),
 )
 async def cliente(
 	cliente_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual
@@ -44,13 +47,14 @@ async def cliente(
 	return await servico.cliente(cliente_id, usuario_atual.id, usuario_atual.papel)
 
 
-@roteador.get(
+@router.get(
 	'/funcionarios/{funcionario_id}',
 	summary='Painel do funcionário autenticado ou admin',
 	description=(
 		'Admin pode consultar qualquer funcionário. Funcionário consulta apenas '
 		'o próprio painel.'
 	),
+	openapi_extra=exemplo_requisicao_json({'funcionario_id': 2}),
 )
 async def funcionario(
 	funcionario_id: int,
@@ -63,13 +67,14 @@ async def funcionario(
 	)
 
 
-@roteador.get(
+@router.get(
 	'/projetos/{projeto_id}/kanban',
 	summary='Kanban do projeto visível ao usuário autenticado',
 	description=(
 		'Admin vê qualquer projeto. Cliente vê projetos próprios. Funcionário '
 		'vê projetos onde participa da equipe.'
 	),
+	openapi_extra=exemplo_requisicao_json({'projeto_id': 1}),
 )
 async def projeto_kanban(
 	projeto_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual

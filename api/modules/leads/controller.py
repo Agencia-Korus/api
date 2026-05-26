@@ -4,12 +4,13 @@ from typing import Annotated
 
 from core.enums import LeadPrioridade, PapelUsuario, SituacaoLead
 from core.security import exigir_papel
+from core.swagger import exemplo_requisicao_json
 from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, Response, status
 from modules.leads.schema import LeadAtualizar, LeadCriar, LeadResposta
 from modules.leads.service import ServicoLead
 
-roteador = APIRouter(
+router = APIRouter(
 	prefix='/leads',
 	tags=['Leads'],
 	dependencies=[Depends(exigir_papel(PapelUsuario.ADMIN.value))],
@@ -24,13 +25,24 @@ def _servico(sessao: DependenciaSessao) -> ServicoLead:
 DependenciaServico = Annotated[ServicoLead, Depends(_servico)]
 
 
-@roteador.post('', response_model=LeadResposta, status_code=status.HTTP_201_CREATED)
+@router.post('', response_model=LeadResposta, status_code=status.HTTP_201_CREATED)
 async def criar(dados: LeadCriar, servico: DependenciaServico):
 	"""Função para criar um novo registro."""
 	return await servico.criar(dados)
 
 
-@roteador.get('', response_model=list[LeadResposta])
+@router.get(
+	'',
+	response_model=list[LeadResposta],
+	openapi_extra=exemplo_requisicao_json({
+		'offset': 0,
+		'limit': 20,
+		'status': 'novo',
+		'prioridade': 'media',
+		'servico_id': 1,
+		'search': 'Marina',
+	}),
+)
 async def listar(
 	servico: DependenciaServico,
 	pagina: DependenciaPaginacao,
@@ -50,7 +62,15 @@ async def listar(
 	)
 
 
-@roteador.get('/export.csv')
+@router.get(
+	'/export.csv',
+	openapi_extra=exemplo_requisicao_json({
+		'status': 'novo',
+		'prioridade': 'media',
+		'servico_id': 1,
+		'search': 'Marina',
+	}),
+)
 async def exportar_csv(
 	servico: DependenciaServico,
 	filtro_situacao: Annotated[SituacaoLead | None, Query(alias='status')] = None,
@@ -103,19 +123,27 @@ async def exportar_csv(
 	)
 
 
-@roteador.get('/{lead_id}', response_model=LeadResposta)
+@router.get(
+	'/{lead_id}',
+	response_model=LeadResposta,
+	openapi_extra=exemplo_requisicao_json({'lead_id': 1}),
+)
 async def obter(lead_id: int, servico: DependenciaServico):
 	"""Função para obter um registro pelo ID."""
 	return await servico.obter(lead_id)
 
 
-@roteador.patch('/{lead_id}', response_model=LeadResposta)
+@router.patch('/{lead_id}', response_model=LeadResposta)
 async def atualizar(lead_id: int, dados: LeadAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(lead_id, dados)
 
 
-@roteador.delete('/{lead_id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+	'/{lead_id}',
+	status_code=status.HTTP_204_NO_CONTENT,
+	openapi_extra=exemplo_requisicao_json({'lead_id': 1}),
+)
 async def deletar(lead_id: int, servico: DependenciaServico):
 	"""Função para excluir um registro pelo ID."""
 	await servico.deletar(lead_id)

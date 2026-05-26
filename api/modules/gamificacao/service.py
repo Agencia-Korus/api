@@ -67,7 +67,7 @@ class ServicoGamificacao:
 
 	async def registrar_xp(self, dados: HistoricoXpCriar) -> HistoricoXp:
 		"""Função para registrar XP para um funcionário."""
-		funcionario = await self.sessao.obter(Funcionario, dados.funcionario_id)
+		funcionario = await self.sessao.get(Funcionario, dados.funcionario_id)
 		if not funcionario:
 			raise ErroNaoEncontrado('Funcionario', dados.funcionario_id)
 		registro = HistoricoXp(**dados.model_dump())

@@ -23,7 +23,17 @@ class ServicoBase(BaseModel):
 class ServicoCriar(ServicoBase):
 	"""Classe que define os dados de serviço usados pela API."""
 
-	pass
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'nome': 'Identidade Visual',
+				'slug': 'identidade-visual',
+				'descricao': 'Criação de marca, manual e aplicações.',
+				'icone': 'palette',
+				'status': 'ativo',
+			}
+		}
+	)
 
 
 class ServicoAtualizar(BaseModel):
@@ -34,6 +44,17 @@ class ServicoAtualizar(BaseModel):
 	descricao: str | None = None
 	icone: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_ICONE)
 	status: SituacaoServico | None = None
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'nome': 'Branding completo',
+				'slug': 'branding-completo',
+				'descricao': 'Pacote completo de estratégia e identidade.',
+				'status': 'ativo',
+			}
+		}
+	)
 
 
 class ServicoResposta(ServicoBase):
@@ -56,12 +77,31 @@ class EntregavelCriar(EntregavelBase):
 
 	servico_id: int
 
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'descricao': 'Manual de marca em PDF',
+				'ordem': 1,
+				'servico_id': 1,
+			}
+		}
+	)
+
 
 class EntregavelAtualizar(BaseModel):
 	"""Classe que define os dados de entregável usados pela API."""
 
 	descricao: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_URL)
 	ordem: int | None = None
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'descricao': 'Manual de marca revisado',
+				'ordem': 2,
+			}
+		}
+	)
 
 
 class EntregavelResposta(EntregavelBase):

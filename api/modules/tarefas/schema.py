@@ -29,6 +29,23 @@ class TarefaCriar(TarefaBase):
 	complexidade: Complexidade = Complexidade.MEDIA
 	prioridade: Prioridade = Prioridade.MEDIA
 
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'projeto_id': 1,
+				'responsavel_id': 2,
+				'titulo': 'Criar primeira versão da landing page',
+				'descricao': 'Montar layout inicial para aprovação.',
+				'categoria': 'Design',
+				'prazo': '2026-06-10',
+				'ordem': 1,
+				'status': 'a_fazer',
+				'complexidade': 'media',
+				'prioridade': 'alta',
+			}
+		}
+	)
+
 
 class TarefaAtualizar(BaseModel):
 	"""Classe que define os dados de tarefa usados pela API."""
@@ -42,6 +59,17 @@ class TarefaAtualizar(BaseModel):
 	status: SituacaoTarefa | None = None
 	complexidade: Complexidade | None = None
 	prioridade: Prioridade | None = None
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'status': 'em_progresso',
+				'responsavel_id': 2,
+				'ordem': 2,
+				'prioridade': 'alta',
+			}
+		}
+	)
 
 
 class TarefaResposta(TarefaBase):
@@ -61,6 +89,15 @@ class ComentarioCriar(BaseModel):
 
 	tarefa_id: int
 	conteudo: str
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'tarefa_id': 1,
+				'conteudo': 'Atualizei o layout com os ajustes combinados.',
+			}
+		}
+	)
 
 
 class ComentarioResposta(BaseModel):
@@ -82,6 +119,18 @@ class AnexoCriar(BaseModel):
 	url: str = Field(max_length=TAMANHO_MAXIMO_URL)
 	tipo: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_TIPO_ARQUIVO)
 	tamanho: int | None = None
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'tarefa_id': 1,
+				'nome': 'layout-home.png',
+				'url': 'https://cdn.korus.com.br/anexos/layout-home.png',
+				'tipo': 'image/png',
+				'tamanho': 204800,
+			}
+		}
+	)
 
 
 class AnexoResposta(AnexoCriar):
