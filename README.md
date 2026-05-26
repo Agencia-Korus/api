@@ -1,5 +1,11 @@
 # API Korus
 
+## Credenciais:
+
+- Email: admin@email.com
+
+- Senha: AdminKorus@2026
+
 ## Configurando o ambiente
 
 ```bash
