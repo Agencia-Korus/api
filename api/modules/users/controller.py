@@ -124,4 +124,3 @@ async def deletar(usuario_id: int, servico: DependenciaServico):
 async def registrar(dados: UsuarioRegistrar, servico: DependenciaServico):
 	"""Função para registrar um novo usuário pendente de aprovação."""
 	return await servico.registrar(dados)
-
