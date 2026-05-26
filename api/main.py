@@ -13,6 +13,7 @@ from core.config import obter_configuracoes
 from core.swagger import exemplo_requisicao_json
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from modules.health.controller import router as router_saude
 from v1.router import router_api as router_api_v1
@@ -66,6 +67,28 @@ async def aplicar_json_como_filtros_get(request: Request, chamar_proximo):
 
 app.include_router(router_saude)
 app.include_router(router_api_v1, prefix='/api/v1')
+
+
+def gerar_openapi_sem_body_em_get():
+	"""Função para evitar requestBody em GET/HEAD no Swagger UI."""
+	if app.openapi_schema:
+		return app.openapi_schema
+	esquema = get_openapi(
+		title=app.title,
+		version=app.version,
+		description=app.description,
+		routes=app.routes,
+	)
+	for caminho in esquema.get('paths', {}).values():
+		for metodo in ('get', 'head'):
+			operacao = caminho.get(metodo)
+			if isinstance(operacao, dict):
+				operacao.pop('requestBody', None)
+	app.openapi_schema = esquema
+	return app.openapi_schema
+
+
+app.openapi = gerar_openapi_sem_body_em_get
 
 
 @app.get(
