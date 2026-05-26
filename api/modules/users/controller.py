@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Query, status
 from modules.users.schema import (
 	UsuarioAtualizar,
 	UsuarioCriar,
+	UsuarioRegistrar,
 	UsuarioResposta,
 )
 from modules.users.service import ServicoUsuario
@@ -112,3 +113,15 @@ async def aprovar(usuario_id: int, servico: DependenciaServico):
 async def deletar(usuario_id: int, servico: DependenciaServico):
 	"""Função para excluir um registro pelo ID."""
 	await servico.deletar(usuario_id)
+
+
+@router.post(
+	'/registro',
+	response_model=UsuarioResposta,
+	status_code=status.HTTP_201_CREATED,
+	summary='Registra um novo usuário pendente de aprovação',
+)
+async def registrar(dados: UsuarioRegistrar, servico: DependenciaServico):
+	"""Função para registrar um novo usuário pendente de aprovação."""
+	return await servico.registrar(dados)
+
