@@ -5,12 +5,10 @@ on:
     branches:
       - main
       - dev
-      - develop
   pull_request:
     branches:
       - main
       - dev
-      - develop
 
 env:
   JWT_SECRET_KEY: ci-jwt-secret
