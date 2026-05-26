@@ -55,9 +55,7 @@ class ServicoServico:
 
 	async def atualizar(self, servico_id: int, dados: ServicoAtualizar) -> Servico:
 		"""Função para atualizar um registro pelo ID."""
-		servico = await self.repository.atualizar(
-			servico_id, dados.model_dump(exclude_none=True)
-		)
+		servico = await self.repository.atualizar(servico_id, dados.model_dump(exclude_none=True))
 		if not servico:
 			raise ErroNaoEncontrado(_ENTITY_SERVICO, servico_id)
 		await self.sessao.commit()

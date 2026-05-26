@@ -50,9 +50,7 @@ class ServicoAcademia:
 
 	async def atualizar(self, item_id: int, dados: AcademiaAtualizar) -> Academia:
 		"""Função para atualizar um registro pelo ID."""
-		item = await self.repository.atualizar(
-			item_id, dados.model_dump(exclude_none=True)
-		)
+		item = await self.repository.atualizar(item_id, dados.model_dump(exclude_none=True))
 		if not item:
 			raise ErroNaoEncontrado(_ENTIDADE, item_id)
 		await self.sessao.commit()

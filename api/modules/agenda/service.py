@@ -78,29 +78,19 @@ class ServicoAgenda:
 		"""Função para listar eventos públicos exibidos no site."""
 		eventos_locais = await self.listar_eventos(usuario_id)
 		if data_inicio:
-			eventos_locais = [
-				evento for evento in eventos_locais if evento.data >= data_inicio
-			]
+			eventos_locais = [evento for evento in eventos_locais if evento.data >= data_inicio]
 		if data_fim:
-			eventos_locais = [
-				evento for evento in eventos_locais if evento.data <= data_fim
-			]
-		eventos_google = await self.listar_eventos_calendario_google(
-			data_inicio, data_fim
-		)
+			eventos_locais = [evento for evento in eventos_locais if evento.data <= data_fim]
+		eventos_google = await self.listar_eventos_calendario_google(data_inicio, data_fim)
 		ids_google_sincronizados = {
-			evento.google_event_id
-			for evento in eventos_locais
-			if evento.google_event_id
+			evento.google_event_id for evento in eventos_locais if evento.google_event_id
 		}
 		eventos_google = [
-			evento
-			for evento in eventos_google
-			if evento.id not in ids_google_sincronizados
+			evento for evento in eventos_google if evento.id not in ids_google_sincronizados
 		]
-		eventos = [
-			self._evento_local_para_site(evento) for evento in eventos_locais
-		] + [self._evento_google_para_site(evento) for evento in eventos_google]
+		eventos = [self._evento_local_para_site(evento) for evento in eventos_locais] + [
+			self._evento_google_para_site(evento) for evento in eventos_google
+		]
 		return sorted(eventos, key=lambda evento: evento.inicio)
 
 	@staticmethod
@@ -152,16 +142,12 @@ class ServicoAgenda:
 			link=evento.link,
 		)
 
-	async def atualizar_evento(
-		self, evento_id: int, dados: EventoAgendaAtualizar
-	) -> EventoAgenda:
+	async def atualizar_evento(self, evento_id: int, dados: EventoAgendaAtualizar) -> EventoAgenda:
 		"""Função para atualizar um evento da agenda."""
 		evento_atual = await self.eventos.obter(evento_id)
 		if not evento_atual:
 			raise ErroNaoEncontrado(_ENTIDADE_EVENTO, evento_id)
-		evento = await self.eventos.atualizar(
-			evento_id, dados.model_dump(exclude_none=True)
-		)
+		evento = await self.eventos.atualizar(evento_id, dados.model_dump(exclude_none=True))
 		if evento.google_event_id:
 			evento_google = await self.calendario_google.atualizar_evento(
 				id_evento_google=evento.google_event_id,
@@ -196,9 +182,7 @@ class ServicoAgenda:
 		await self.eventos.deletar(evento_id)
 		await self.sessao.commit()
 
-	async def criar_solicitacao(
-		self, dados: SolicitacaoReuniaoCriar
-	) -> SolicitacaoReuniao:
+	async def criar_solicitacao(self, dados: SolicitacaoReuniaoCriar) -> SolicitacaoReuniao:
 		"""Função para criar uma solicitação de reunião."""
 		solicitacao = SolicitacaoReuniao(**dados.model_dump())
 		solicitacao = await self.solicitacoes.adicionar(solicitacao)

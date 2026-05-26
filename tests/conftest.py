@@ -1,27 +1,41 @@
-import asyncio
 import os
-import socket
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Generator
+from importlib import import_module
+from pathlib import Path
+from typing import cast
 
 import pytest
 import pytest_asyncio
+from alembic import command
+from alembic.config import Config
+from core.config import obter_configuracoes
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
-
-os.environ.setdefault(
-	'DATABASE_URL',
-	'postgresql+asyncpg://korus:korus@localhost:5432/korus_test',
-)
-os.environ.setdefault('JWT_SECRET_KEY', 'test-secret')
-
-from core.security import criar_token_acesso
-from db.session import motor
-from main import app
-from sqlalchemy import text
+from testcontainers.postgres import PostgresContainer
 
 VARIAVEL_URL_BASE = 'KORUS_BASE_URL'
 TEMPO_LIMITE_PADRAO_SEGUNDOS = 30
-PORTA_PADRAO_BANCO = 5432
-TEMPO_LIMITE_SOCKET = 1
+POSTGRES_IMAGE = os.environ.get('POSTGRES_IMAGE', 'postgres:16-alpine')
+CAMINHO_ALEMBIC = Path(__file__).resolve().parents[1] / 'alembic.ini'
+
+os.environ.setdefault('JWT_SECRET_KEY', 'test-secret')
+
+
+def _executar_migracoes() -> None:
+	configuracao = Config(str(CAMINHO_ALEMBIC))
+	command.upgrade(configuracao, 'head')
+
+
+@pytest.fixture(scope='session')
+def postgres_container() -> Generator[PostgresContainer, None, None]:
+	"""Sobe um Postgres efêmero para a sessão de testes."""
+	with PostgresContainer(POSTGRES_IMAGE, driver='asyncpg') as postgres:
+		os.environ['DATABASE_URL'] = postgres.get_connection_url()
+		obter_configuracoes.cache_clear()
+		_executar_migracoes()
+		yield postgres
+	obter_configuracoes.cache_clear()
 
 
 @pytest.fixture(scope='session')
@@ -29,15 +43,28 @@ def url_base() -> str | None:
 	return os.environ.get(VARIAVEL_URL_BASE)
 
 
+@pytest.fixture(scope='session')
+def app_teste(postgres_container: PostgresContainer) -> FastAPI:
+	return cast(FastAPI, import_module('main').app)
+
+
+@pytest.fixture
+def cliente_teste(app_teste: FastAPI) -> Generator[TestClient, None, None]:
+	with TestClient(app_teste) as cliente_http_interno:
+		yield cliente_http_interno
+
+
 @pytest_asyncio.fixture
-async def cliente_http(url_base: str | None) -> AsyncGenerator[AsyncClient, None]:
+async def cliente_http(
+	url_base: str | None, app_teste: FastAPI
+) -> AsyncGenerator[AsyncClient, None]:
 	if url_base:
 		async with AsyncClient(
 			base_url=url_base, timeout=TEMPO_LIMITE_PADRAO_SEGUNDOS
 		) as cliente_http_interno:
 			yield cliente_http_interno
 	else:
-		transport = ASGITransport(app=app)
+		transport = ASGITransport(app=app_teste)
 		async with AsyncClient(
 			transport=transport,
 			base_url='http://testserver',
@@ -48,6 +75,7 @@ async def cliente_http(url_base: str | None) -> AsyncGenerator[AsyncClient, None
 
 @pytest.fixture
 def token_admin() -> str:
+	criar_token_acesso = import_module('core.security').criar_token_acesso
 	return criar_token_acesso(sujeito=1, dados_extras={'role': 'admin'})
 
 
@@ -58,7 +86,7 @@ def cabecalhos_admin(token_admin: str) -> dict[str, str]:
 
 @pytest_asyncio.fixture
 async def cliente_admin(
-	url_base: str | None, cabecalhos_admin: dict[str, str]
+	url_base: str | None, app_teste: FastAPI, cabecalhos_admin: dict[str, str]
 ) -> AsyncGenerator[AsyncClient, None]:
 	if url_base:
 		async with AsyncClient(
@@ -68,7 +96,7 @@ async def cliente_admin(
 		) as cliente_http_interno:
 			yield cliente_http_interno
 	else:
-		transport = ASGITransport(app=app)
+		transport = ASGITransport(app=app_teste)
 		async with AsyncClient(
 			transport=transport,
 			base_url='http://testserver',
@@ -80,6 +108,7 @@ async def cliente_admin(
 
 @pytest.fixture
 def token_cliente() -> str:
+	criar_token_acesso = import_module('core.security').criar_token_acesso
 	return criar_token_acesso(sujeito=2, dados_extras={'role': 'cliente'})
 
 
@@ -88,32 +117,4 @@ def cabecalhos_cliente(token_cliente: str) -> dict[str, str]:
 	return {'Authorization': f'Bearer {token_cliente}'}
 
 
-async def _consultar_banco() -> bool:
-	try:
-		async with motor.connect() as conexao:
-			await conexao.execute(text('SELECT 1 FROM usuario LIMIT 1'))
-			return True
-	except Exception:
-		return False
-	finally:
-		await motor.dispose()
-
-
-def postgres_disponivel() -> bool:
-	host = os.environ.get('TEST_DB_HOST', 'localhost')
-	port = int(os.environ.get('TEST_DB_PORT', str(PORTA_PADRAO_BANCO)))
-	try:
-		with socket.create_connection((host, port), timeout=TEMPO_LIMITE_SOCKET):
-			pass
-	except OSError:
-		return False
-	try:
-		return asyncio.run(_consultar_banco())
-	except RuntimeError:
-		return False
-
-
-exige_banco = pytest.mark.skipif(
-	not postgres_disponivel(),
-	reason='Postgres com esquema aplicado é necessário para integração',
-)
+exige_banco = pytest.mark.usefixtures('postgres_container')

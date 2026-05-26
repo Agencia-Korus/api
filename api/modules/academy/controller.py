@@ -99,9 +99,7 @@ async def obter(item_id: int, servico: DependenciaServico):
 	dependencies=[GuardaAdmin],
 	summary='Atualiza conteúdo no Academia (somente admin)',
 )
-async def atualizar(
-	item_id: int, dados: AcademiaAtualizar, servico: DependenciaServico
-):
+async def atualizar(item_id: int, dados: AcademiaAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(item_id, dados)
 

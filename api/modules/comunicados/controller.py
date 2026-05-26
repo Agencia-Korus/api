@@ -62,9 +62,7 @@ async def listar(
 	alvo: Annotated[ComunicadoAlvo | None, Query()] = None,
 ):
 	"""Função para listar registros."""
-	return await servico.listar_filtrados(
-		offset=pagina.offset, limit=pagina.limit, alvo=alvo
-	)
+	return await servico.listar_filtrados(offset=pagina.offset, limit=pagina.limit, alvo=alvo)
 
 
 @router.get(
@@ -85,9 +83,7 @@ async def obter(comunicado_id: int, servico: DependenciaServico):
 	dependencies=[GuardaAdmin],
 	summary='Atualiza comunicado (somente admin)',
 )
-async def atualizar(
-	comunicado_id: int, dados: ComunicadoAtualizar, servico: DependenciaServico
-):
+async def atualizar(comunicado_id: int, dados: ComunicadoAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(comunicado_id, dados)
 

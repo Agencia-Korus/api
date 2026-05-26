@@ -142,9 +142,11 @@ class RepositorioFake:  # noqa: PLR0904
 		return self.itens.get(entidade_id)
 
 	async def listar_todos(self, offset: int = 0, limit: int = 100, filtros=None):
-		self.filtros_recebidos.append(
-			{'offset': offset, 'limit': limit, 'filtros': filtros}
-		)
+		self.filtros_recebidos.append({
+			'offset': offset,
+			'limit': limit,
+			'filtros': filtros,
+		})
 		return list(self.itens.values())[offset : offset + limit]
 
 	async def atualizar(self, entidade_id: int, dados: dict[str, Any]):
@@ -181,51 +183,31 @@ class RepositorioFake:  # noqa: PLR0904
 
 	async def listar_por_servico(self, servico_id: int):
 		self.filtros_recebidos.append({'servico_id': servico_id})
-		return [
-			item for item in self.itens.values() if item.servico_id == servico_id
-		]
+		return [item for item in self.itens.values() if item.servico_id == servico_id]
 
 	async def listar_por_projeto(self, projeto_id: int):
 		self.filtros_recebidos.append({'projeto_id': projeto_id})
-		return [
-			item for item in self.itens.values() if item.projeto_id == projeto_id
-		]
+		return [item for item in self.itens.values() if item.projeto_id == projeto_id]
 
 	async def listar_por_tarefa(self, tarefa_id: int):
 		self.filtros_recebidos.append({'tarefa_id': tarefa_id})
-		return [
-			item for item in self.itens.values() if item.tarefa_id == tarefa_id
-		]
+		return [item for item in self.itens.values() if item.tarefa_id == tarefa_id]
 
 	async def listar_por_comunicado(self, comunicado_id: int):
 		self.filtros_recebidos.append({'comunicado_id': comunicado_id})
-		return [
-			item
-			for item in self.itens.values()
-			if item.comunicado_id == comunicado_id
-		]
+		return [item for item in self.itens.values() if item.comunicado_id == comunicado_id]
 
 	async def listar_por_funcionario(self, funcionario_id: int):
 		self.filtros_recebidos.append({'funcionario_id': funcionario_id})
-		return [
-			item
-			for item in self.itens.values()
-			if item.funcionario_id == funcionario_id
-		]
+		return [item for item in self.itens.values() if item.funcionario_id == funcionario_id]
 
 	async def listar_por_usuario(self, usuario_id: int):
 		self.filtros_recebidos.append({'usuario_id': usuario_id})
-		return [
-			item for item in self.itens.values() if item.usuario_id == usuario_id
-		]
+		return [item for item in self.itens.values() if item.usuario_id == usuario_id]
 
 	async def listar_recebidas(self, destinatario_id: int):
 		self.filtros_recebidos.append({'destinatario_id': destinatario_id})
-		return [
-			item
-			for item in self.itens.values()
-			if item.destinatario_id == destinatario_id
-		]
+		return [item for item in self.itens.values() if item.destinatario_id == destinatario_id]
 
 	async def marcar_lido(self, comunicado_id: int, usuario_id: int):
 		leitura = ComunicadoLeitura(
@@ -246,10 +228,7 @@ class RepositorioFake:  # noqa: PLR0904
 			(
 				item_id
 				for item_id, item in self.itens.items()
-				if (
-					item.projeto_id == projeto_id
-					and item.funcionario_id == funcionario_id
-				)
+				if (item.projeto_id == projeto_id and item.funcionario_id == funcionario_id)
 			),
 			None,
 		)
@@ -310,25 +289,21 @@ class CalendarioGoogleFake:
 
 def servico_academia(sessao: SessaoFake):
 	servico = ServicoAcademia(sessao)
-	servico.repository = RepositorioFake(
-		{
-			1: Academia(
-				id=1,
-				titulo='Marketing',
-				tipo=TipoAcademia.CURSO,
-				preco=Decimal('10.00'),
-				url_externa='https://korus.test/marketing',
-			)
-		}
-	)
+	servico.repository = RepositorioFake({
+		1: Academia(
+			id=1,
+			titulo='Marketing',
+			tipo=TipoAcademia.CURSO,
+			preco=Decimal('10.00'),
+			url_externa='https://korus.test/marketing',
+		)
+	})
 	return servico
 
 
 def servico_lead(sessao: SessaoFake):
 	servico = ServicoLead(sessao)
-	servico.repository = RepositorioFake(
-		{1: Lead(id=1, nome='Maria', email='maria@example.com')}
-	)
+	servico.repository = RepositorioFake({1: Lead(id=1, nome='Maria', email='maria@example.com')})
 	return servico
 
 
@@ -340,41 +315,37 @@ def servico_portfolio(sessao: SessaoFake):
 
 def servico_agenda(sessao: SessaoFake):
 	servico = ServicoAgenda(sessao)
-	servico.eventos = RepositorioFake(
-		{
-			1: EventoAgenda(
-				id=1,
-				usuario_id=1,
-				titulo='Reunião local',
-				tipo=EventoTipo.REUNIAO,
-				data=date(2026, 5, 25),
-				hora=time(9, 0),
-				duracao_min=60,
-				google_event_id='sincronizado',
-			),
-			2: EventoAgenda(
-				id=2,
-				usuario_id=1,
-				titulo='Fora do periodo',
-				tipo=EventoTipo.TAREFA,
-				data=date(2026, 6, 10),
-				hora=time(9, 0),
-				duracao_min=30,
-			),
-		}
-	)
-	servico.solicitacoes = RepositorioFake(
-		{
-			1: SolicitacaoReuniao(
-				id=1,
-				remetente_id=2,
-				destinatario_id=1,
-				titulo='Revisão',
-				data=date(2026, 5, 26),
-				hora=time(10, 0),
-			)
-		}
-	)
+	servico.eventos = RepositorioFake({
+		1: EventoAgenda(
+			id=1,
+			usuario_id=1,
+			titulo='Reunião local',
+			tipo=EventoTipo.REUNIAO,
+			data=date(2026, 5, 25),
+			hora=time(9, 0),
+			duracao_min=60,
+			google_event_id='sincronizado',
+		),
+		2: EventoAgenda(
+			id=2,
+			usuario_id=1,
+			titulo='Fora do periodo',
+			tipo=EventoTipo.TAREFA,
+			data=date(2026, 6, 10),
+			hora=time(9, 0),
+			duracao_min=30,
+		),
+	})
+	servico.solicitacoes = RepositorioFake({
+		1: SolicitacaoReuniao(
+			id=1,
+			remetente_id=2,
+			destinatario_id=1,
+			titulo='Revisão',
+			data=date(2026, 5, 26),
+			hora=time(10, 0),
+		)
+	})
 	servico.calendario_google = CalendarioGoogleFake()
 	return servico
 
@@ -400,9 +371,7 @@ def servico_agenda(sessao: SessaoFake):
 		(servico_portfolio, PortfolioCriar(nome='Identidade Aurora'), Portfolio),
 	],
 )
-async def test_services_crud_criam_entidade_e_comitam(
-	fabrica_servico, dados_criacao, tipo_modelo
-):
+async def test_services_crud_criam_entidade_e_comitam(fabrica_servico, dados_criacao, tipo_modelo):
 	"""Valida que services crud criam entidade e comitam."""
 	sessao = SessaoFake()
 	servico = fabrica_servico(sessao)
@@ -466,9 +435,7 @@ async def test_services_crud_retorna_404_quando_atualizacao_nao_encontra_registr
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-	'fabrica_servico', [servico_academia, servico_lead, servico_portfolio]
-)
+@pytest.mark.parametrize('fabrica_servico', [servico_academia, servico_lead, servico_portfolio])
 async def test_services_crud_deletam_e_comitam(fabrica_servico):
 	"""Valida que services crud deletam e comitam."""
 	sessao = SessaoFake()
@@ -481,9 +448,7 @@ async def test_services_crud_deletam_e_comitam(fabrica_servico):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-	'fabrica_servico', [servico_academia, servico_lead, servico_portfolio]
-)
+@pytest.mark.parametrize('fabrica_servico', [servico_academia, servico_lead, servico_portfolio])
 async def test_services_crud_retorna_404_quando_delecao_nao_encontra_registro(
 	fabrica_servico,
 ):
@@ -504,9 +469,7 @@ async def test_servico_academia_lista_com_filtros():
 	sessao = SessaoFake()
 	servico = servico_academia(sessao)
 
-	await servico.listar_filtrados(
-		offset=2, limit=10, tipo=TipoAcademia.CURSO, publicado=True
-	)
+	await servico.listar_filtrados(offset=2, limit=10, tipo=TipoAcademia.CURSO, publicado=True)
 
 	assert servico.repository.filtros_recebidos[-1] == {
 		'offset': 2,
@@ -590,10 +553,7 @@ async def test_servico_agenda_atualiza_evento_sincronizado_e_deleta_no_google():
 	await servico.deletar_evento(1)
 
 	assert evento.titulo == 'Kickoff atualizado'
-	assert (
-		servico.calendario_google.atualizados[0]['id_evento_google']
-		== 'sincronizado'
-	)
+	assert servico.calendario_google.atualizados[0]['id_evento_google'] == 'sincronizado'
 	assert servico.calendario_google.deletados == ['google-1']
 	assert sessao.flushes == 1
 	assert sessao.commits == 2
@@ -673,9 +633,9 @@ async def test_servico_servico_gerencia_entregaveis():
 	sessao = SessaoFake()
 	servico = ServicoServico(sessao)
 	servico.repository = RepositorioFake({1: Servico(id=1, nome='Site', slug='site')})
-	servico.entregaveis = RepositorioFake(
-		{1: Entregavel(id=1, servico_id=1, descricao='Wireframe', ordem=1)}
-	)
+	servico.entregaveis = RepositorioFake({
+		1: Entregavel(id=1, servico_id=1, descricao='Wireframe', ordem=1)
+	})
 
 	criado = await servico.criar_entregavel(
 		EntregavelCriar(servico_id=1, descricao='Layout', ordem=2)
@@ -697,15 +657,13 @@ async def test_servico_integracao_cria_atualiza_e_deleta_google_calendar():
 	"""Valida que servico integracao cria atualiza e deleta google calendar."""
 	sessao = SessaoFake()
 	servico = ServicoIntegracao(sessao)
-	servico.repository = RepositorioFake(
-		{
-			1: Integracao(
-				id=1,
-				nome='google_calendar',
-				status=SituacaoIntegracao.DESCONECTADO,
-			)
-		}
-	)
+	servico.repository = RepositorioFake({
+		1: Integracao(
+			id=1,
+			nome='google_calendar',
+			status=SituacaoIntegracao.DESCONECTADO,
+		)
+	})
 
 	criado = await servico.criar(IntegracaoCriar(status=SituacaoIntegracao.CONECTADO))
 	atualizado = await servico.atualizar(
@@ -737,25 +695,19 @@ async def test_servico_comunicado_marca_e_lista_leituras():
 	"""Valida que servico comunicado marca e lista leituras."""
 	sessao = SessaoFake()
 	servico = ServicoComunicado(sessao)
-	servico.repository = RepositorioFake(
-		{
-			1: Comunicado(
-				id=1,
-				autor_id=1,
-				titulo='Aviso',
-				conteudo='Conteudo',
-				alvo=ComunicadoAlvo.TODOS,
-			)
-		}
-	)
+	servico.repository = RepositorioFake({
+		1: Comunicado(
+			id=1,
+			autor_id=1,
+			titulo='Aviso',
+			conteudo='Conteudo',
+			alvo=ComunicadoAlvo.TODOS,
+		)
+	})
 	servico.leituras = RepositorioFake()
 
-	criado = await servico.criar(
-		ComunicadoCriar(autor_id=1, titulo='Novo', conteudo='Texto')
-	)
-	atualizado = await servico.atualizar(
-		1, ComunicadoAtualizar(alvo=ComunicadoAlvo.CLIENTES)
-	)
+	criado = await servico.criar(ComunicadoCriar(autor_id=1, titulo='Novo', conteudo='Texto'))
+	atualizado = await servico.atualizar(1, ComunicadoAtualizar(alvo=ComunicadoAlvo.CLIENTES))
 	leitura = await servico.marcar_lido(1, usuario_id=7)
 	leituras = await servico.listar_leituras(1)
 
@@ -814,9 +766,7 @@ async def test_servico_gamificacao_retorna_404_quando_funcionario_nao_existe():
 	servico.historicos = RepositorioFake()
 
 	with pytest.raises(HTTPException) as exc:
-		await servico.registrar_xp(
-			HistoricoXpCriar(funcionario_id=404, acao='Entrega', xp=10)
-		)
+		await servico.registrar_xp(HistoricoXpCriar(funcionario_id=404, acao='Entrega', xp=10))
 
 	assert exc.value.status_code == 404
 	assert sessao.commits == 0
@@ -827,12 +777,12 @@ async def test_servico_gamificacao_crud_regras_conquistas_e_desbloqueio():
 	"""Valida que servico gamificacao crud regras conquistas e desbloqueio."""
 	sessao = SessaoFake()
 	servico = ServicoGamificacao(sessao)
-	servico.regras = RepositorioFake(
-		{1: RegraXp(id=1, tarefa='Entrega', complexidade=Complexidade.MEDIA, xp=50)}
-	)
-	servico.conquistas = RepositorioFake(
-		{1: Conquista(id=1, nome='Primeira entrega', xp_bonus=100)}
-	)
+	servico.regras = RepositorioFake({
+		1: RegraXp(id=1, tarefa='Entrega', complexidade=Complexidade.MEDIA, xp=50)
+	})
+	servico.conquistas = RepositorioFake({
+		1: Conquista(id=1, nome='Primeira entrega', xp_bonus=100)
+	})
 	servico.fc = RepositorioFake()
 
 	regra = await servico.criar_regra(
@@ -840,9 +790,7 @@ async def test_servico_gamificacao_crud_regras_conquistas_e_desbloqueio():
 	)
 	regra_atualizada = await servico.atualizar_regra(1, RegraXpAtualizar(xp=80))
 	conquista = await servico.criar_conquista(ConquistaCriar(nome='Bravo'))
-	conquista_atualizada = await servico.atualizar_conquista(
-		1, ConquistaAtualizar(xp_bonus=150)
-	)
+	conquista_atualizada = await servico.atualizar_conquista(1, ConquistaAtualizar(xp_bonus=150))
 	desbloqueio = await servico.desbloquear_conquista(2, 1)
 
 	assert regra.tarefa == 'Review'
@@ -866,15 +814,13 @@ async def test_servico_projeto_aplica_permissoes_de_visibilidade():
 	)
 	servico = ServicoProjeto(sessao)
 	servico.repository = RepositorioFake({1: projeto})
-	servico.equipe = RepositorioFake(
-		{
-			1: ProjetoFuncionario(
-				projeto_id=1,
-				funcionario_id=20,
-				papel='Designer',
-			)
-		}
-	)
+	servico.equipe = RepositorioFake({
+		1: ProjetoFuncionario(
+			projeto_id=1,
+			funcionario_id=20,
+			papel='Designer',
+		)
+	})
 
 	assert await servico.obter_visivel(1, 99, PapelUsuario.ADMIN.value) is projeto
 	assert await servico.obter_visivel(1, 10, PapelUsuario.CLIENTE.value) is projeto
@@ -890,20 +836,18 @@ async def test_servico_projeto_gerencia_equipe():
 	"""Valida que servico projeto gerencia equipe."""
 	sessao = SessaoFake()
 	servico = ServicoProjeto(sessao)
-	servico.repository = RepositorioFake(
-		{
-			1: Projeto(
-				id=1,
-				cliente_id=10,
-				nome='Site',
-				status=SituacaoProjeto.PLANEJAMENTO,
-				progresso=0,
-			)
-		}
-	)
-	servico.equipe = RepositorioFake(
-		{1: ProjetoFuncionario(projeto_id=1, funcionario_id=7, papel='Dev')}
-	)
+	servico.repository = RepositorioFake({
+		1: Projeto(
+			id=1,
+			cliente_id=10,
+			nome='Site',
+			status=SituacaoProjeto.PLANEJAMENTO,
+			progresso=0,
+		)
+	})
+	servico.equipe = RepositorioFake({
+		1: ProjetoFuncionario(projeto_id=1, funcionario_id=7, papel='Dev')
+	})
 
 	membro = await servico.adicionar_membro(
 		1, ProjetoFuncionarioCriar(funcionario_id=8, papel='Design')
@@ -921,24 +865,20 @@ async def test_servico_tarefa_conclui_com_data_e_gerencia_comentarios_anexos():
 	"""Valida que servico tarefa conclui com data e gerencia comentarios anexos."""
 	sessao = SessaoFake()
 	servico = ServicoTarefa(sessao)
-	servico.repository = RepositorioFake(
-		{
-			1: Tarefa(
-				id=1,
-				projeto_id=1,
-				titulo='Layout',
-				status=SituacaoTarefa.A_FAZER,
-				complexidade=Complexidade.MEDIA,
-				prioridade=Prioridade.MEDIA,
-			)
-		}
-	)
+	servico.repository = RepositorioFake({
+		1: Tarefa(
+			id=1,
+			projeto_id=1,
+			titulo='Layout',
+			status=SituacaoTarefa.A_FAZER,
+			complexidade=Complexidade.MEDIA,
+			prioridade=Prioridade.MEDIA,
+		)
+	})
 	servico.comentarios = RepositorioFake()
 	servico.anexos = RepositorioFake()
 
-	tarefa = await servico.atualizar(
-		1, TarefaAtualizar(status=SituacaoTarefa.CONCLUIDO)
-	)
+	tarefa = await servico.atualizar(1, TarefaAtualizar(status=SituacaoTarefa.CONCLUIDO))
 	comentario = await servico.adicionar_comentario(
 		ComentarioCriar(tarefa_id=1, conteudo='feito'), autor_id=2
 	)
@@ -982,15 +922,11 @@ async def test_servico_tarefa_aplica_permissoes_de_acesso_e_gerenciamento():
 	assert await servico.obter_visivel(1, 99, PapelUsuario.ADMIN.value) is tarefa
 	assert await servico.obter_visivel(1, 10, PapelUsuario.CLIENTE.value) is tarefa
 	assert (
-		await servico.garantir_permissao_gerenciar_tarefa(
-			1, 20, PapelUsuario.FUNCIONARIO.value
-		)
+		await servico.garantir_permissao_gerenciar_tarefa(1, 20, PapelUsuario.FUNCIONARIO.value)
 		is tarefa
 	)
 	with pytest.raises(HTTPException) as exc:
-		await servico.garantir_permissao_gerenciar_tarefa(
-			1, 30, PapelUsuario.CLIENTE.value
-		)
+		await servico.garantir_permissao_gerenciar_tarefa(1, 30, PapelUsuario.CLIENTE.value)
 
 	assert exc.value.status_code == 403
 
@@ -1000,18 +936,16 @@ async def test_servico_usuario_cria_perfis_e_aprova_cadastro():
 	"""Valida que servico usuario cria perfis e aprova cadastro."""
 	sessao = SessaoFake()
 	servico = ServicoUsuario(sessao)
-	servico.usuarios = RepositorioFake(
-		{
-			1: Usuario(
-				id=1,
-				nome='Ana',
-				email='ana@example.com',
-				senha_hash='x',
-				role=PapelUsuario.CLIENTE,
-				status=SituacaoUsuario.PENDENTE,
-			)
-		}
-	)
+	servico.usuarios = RepositorioFake({
+		1: Usuario(
+			id=1,
+			nome='Ana',
+			email='ana@example.com',
+			senha_hash='x',
+			role=PapelUsuario.CLIENTE,
+			status=SituacaoUsuario.PENDENTE,
+		)
+	})
 	servico.clientes = RepositorioFake()
 	servico.funcionarios = RepositorioFake()
 	servico.admins = RepositorioFake()

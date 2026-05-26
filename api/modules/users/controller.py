@@ -84,9 +84,7 @@ async def obter(usuario_id: int, servico: DependenciaServico):
 	dependencies=[GuardaAdmin],
 	summary='Edita dados do usuário (somente admin)',
 )
-async def atualizar(
-	usuario_id: int, dados: UsuarioAtualizar, servico: DependenciaServico
-):
+async def atualizar(usuario_id: int, dados: UsuarioAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(usuario_id, dados)
 

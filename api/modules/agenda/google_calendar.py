@@ -49,8 +49,7 @@ class ClienteGoogleCalendar:
 		if self._credenciais_conta_servico_disponiveis():
 			return True
 		return bool(
-			self.configuracoes.google_calendar_id
-			and self.configuracoes.google_calendar_api_key
+			self.configuracoes.google_calendar_id and self.configuracoes.google_calendar_api_key
 		)
 
 	def _credenciais_conta_servico_disponiveis(self) -> bool:
@@ -75,12 +74,8 @@ class ClienteGoogleCalendar:
 		parametros = {
 			'singleEvents': 'true',
 			'orderBy': 'startTime',
-			'timeMin': datetime.combine(
-				data_inicial, time.min, tzinfo=timezone.utc
-			).isoformat(),
-			'timeMax': datetime.combine(
-				data_final, time.max, tzinfo=timezone.utc
-			).isoformat(),
+			'timeMin': datetime.combine(data_inicial, time.min, tzinfo=timezone.utc).isoformat(),
+			'timeMax': datetime.combine(data_final, time.max, tzinfo=timezone.utc).isoformat(),
 		}
 		if self.configuracoes.google_calendar_api_key:
 			parametros['key'] = self.configuracoes.google_calendar_api_key
@@ -139,9 +134,7 @@ class ClienteGoogleCalendar:
 		try:
 			evento_atualizado = await self._requisitar_json(
 				'PATCH',
-				self._url_calendario(
-					id_calendario, f'events/{quote(id_evento_google, safe="")}'
-				),
+				self._url_calendario(id_calendario, f'events/{quote(id_evento_google, safe="")}'),
 				corpo_requisicao=json.dumps(corpo).encode('utf-8'),
 				cabecalhos={
 					**await self._cabecalhos_autenticacao(),
@@ -170,9 +163,7 @@ class ClienteGoogleCalendar:
 		try:
 			await self._requisitar_json(
 				'DELETE',
-				self._url_calendario(
-					id_calendario, f'events/{quote(id_evento_google, safe="")}'
-				),
+				self._url_calendario(id_calendario, f'events/{quote(id_evento_google, safe="")}'),
 				cabecalhos=await self._cabecalhos_autenticacao(),
 			)
 		except HTTPException as exc:
@@ -229,11 +220,7 @@ class ClienteGoogleCalendar:
 	async def _obter_token_conta_servico(self) -> str:
 		"""Função interna para obter token da conta de serviço."""
 		agora = datetime.now(timezone.utc)
-		if (
-			self._token_acesso
-			and self._token_expira_em
-			and agora < self._token_expira_em
-		):
+		if self._token_acesso and self._token_expira_em and agora < self._token_expira_em:
 			return self._token_acesso
 		info = self._info_conta_servico()
 		emitido_em = int(agora.timestamp())
@@ -388,11 +375,7 @@ class ClienteGoogleCalendar:
 	def _converter_evento(self, item: dict[str, Any]) -> EventoGoogleCalendar:
 		"""Função interna para converter um evento do Google Calendar."""
 		inicio = self._converter_data_hora_evento(item.get('start', {}))
-		fim = (
-			self._converter_data_hora_evento(item.get('end', {}))
-			if item.get('end')
-			else None
-		)
+		fim = self._converter_data_hora_evento(item.get('end', {})) if item.get('end') else None
 		return EventoGoogleCalendar(
 			id=item['id'],
 			titulo=item.get('summary') or 'Reunião',

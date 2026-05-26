@@ -38,9 +38,7 @@ class ConsentimentoLgpd(Base):
 	)
 	aceito: Mapped[bool] = mapped_column(Boolean, nullable=False)
 	ip: Mapped[str | None] = mapped_column(INET)
-	user_agent: Mapped[str | None] = mapped_column(
-		String(TAMANHO_MAXIMO_AGENTE_USUARIO)
-	)
+	user_agent: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_AGENTE_USUARIO))
 	data: Mapped[datetime] = mapped_column(
 		DateTime(timezone=True), server_default=func.now(), nullable=False
 	)

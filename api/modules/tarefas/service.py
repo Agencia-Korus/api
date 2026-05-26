@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 
 from core.enums import PapelUsuario, SituacaoTarefa
 from core.exceptions import ErroNaoEncontrado
-from fastapi import HTTPException, status
+from fastapi import HTTPException
+from fastapi import status as http_status
 from modules.projetos.model import Projeto, ProjetoFuncionario
 from modules.tarefas.model import Anexo, Comentario, Tarefa
 from modules.tarefas.repository import (
@@ -105,13 +106,11 @@ class ServicoTarefa:
 				status=status,
 			)
 		raise HTTPException(
-			status_code=status.HTTP_403_FORBIDDEN,
+			status_code=http_status.HTTP_403_FORBIDDEN,
 			detail='Acesso negado para tarefas',
 		)
 
-	async def obter_visivel(
-		self, tarefa_id: int, usuario_id: int, papel: str
-	) -> Tarefa:
+	async def obter_visivel(self, tarefa_id: int, usuario_id: int, papel: str) -> Tarefa:
 		"""Função para obter um registro respeitando as permissões do usuário."""
 		tarefa = await self.obter(tarefa_id)
 		if papel == PapelUsuario.ADMIN.value or await self._pode_acessar_tarefa(
@@ -119,7 +118,7 @@ class ServicoTarefa:
 		):
 			return tarefa
 		raise HTTPException(
-			status_code=status.HTTP_403_FORBIDDEN,
+			status_code=http_status.HTTP_403_FORBIDDEN,
 			detail='Acesso negado para esta tarefa',
 		)
 
@@ -130,19 +129,16 @@ class ServicoTarefa:
 		tarefa = await self.obter(tarefa_id)
 		if papel == PapelUsuario.ADMIN.value:
 			return tarefa
-		if (
-			papel == PapelUsuario.FUNCIONARIO.value
-			and await self._funcionario_envolvido(tarefa, usuario_id)
+		if papel == PapelUsuario.FUNCIONARIO.value and await self._funcionario_envolvido(
+			tarefa, usuario_id
 		):
 			return tarefa
 		raise HTTPException(
-			status_code=status.HTTP_403_FORBIDDEN,
+			status_code=http_status.HTTP_403_FORBIDDEN,
 			detail='Apenas admin ou funcionário envolvido pode alterar esta tarefa',
 		)
 
-	async def _pode_acessar_tarefa(
-		self, tarefa: Tarefa, usuario_id: int, papel: str
-	) -> bool:
+	async def _pode_acessar_tarefa(self, tarefa: Tarefa, usuario_id: int, papel: str) -> bool:
 		"""Função interna para validar acesso a uma tarefa."""
 		if papel == PapelUsuario.CLIENTE.value:
 			projeto = await self.sessao.get(Projeto, tarefa.projeto_id)
@@ -179,9 +175,7 @@ class ServicoTarefa:
 			raise ErroNaoEncontrado(_ENTIDADE_TAREFA, tarefa_id)
 		await self.sessao.commit()
 
-	async def adicionar_comentario(
-		self, dados: ComentarioCriar, autor_id: int
-	) -> Comentario:
+	async def adicionar_comentario(self, dados: ComentarioCriar, autor_id: int) -> Comentario:
 		"""Função para adicionar um comentário a uma tarefa."""
 		await self.obter(dados.tarefa_id)
 		comentario = Comentario(

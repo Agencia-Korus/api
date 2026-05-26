@@ -22,9 +22,7 @@ async def obter_escalar(conexao: AsyncConnection, sql: str, **parametros: Any) -
 	return (await conexao.execute(text(sql), parametros)).scalar_one()
 
 
-async def obter_escalar_opcional(
-	conexao: AsyncConnection, sql: str, **parametros: Any
-) -> Any:
+async def obter_escalar_opcional(conexao: AsyncConnection, sql: str, **parametros: Any) -> Any:
 	return (await conexao.execute(text(sql), parametros)).scalar_one_or_none()
 
 
@@ -137,9 +135,7 @@ async def inserir_ou_atualizar_tarefa(
 ) -> int:
 	prioridade = complexidade if complexidade in {'baixa', 'media', 'alta'} else 'alta'
 	concluido_em = (
-		datetime(2026, 4, 15, 12, 0, tzinfo=timezone.utc)
-		if status == 'concluido'
-		else None
+		datetime(2026, 4, 15, 12, 0, tzinfo=timezone.utc) if status == 'concluido' else None
 	)
 	tarefa_id = await obter_escalar_opcional(
 		conexao,

@@ -89,9 +89,7 @@ async def listar_regras(servico: DependenciaServico, pagina: DependenciaPaginaca
 	dependencies=[GuardaAdmin],
 	summary='Atualiza regra de XP (somente admin)',
 )
-async def atualizar_regra(
-	regra_id: int, dados: RegraXpAtualizar, servico: DependenciaServico
-):
+async def atualizar_regra(regra_id: int, dados: RegraXpAtualizar, servico: DependenciaServico):
 	"""Função para atualizar uma regra de XP."""
 	return await servico.atualizar_regra(regra_id, dados)
 
@@ -133,10 +131,7 @@ async def listar_historico(
 ):
 	"""Função para listar o histórico de XP de um funcionário."""
 	id_solicitante, papel_solicitante = solicitante
-	if (
-		papel_solicitante == PapelUsuario.FUNCIONARIO.value
-		and id_solicitante != funcionario_id
-	):
+	if papel_solicitante == PapelUsuario.FUNCIONARIO.value and id_solicitante != funcionario_id:
 		raise HTTPException(
 			status_code=status.HTTP_403_FORBIDDEN,
 			detail='Funcionário só pode listar o próprio XP',
@@ -207,9 +202,7 @@ async def deletar_conquista(conquista_id: int, servico: DependenciaServico):
 		'conquista_id': 1,
 	}),
 )
-async def desbloquear(
-	funcionario_id: int, conquista_id: int, servico: DependenciaServico
-):
+async def desbloquear(funcionario_id: int, conquista_id: int, servico: DependenciaServico):
 	"""Função para registrar uma conquista desbloqueada por um funcionário."""
 	return await servico.desbloquear_conquista(funcionario_id, conquista_id)
 
@@ -226,10 +219,7 @@ async def listar_funcionario_conquistas(
 ):
 	"""Função para listar conquistas de um funcionário."""
 	id_solicitante, papel_solicitante = solicitante
-	if (
-		papel_solicitante == PapelUsuario.FUNCIONARIO.value
-		and id_solicitante != funcionario_id
-	):
+	if papel_solicitante == PapelUsuario.FUNCIONARIO.value and id_solicitante != funcionario_id:
 		raise HTTPException(
 			status_code=status.HTTP_403_FORBIDDEN,
 			detail='Funcionário só pode listar conquistas próprias',

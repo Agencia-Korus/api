@@ -13,6 +13,4 @@ def normalizar_url_banco_assincrono(url: str) -> tuple[str, dict[str, Any]]:
 
 	dsn_asyncpg = url_analisada.set(drivername='postgresql')
 
-	return 'postgresql+asyncpg://', {
-		'dsn': dsn_asyncpg.render_as_string(hide_password=False)
-	}
+	return 'postgresql+asyncpg://', {'dsn': dsn_asyncpg.render_as_string(hide_password=False)}

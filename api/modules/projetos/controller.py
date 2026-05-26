@@ -82,9 +82,7 @@ async def obter(
 	projeto_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual
 ):
 	"""Função para obter um registro pelo ID."""
-	return await servico.obter_visivel(
-		projeto_id, usuario_atual.id, usuario_atual.papel
-	)
+	return await servico.obter_visivel(projeto_id, usuario_atual.id, usuario_atual.papel)
 
 
 @router.patch(
@@ -93,9 +91,7 @@ async def obter(
 	dependencies=[GuardaAdmin],
 	summary='Atualiza projeto (somente admin)',
 )
-async def atualizar(
-	projeto_id: int, dados: ProjetoAtualizar, servico: DependenciaServico
-):
+async def atualizar(projeto_id: int, dados: ProjetoAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(projeto_id, dados)
 
@@ -150,8 +146,6 @@ async def listar_equipe(
 		'funcionario_id': 2,
 	}),
 )
-async def remover_membro(
-	projeto_id: int, funcionario_id: int, servico: DependenciaServico
-):
+async def remover_membro(projeto_id: int, funcionario_id: int, servico: DependenciaServico):
 	"""Função para remover um funcionário da equipe do projeto."""
 	await servico.remover_membro(projeto_id, funcionario_id)

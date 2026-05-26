@@ -41,9 +41,7 @@ class ServicoIntegracao:
 		"""Função para listar registros."""
 		return await self.repository.listar_google_calendar(offset=offset, limit=limit)
 
-	async def atualizar(
-		self, integracao_id: int, dados: IntegracaoAtualizar
-	) -> Integracao:
+	async def atualizar(self, integracao_id: int, dados: IntegracaoAtualizar) -> Integracao:
 		"""Função para atualizar um registro pelo ID."""
 		await self.obter(integracao_id)
 		integracao = await self.repository.atualizar(

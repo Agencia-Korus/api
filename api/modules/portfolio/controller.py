@@ -27,9 +27,7 @@ def _servico(sessao: DependenciaSessao) -> ServicoPortfolio:
 DependenciaServico = Annotated[ServicoPortfolio, Depends(_servico)]
 
 
-@router.post(
-	'', response_model=PortfolioResposta, status_code=status.HTTP_201_CREATED
-)
+@router.post('', response_model=PortfolioResposta, status_code=status.HTTP_201_CREATED)
 async def criar(dados: PortfolioCriar, servico: DependenciaServico):
 	"""Função para criar um novo registro."""
 	return await servico.criar(dados)
@@ -74,9 +72,7 @@ async def obter(item_id: int, servico: DependenciaServico):
 
 
 @router.patch('/{item_id}', response_model=PortfolioResposta)
-async def atualizar(
-	item_id: int, dados: PortfolioAtualizar, servico: DependenciaServico
-):
+async def atualizar(item_id: int, dados: PortfolioAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(item_id, dados)
 

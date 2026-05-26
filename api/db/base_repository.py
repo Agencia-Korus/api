@@ -68,9 +68,7 @@ class RepositorioBase(Generic[ModelT]):
 	async def deletar(self, entidade_id: int) -> bool:
 		"""Função para excluir um registro pelo ID."""
 		campo_id = getattr(self.modelo, 'id')
-		instrucao = (
-			sa_delete(self.modelo).where(campo_id == entidade_id).returning(campo_id)
-		)
+		instrucao = sa_delete(self.modelo).where(campo_id == entidade_id).returning(campo_id)
 		resultado = await self.sessao.execute(instrucao)
 		await self.sessao.flush()
 		return resultado.scalar_one_or_none() is not None

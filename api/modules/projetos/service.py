@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from core.enums import PapelUsuario, SituacaoProjeto
 from core.exceptions import ErroNaoEncontrado
-from fastapi import HTTPException, status
+from fastapi import HTTPException
+from fastapi import status as http_status
 from modules.projetos.model import Projeto, ProjetoFuncionario
 from modules.projetos.repository import (
 	RepositorioProjeto,
@@ -41,9 +42,7 @@ class ServicoProjeto:
 			raise ErroNaoEncontrado(_ENTIDADE, projeto_id)
 		return projeto
 
-	async def obter_visivel(
-		self, projeto_id: int, usuario_id: int, papel: str
-	) -> Projeto:
+	async def obter_visivel(self, projeto_id: int, usuario_id: int, papel: str) -> Projeto:
 		"""Função para obter um registro respeitando as permissões do usuário."""
 		projeto = await self.obter(projeto_id)
 		if papel == PapelUsuario.ADMIN.value:
@@ -55,7 +54,7 @@ class ServicoProjeto:
 		):
 			return projeto
 		raise HTTPException(
-			status_code=status.HTTP_403_FORBIDDEN,
+			status_code=http_status.HTTP_403_FORBIDDEN,
 			detail='Acesso negado para este projeto',
 		)
 
@@ -103,15 +102,13 @@ class ServicoProjeto:
 				status=status,
 			)
 		raise HTTPException(
-			status_code=status.HTTP_403_FORBIDDEN,
+			status_code=http_status.HTTP_403_FORBIDDEN,
 			detail='Acesso negado para projetos',
 		)
 
 	async def atualizar(self, projeto_id: int, dados: ProjetoAtualizar) -> Projeto:
 		"""Função para atualizar um registro pelo ID."""
-		projeto = await self.repository.atualizar(
-			projeto_id, dados.model_dump(exclude_none=True)
-		)
+		projeto = await self.repository.atualizar(projeto_id, dados.model_dump(exclude_none=True))
 		if not projeto:
 			raise ErroNaoEncontrado(_ENTIDADE, projeto_id)
 		await self.sessao.commit()

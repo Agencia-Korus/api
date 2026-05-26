@@ -67,9 +67,7 @@ async def obter(servico_id: int, servico: DependenciaServico):
 
 
 @router.patch('/{servico_id}', response_model=ServicoResposta)
-async def atualizar(
-	servico_id: int, dados: ServicoAtualizar, servico: DependenciaServico
-):
+async def atualizar(servico_id: int, dados: ServicoAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(servico_id, dados)
 

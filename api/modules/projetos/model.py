@@ -55,9 +55,7 @@ class Projeto(Base):
 		nullable=False,
 		default=SituacaoProjeto.PLANEJAMENTO,
 	)
-	progresso: Mapped[int] = mapped_column(
-		SmallInteger, nullable=False, default=PROGRESSO_MINIMO
-	)
+	progresso: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=PROGRESSO_MINIMO)
 	data_inicio: Mapped[date | None] = mapped_column(Date)
 	data_fim: Mapped[date | None] = mapped_column(Date)
 	criado_em: Mapped[datetime] = mapped_column(

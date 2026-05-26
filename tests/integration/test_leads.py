@@ -25,9 +25,7 @@ def _dados(**substituicoes):
 @pytest.mark.parametrize('prioridade', ['baixa', 'media', 'alta'])
 async def test_criar_lead_com_prioridades(cliente_admin: AsyncClient, prioridade: str):
 	"""Valida que criar lead com prioridades."""
-	resposta = await cliente_admin.post(
-		'/api/v1/leads', json=_dados(prioridade=prioridade)
-	)
+	resposta = await cliente_admin.post('/api/v1/leads', json=_dados(prioridade=prioridade))
 	assert resposta.status_code == 201
 	assert resposta.json()['prioridade'] == prioridade
 

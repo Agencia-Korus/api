@@ -23,8 +23,7 @@ class ComunicadoCriar(ComunicadoBase):
 			'example': {
 				'titulo': 'Novo projeto aprovado!',
 				'conteudo': (
-					'O projeto de identidade visual foi aprovado. '
-					'Equipe de design, preparem-se!'
+					'O projeto de identidade visual foi aprovado. Equipe de design, preparem-se!'
 				),
 				'alvo': 'todos',
 				'autor_id': 1,

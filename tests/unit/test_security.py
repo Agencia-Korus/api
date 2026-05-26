@@ -50,6 +50,14 @@ def test_obter_usuario_atual_id_extrai_sub_do_token():
 	assert obter_usuario_atual_id(_credenciais(token)) == 77
 
 
+def test_obter_usuario_atual_id_rejeita_token_sem_sub():
+	"""Valida que obter usuario atual id rejeita token sem sujeito."""
+	token = criar_token_acesso('', dados_extras={'role': 'admin'})
+
+	with pytest.raises(HTTPException):
+		obter_usuario_atual_id(_credenciais(token))
+
+
 def test_obter_usuario_atual_extrai_id_e_papel():
 	"""Valida que obter usuario atual extrai id e papel."""
 	token = criar_token_acesso(88, dados_extras={'role': 'funcionario'})

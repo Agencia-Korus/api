@@ -36,8 +36,11 @@ def test_caminho_conta_servico_google_prioriza_arquivo_do_host(tmp_path: Path):
 	assert configuracoes.caminho_conta_servico_google() == arquivo_host.resolve()
 
 
-def test_caminho_conta_servico_google_retorna_none_sem_arquivo_existente():
+def test_caminho_conta_servico_google_retorna_none_sem_arquivo_existente(
+	tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
 	"""Valida que caminho conta servico google retorna none sem arquivo existente."""
+	monkeypatch.chdir(tmp_path)
 	configuracoes = Configuracoes(
 		google_calendar_service_account_file='arquivo-inexistente.json',
 		google_calendar_service_account_host_file='outro-inexistente.json',

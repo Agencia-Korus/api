@@ -12,9 +12,7 @@ class ConsentimentoLgpdCriar(BaseModel):
 	tipo: ConsentimentoTipo
 	aceito: bool
 	ip: IPvAnyAddress | None = None
-	user_agent: str | None = Field(
-		default=None, max_length=TAMANHO_MAXIMO_AGENTE_USUARIO
-	)
+	user_agent: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_AGENTE_USUARIO)
 
 	model_config = ConfigDict(
 		json_schema_extra={

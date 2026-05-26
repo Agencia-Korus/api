@@ -25,9 +25,7 @@ class ProjetoCriar(ProjetoBase):
 	"""Classe que define os dados de projeto usados pela API."""
 
 	status: SituacaoProjeto = SituacaoProjeto.PLANEJAMENTO
-	progresso: int = Field(
-		default=PROGRESSO_MINIMO, ge=PROGRESSO_MINIMO, le=PROGRESSO_MAXIMO
-	)
+	progresso: int = Field(default=PROGRESSO_MINIMO, ge=PROGRESSO_MINIMO, le=PROGRESSO_MAXIMO)
 
 	model_config = ConfigDict(
 		json_schema_extra={
@@ -54,9 +52,7 @@ class ProjetoAtualizar(BaseModel):
 	data_inicio: date | None = None
 	data_fim: date | None = None
 	status: SituacaoProjeto | None = None
-	progresso: int | None = Field(
-		default=None, ge=PROGRESSO_MINIMO, le=PROGRESSO_MAXIMO
-	)
+	progresso: int | None = Field(default=None, ge=PROGRESSO_MINIMO, le=PROGRESSO_MAXIMO)
 
 	model_config = ConfigDict(
 		json_schema_extra={

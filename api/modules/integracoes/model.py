@@ -21,9 +21,7 @@ class Integracao(Base):
 	__tablename__ = 'integracao'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-	nome: Mapped[str] = mapped_column(
-		String(TAMANHO_MAXIMO_SEGMENTO), unique=True, nullable=False
-	)
+	nome: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_SEGMENTO), unique=True, nullable=False)
 	chave: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_CHAVE_INTEGRACAO))
 	status: Mapped[SituacaoIntegracao] = mapped_column(
 		SAEnum(

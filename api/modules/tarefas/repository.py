@@ -12,9 +12,7 @@ class RepositorioTarefa(RepositorioBase[Tarefa]):
 
 	async def listar_por_projeto(self, projeto_id: int) -> list[Tarefa]:
 		"""Função para listar registros vinculados a um projeto."""
-		consulta = (
-			select(Tarefa).where(Tarefa.projeto_id == projeto_id).order_by(Tarefa.ordem)
-		)
+		consulta = select(Tarefa).where(Tarefa.projeto_id == projeto_id).order_by(Tarefa.ordem)
 		resultado = await self.sessao.execute(consulta)
 		return list(resultado.scalars().all())
 
@@ -34,9 +32,7 @@ class RepositorioTarefa(RepositorioBase[Tarefa]):
 			consulta = consulta.where(Tarefa.responsavel_id == responsavel_id)
 		if status is not None:
 			consulta = consulta.where(Tarefa.status == status)
-		consulta = (
-			consulta.order_by(Tarefa.ordem, Tarefa.prazo).offset(offset).limit(limit)
-		)
+		consulta = consulta.order_by(Tarefa.ordem, Tarefa.prazo).offset(offset).limit(limit)
 		resultado = await self.sessao.execute(consulta)
 		return list(resultado.scalars().all())
 
@@ -75,9 +71,7 @@ class RepositorioTarefa(RepositorioBase[Tarefa]):
 			consulta = consulta.where(Tarefa.responsavel_id == responsavel_id)
 		if status is not None:
 			consulta = consulta.where(Tarefa.status == status)
-		consulta = (
-			consulta.order_by(Tarefa.ordem, Tarefa.prazo).offset(offset).limit(limit)
-		)
+		consulta = consulta.order_by(Tarefa.ordem, Tarefa.prazo).offset(offset).limit(limit)
 		resultado = await self.sessao.execute(consulta)
 		return list(resultado.scalars().all())
 

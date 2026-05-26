@@ -46,12 +46,8 @@ class ServicoUsuario:
 			dados_cliente = dados.cliente
 			cliente = Cliente(
 				id=usuario.id,
-				razao_social=dados_cliente.razao_social
-				if dados_cliente
-				else usuario.nome,
-				cnpj_cpf=dados_cliente.cnpj_cpf
-				if dados_cliente
-				else f'api-{usuario.id}',
+				razao_social=dados_cliente.razao_social if dados_cliente else usuario.nome,
+				cnpj_cpf=dados_cliente.cnpj_cpf if dados_cliente else f'api-{usuario.id}',
 				segmento=dados_cliente.segmento if dados_cliente else None,
 			)
 			await self.clientes.adicionar(cliente)
@@ -61,9 +57,7 @@ class ServicoUsuario:
 			funcionario = Funcionario(
 				id=usuario.id,
 				cargo=dados_funcionario.cargo if dados_funcionario else 'Funcionário',
-				especialidade=dados_funcionario.especialidade
-				if dados_funcionario
-				else None,
+				especialidade=dados_funcionario.especialidade if dados_funcionario else None,
 			)
 			await self.funcionarios.adicionar(funcionario)
 
@@ -104,9 +98,7 @@ class ServicoUsuario:
 
 	async def atualizar(self, usuario_id: int, dados: UsuarioAtualizar) -> Usuario:
 		"""Função para atualizar um registro pelo ID."""
-		usuario = await self.usuarios.atualizar(
-			usuario_id, dados.model_dump(exclude_none=True)
-		)
+		usuario = await self.usuarios.atualizar(usuario_id, dados.model_dump(exclude_none=True))
 		if not usuario:
 			raise ErroNaoEncontrado(_ENTIDADE, usuario_id)
 		await self.sessao.commit()
@@ -123,8 +115,7 @@ class ServicoUsuario:
 		"""Função para registrar um novo usuário."""
 		if dados.role == PapelUsuario.ADMIN:
 			raise ErroRequisicaoInvalida(
-				'Auto-cadastro como admin não é pertmitido. '
-				'Apenas admins podem promover usuários'
+				'Auto-cadastro como admin não é pertmitido. Apenas admins podem promover usuários'
 			)
 		dados_criacao = UsuarioCriar(
 			nome=dados.nome,

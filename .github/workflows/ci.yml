@@ -2,64 +2,68 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches:
+      - main
+      - dev
+      - develop
   pull_request:
-    branches: [main, develop]
+    branches:
+      - main
+      - dev
+      - develop
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-  POETRY_VERSION: '2.4.1'
-  POSTGRES_USER: korus
-  POSTGRES_PASSWORD: korus
-  POSTGRES_DB: korus_test
-  DATABASE_URL: postgresql+asyncpg://korus:korus@localhost:5432/korus_test
   JWT_SECRET_KEY: ci-jwt-secret
   JWT_ALGORITHM: HS256
   JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 60
   JWT_REFRESH_TOKEN_EXPIRE_DAYS: 7
   DEBUG: 'false'
   CORS_ALLOW_ORIGINS: '*'
+  TESTCONTAINERS_RYUK_DISABLED: 'true'
 
 jobs:
   lint-and-test:
     name: Lint + Test (api)
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:18
-        env:
-          POSTGRES_USER: korus
-          POSTGRES_PASSWORD: korus
-          POSTGRES_DB: korus_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U korus -d korus_test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.12'
 
       - name: Install Poetry
-        run: pipx install poetry==${POETRY_VERSION}
+        run: pipx install poetry
+
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-${{ runner.os }}-py3.12-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            poetry-${{ runner.os }}-py3.12-
 
       - name: Install dependencies
         run: poetry install --no-interaction --no-ansi --no-root
 
-      - name: Lint (ruff)
-        run: poetry run ruff check .
+      - name: Check Docker
+        run: docker version
 
-      - name: Run database migrations
-        run: poetry run alembic upgrade head
+      - name: Run lint
+        run: poetry run ruff check
 
       - name: Run tests
-        run: poetry run pytest -x --cov --cov-report=xml -vv
+        run: >
+          poetry run pytest
+          --cov=core
+          --cov=db
+          --cov=modules
+          --cov-report=term-missing
+          --cov-report=xml
+          --cov-fail-under=100
+          -q
 
       - name: Upload coverage
         if: success()
@@ -73,7 +77,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint-and-test
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup buildx
         uses: docker/setup-buildx-action@v3

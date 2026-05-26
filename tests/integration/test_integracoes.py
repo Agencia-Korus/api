@@ -10,9 +10,7 @@ from tests.conftest import exige_banco
 	'situacao_entrada',
 	['conectado', 'desconectado'],
 )
-async def test_criar_integracao_status(
-	cliente_admin: AsyncClient, situacao_entrada: str
-):
+async def test_criar_integracao_status(cliente_admin: AsyncClient, situacao_entrada: str):
 	"""Valida que criar integracao status."""
 	dados = {
 		'nome': 'google_calendar',

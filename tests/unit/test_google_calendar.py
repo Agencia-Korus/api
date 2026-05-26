@@ -23,12 +23,19 @@ def test_caminho_conta_servico_prioriza_arquivo_local(tmp_path: Path):
 	assert configuracoes.caminho_conta_servico_google() == arquivo_local.resolve()
 
 
-def test_criar_evento_ignora_google_quando_arquivo_credencial_nao_existe():
+def test_criar_evento_ignora_google_quando_arquivo_credencial_nao_existe(
+	tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
 	"""Valida que criar evento ignora google quando arquivo credencial nao existe."""
+	monkeypatch.chdir(tmp_path)
 	cliente = ClienteGoogleCalendar(
 		Configuracoes(
 			google_calendar_enabled=True,
+			google_calendar_id=None,
+			google_calendar_api_key=None,
 			google_calendar_service_account_file='/caminho/inexistente.json',
+			google_calendar_service_account_host_file=None,
+			google_calendar_service_account_json=None,
 		)
 	)
 
@@ -37,12 +44,19 @@ def test_criar_evento_ignora_google_quando_arquivo_credencial_nao_existe():
 
 
 @pytest.mark.asyncio
-async def test_criar_evento_retorna_none_sem_credenciais_validas():
+async def test_criar_evento_retorna_none_sem_credenciais_validas(
+	tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
 	"""Valida que criar evento retorna none sem credenciais validas."""
+	monkeypatch.chdir(tmp_path)
 	cliente = ClienteGoogleCalendar(
 		Configuracoes(
 			google_calendar_enabled=True,
+			google_calendar_id=None,
+			google_calendar_api_key=None,
 			google_calendar_service_account_file='/caminho/inexistente.json',
+			google_calendar_service_account_host_file=None,
+			google_calendar_service_account_json=None,
 		)
 	)
 

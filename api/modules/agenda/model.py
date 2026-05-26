@@ -70,9 +70,7 @@ class SolicitacaoReuniao(Base):
 
 	__tablename__ = 'solicitacao_reuniao'
 	__table_args__ = (
-		CheckConstraint(
-			'remetente_id <> destinatario_id', name='ck_solicitacao_diferentes'
-		),
+		CheckConstraint('remetente_id <> destinatario_id', name='ck_solicitacao_diferentes'),
 		Index('idx_solicitacao_destinatario', 'destinatario_id', 'status'),
 	)
 

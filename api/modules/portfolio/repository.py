@@ -31,8 +31,6 @@ class RepositorioPortfolio(RepositorioBase[Portfolio]):
 			consulta = consulta.where(Portfolio.destaque.is_(True))
 		if categoria:
 			consulta = consulta.where(Portfolio.categoria.ilike(categoria))
-		consulta = (
-			consulta.order_by(Portfolio.criado_em.desc()).offset(offset).limit(limit)
-		)
+		consulta = consulta.order_by(Portfolio.criado_em.desc()).offset(offset).limit(limit)
 		resultado = await self.sessao.execute(consulta)
 		return list(resultado.scalars().all())

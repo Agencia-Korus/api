@@ -45,9 +45,7 @@ class RepositorioFuncionarioConquista:
 		"""Função para inicializar a instância com suas dependências."""
 		self.sessao = sessao
 
-	async def desbloquear(
-		self, funcionario_id: int, conquista_id: int
-	) -> FuncionarioConquista:
+	async def desbloquear(self, funcionario_id: int, conquista_id: int) -> FuncionarioConquista:
 		"""Função para registrar uma conquista desbloqueada por um funcionário."""
 		consulta = (
 			insert(FuncionarioConquista)
@@ -63,9 +61,7 @@ class RepositorioFuncionarioConquista:
 		resultado = await self.sessao.execute(consulta_selecao)
 		return resultado.scalar_one()
 
-	async def listar_por_funcionario(
-		self, funcionario_id: int
-	) -> list[FuncionarioConquista]:
+	async def listar_por_funcionario(self, funcionario_id: int) -> list[FuncionarioConquista]:
 		"""Função para listar registros vinculados a um funcionário."""
 		consulta = select(FuncionarioConquista).where(
 			FuncionarioConquista.funcionario_id == funcionario_id

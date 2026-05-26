@@ -7,7 +7,9 @@ from tests.conftest import exige_banco
 
 
 def _dados_cliente():
-	suffix = uuid.uuid4().hex[:8]
+	identificador = uuid.uuid4()
+	suffix = identificador.hex[:8]
+	cnpj = f'{identificador.int % 10**14:014d}'
 	return {
 		'nome': f'Cliente {suffix}',
 		'email': f'cli-{suffix}@example.com',
@@ -15,7 +17,7 @@ def _dados_cliente():
 		'role': 'cliente',
 		'cliente': {
 			'razao_social': 'Acme LTDA',
-			'cnpj_cpf': f'00.000.000/0001-{int(suffix[:2], 16) % 100:02d}',
+			'cnpj_cpf': f'{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}',
 			'segmento': 'Tech',
 		},
 	}
@@ -40,9 +42,7 @@ async def test_admin_cria_usuarios_de_tipos_diversos(
 ):
 	"""Valida que admin cria usuarios de tipos diversos."""
 	dados = construtor_dados()
-	resposta = await cliente_http.post(
-		'/api/v1/usuarios', json=dados, headers=cabecalhos_admin
-	)
+	resposta = await cliente_http.post('/api/v1/usuarios', json=dados, headers=cabecalhos_admin)
 	assert resposta.status_code == 201, resposta.text
 	criado = resposta.json()
 	assert criado['email'] == dados['email']
@@ -114,9 +114,7 @@ async def test_admin_aprova_cadastro_pendente(
 	cliente_http: AsyncClient, cabecalhos_admin: dict[str, str]
 ):
 	"""Valida que admin aprova cadastro pendente."""
-	registro = await cliente_http.post(
-		'/api/v1/usuarios/registro', json=_dados_funcionario()
-	)
+	registro = await cliente_http.post('/api/v1/usuarios/registro', json=_dados_funcionario())
 	assert registro.status_code == 201
 	usuario_id = registro.json()['id']
 	resposta = await cliente_http.post(
@@ -132,9 +130,7 @@ async def test_aprovar_sem_admin_retorna_403(
 	cliente_http: AsyncClient, cabecalhos_cliente: dict[str, str]
 ):
 	"""Valida que aprovar sem admin retorna 403."""
-	registro = await cliente_http.post(
-		'/api/v1/usuarios/registro', json=_dados_funcionario()
-	)
+	registro = await cliente_http.post('/api/v1/usuarios/registro', json=_dados_funcionario())
 	usuario_id = registro.json()['id']
 	resposta = await cliente_http.post(
 		f'/api/v1/usuarios/{usuario_id}/aprovar', headers=cabecalhos_cliente

@@ -57,9 +57,7 @@ class ServicoLead:
 
 	async def atualizar(self, lead_id: int, dados: LeadAtualizar) -> Lead:
 		"""Função para atualizar um registro pelo ID."""
-		lead = await self.repository.atualizar(
-			lead_id, dados.model_dump(exclude_none=True)
-		)
+		lead = await self.repository.atualizar(lead_id, dados.model_dump(exclude_none=True))
 		if not lead:
 			raise ErroNaoEncontrado(_ENTIDADE, lead_id)
 		await self.sessao.commit()

@@ -44,9 +44,7 @@ def _valor_query(valor):
 @app.middleware('http')
 async def aplicar_json_como_filtros_get(request: Request, chamar_proximo):
 	"""Função para aceitar no GET o JSON de filtros exibido no Swagger."""
-	if request.method == 'GET' and 'application/json' in request.headers.get(
-		'content-type', ''
-	):
+	if request.method == 'GET' and 'application/json' in request.headers.get('content-type', ''):
 		try:
 			dados = await request.json()
 		except ValueError:

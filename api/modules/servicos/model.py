@@ -30,9 +30,7 @@ class Servico(Base):
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
 	nome: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_NOME), nullable=False)
-	slug: Mapped[str] = mapped_column(
-		String(TAMANHO_MAXIMO_SLUG), unique=True, nullable=False
-	)
+	slug: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_SLUG), unique=True, nullable=False)
 	descricao: Mapped[str | None] = mapped_column(Text)
 	icone: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_ICONE))
 	status: Mapped[SituacaoServico] = mapped_column(

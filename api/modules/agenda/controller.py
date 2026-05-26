@@ -27,9 +27,7 @@ GuardaUsuarioAutenticado = Depends(
 )
 DependenciaUsuarioAtual = Annotated[UsuarioAtual, Depends(obter_usuario_atual)]
 
-router = APIRouter(
-	prefix='/agenda', tags=['Agenda'], dependencies=[GuardaUsuarioAutenticado]
-)
+router = APIRouter(prefix='/agenda', tags=['Agenda'], dependencies=[GuardaUsuarioAutenticado])
 
 
 def _servico(sessao: DependenciaSessao) -> ServicoAgenda:
@@ -147,9 +145,7 @@ async def deletar_evento(evento_id: int, servico: DependenciaServico):
 	status_code=status.HTTP_201_CREATED,
 	summary='Solicita reunião (usuário autenticado)',
 )
-async def criar_solicitacao(
-	dados: SolicitacaoReuniaoCriar, servico: DependenciaServico
-):
+async def criar_solicitacao(dados: SolicitacaoReuniaoCriar, servico: DependenciaServico):
 	"""Função para criar uma solicitação de reunião."""
 	return await servico.criar_solicitacao(dados)
 

@@ -66,9 +66,7 @@ async def obter(integracao_id: int, servico: DependenciaServico):
 	response_model=IntegracaoResposta,
 	summary='Atualiza configuração do Google Calendar (somente admin)',
 )
-async def atualizar(
-	integracao_id: int, dados: IntegracaoAtualizar, servico: DependenciaServico
-):
+async def atualizar(integracao_id: int, dados: IntegracaoAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(integracao_id, dados)
 

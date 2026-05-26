@@ -51,9 +51,7 @@ class ServicoPainel:
 					Usuario.status == SituacaoUsuario.ATIVO,
 				),
 			},
-			'leads_por_semana': await self._series_por_periodo(
-				Lead.data, 'week', Lead.id
-			),
+			'leads_por_semana': await self._series_por_periodo(Lead.data, 'week', Lead.id),
 			'tarefas_concluidas_por_dia': await self._series_por_periodo(
 				Tarefa.concluido_em,
 				'day',
@@ -108,9 +106,7 @@ class ServicoPainel:
 		papel: str | None = None,
 	) -> dict[str, Any]:
 		"""Função para montar os indicadores do painel do funcionário."""
-		funcionario = await self._garantir_acesso_funcionario(
-			funcionario_id, usuario_id, papel
-		)
+		funcionario = await self._garantir_acesso_funcionario(funcionario_id, usuario_id, papel)
 		return {
 			'perfil': {
 				'id': funcionario.id,
@@ -294,9 +290,7 @@ class ServicoPainel:
 
 	async def _projetos_do_cliente(self, cliente_id: int) -> list[dict[str, Any]]:
 		"""Função interna para listar projetos de um cliente."""
-		consulta = (
-			select(Projeto).where(Projeto.cliente_id == cliente_id).order_by(Projeto.id)
-		)
+		consulta = select(Projeto).where(Projeto.cliente_id == cliente_id).order_by(Projeto.id)
 		projetos = list((await self.sessao.execute(consulta)).scalars().all())
 		return [
 			{
@@ -366,9 +360,7 @@ class ServicoPainel:
 		)
 		return int((await self.sessao.execute(consulta)).scalar_one())
 
-	async def _tarefas_do_funcionario(
-		self, funcionario_id: int
-	) -> list[dict[str, Any]]:
+	async def _tarefas_do_funcionario(self, funcionario_id: int) -> list[dict[str, Any]]:
 		"""Função interna para listar tarefas de um funcionário."""
 		consulta = (
 			select(Tarefa)
@@ -399,9 +391,7 @@ class ServicoPainel:
 			for linha in linhas
 		]
 
-	async def _conquistas_do_funcionario(
-		self, funcionario_id: int
-	) -> list[dict[str, Any]]:
+	async def _conquistas_do_funcionario(self, funcionario_id: int) -> list[dict[str, Any]]:
 		"""Função interna para listar conquistas de um funcionário."""
 		consulta = (
 			select(Conquista, FuncionarioConquista.desbloqueado_em)

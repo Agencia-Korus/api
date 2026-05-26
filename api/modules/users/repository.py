@@ -32,9 +32,7 @@ class RepositorioUsuario(RepositorioBase[Usuario]):
 			consulta = consulta.where(Usuario.status == status)
 		if busca:
 			termo = f'%{busca}%'
-			consulta = consulta.where(
-				or_(Usuario.nome.ilike(termo), Usuario.email.ilike(termo))
-			)
+			consulta = consulta.where(or_(Usuario.nome.ilike(termo), Usuario.email.ilike(termo)))
 		consulta = consulta.order_by(Usuario.nome).offset(offset).limit(limit)
 		resultado = await self.sessao.execute(consulta)
 		return list(resultado.scalars().all())

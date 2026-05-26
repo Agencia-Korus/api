@@ -51,9 +51,7 @@ class ServicoGamificacao:
 
 	async def atualizar_regra(self, regra_id: int, dados: RegraXpAtualizar) -> RegraXp:
 		"""Função para atualizar uma regra de XP."""
-		regra = await self.regras.atualizar(
-			regra_id, dados.model_dump(exclude_none=True)
-		)
+		regra = await self.regras.atualizar(regra_id, dados.model_dump(exclude_none=True))
 		if not regra:
 			raise ErroNaoEncontrado(_ENTITY_REGRA, regra_id)
 		await self.sessao.commit()
@@ -92,9 +90,7 @@ class ServicoGamificacao:
 		"""Função para listar conquistas."""
 		return await self.conquistas.listar_todos(offset=offset, limit=limit)
 
-	async def atualizar_conquista(
-		self, conquista_id: int, dados: ConquistaAtualizar
-	) -> Conquista:
+	async def atualizar_conquista(self, conquista_id: int, dados: ConquistaAtualizar) -> Conquista:
 		"""Função para atualizar uma conquista."""
 		conquista = await self.conquistas.atualizar(
 			conquista_id, dados.model_dump(exclude_none=True)

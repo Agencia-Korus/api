@@ -26,9 +26,7 @@ class UsuarioAtual:
 	papel: str
 
 
-def criar_token_acesso(
-	sujeito: str | int, dados_extras: dict[str, Any] | None = None
-) -> str:
+def criar_token_acesso(sujeito: str | int, dados_extras: dict[str, Any] | None = None) -> str:
 	"""Função para criar um token JWT de acesso."""
 	expiracao = datetime.now(timezone.utc) + timedelta(
 		minutes=configuracoes.jwt_access_token_expire_minutes
@@ -36,9 +34,7 @@ def criar_token_acesso(
 	dados: dict[str, Any] = {'sub': str(sujeito), 'exp': expiracao, 'type': 'access'}
 	if dados_extras:
 		dados.update(dados_extras)
-	return jwt.encode(
-		dados, configuracoes.jwt_secret_key, algorithm=configuracoes.jwt_algorithm
-	)
+	return jwt.encode(dados, configuracoes.jwt_secret_key, algorithm=configuracoes.jwt_algorithm)
 
 
 def criar_token_atualizacao(sujeito: str | int) -> str:
@@ -47,9 +43,7 @@ def criar_token_atualizacao(sujeito: str | int) -> str:
 		days=configuracoes.jwt_refresh_token_expire_days
 	)
 	dados = {'sub': str(sujeito), 'exp': expiracao, 'type': 'refresh'}
-	return jwt.encode(
-		dados, configuracoes.jwt_secret_key, algorithm=configuracoes.jwt_algorithm
-	)
+	return jwt.encode(dados, configuracoes.jwt_secret_key, algorithm=configuracoes.jwt_algorithm)
 
 
 def decodificar_token(token: str) -> dict[str, Any]:

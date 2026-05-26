@@ -25,9 +25,7 @@ class RepositorioProjeto(RepositorioBase[Projeto]):
 		)
 		if status is not None:
 			consulta = consulta.where(Projeto.status == status)
-		consulta = (
-			consulta.order_by(Projeto.criado_em.desc()).offset(offset).limit(limit)
-		)
+		consulta = consulta.order_by(Projeto.criado_em.desc()).offset(offset).limit(limit)
 		resultado = await self.sessao.execute(consulta)
 		return list(resultado.scalars().all())
 
@@ -48,9 +46,7 @@ class RepositorioProjetoFuncionario:
 
 	async def listar_por_projeto(self, projeto_id: int) -> list[ProjetoFuncionario]:
 		"""Função para listar registros vinculados a um projeto."""
-		consulta = select(ProjetoFuncionario).where(
-			ProjetoFuncionario.projeto_id == projeto_id
-		)
+		consulta = select(ProjetoFuncionario).where(ProjetoFuncionario.projeto_id == projeto_id)
 		resultado = await self.sessao.execute(consulta)
 		return list(resultado.scalars().all())
 

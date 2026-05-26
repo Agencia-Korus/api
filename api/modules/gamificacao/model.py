@@ -28,9 +28,7 @@ class RegraXp(Base):
 	"""Classe que representa a tabela de regra de XP no banco de dados."""
 
 	__tablename__ = 'regra_xp'
-	__table_args__ = (
-		CheckConstraint(f'xp >= {XP_MINIMO}', name='ck_regra_xp_positivo'),
-	)
+	__table_args__ = (CheckConstraint(f'xp >= {XP_MINIMO}', name='ck_regra_xp_positivo'),)
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
 	tarefa: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_NOME), nullable=False)

@@ -39,9 +39,7 @@ class Usuario(Base):
 	nome: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_NOME), nullable=False)
 	# CITEXT() -> Lucas@email.com = lucas@email.com
 	email: Mapped[str] = mapped_column(CITEXT(), unique=True, nullable=False)
-	senha_hash: Mapped[str] = mapped_column(
-		String(TAMANHO_MAXIMO_HASH_SENHA), nullable=False
-	)
+	senha_hash: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_HASH_SENHA), nullable=False)
 	role: Mapped[PapelUsuario] = mapped_column(
 		SAEnum(
 			PapelUsuario,
@@ -88,9 +86,7 @@ class Cliente(Base):
 	id: Mapped[int] = mapped_column(
 		BigInteger, ForeignKey('usuario.id', ondelete='CASCADE'), primary_key=True
 	)
-	razao_social: Mapped[str] = mapped_column(
-		String(TAMANHO_MAXIMO_RAZAO_SOCIAL), nullable=False
-	)
+	razao_social: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_RAZAO_SOCIAL), nullable=False)
 	cnpj_cpf: Mapped[str] = mapped_column(
 		String(TAMANHO_MAXIMO_DOCUMENTO), unique=True, nullable=False
 	)
@@ -112,9 +108,7 @@ class Funcionario(Base):
 		Date, nullable=False, server_default=func.current_date()
 	)
 	xp_total: Mapped[int] = mapped_column(Integer, nullable=False, default=XP_INICIAL)
-	nivel: Mapped[int] = mapped_column(
-		Integer, nullable=False, default=NIVEL_FUNCIONARIO_INICIAL
-	)
+	nivel: Mapped[int] = mapped_column(Integer, nullable=False, default=NIVEL_FUNCIONARIO_INICIAL)
 	usuario: Mapped['Usuario'] = relationship(back_populates='funcionario')
 
 

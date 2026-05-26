@@ -133,9 +133,7 @@ async def deletar(
 		'requestBody': {
 			'content': {
 				'application/json': {
-					'example': {
-						'conteudo': 'Atualizei o layout com os ajustes combinados.'
-					}
+					'example': {'conteudo': 'Atualizei o layout com os ajustes combinados.'}
 				}
 			}
 		}

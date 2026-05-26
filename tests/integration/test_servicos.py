@@ -23,9 +23,7 @@ def _dados_servico(**substituicoes):
 @pytest.mark.parametrize('status', ['ativo', 'inativo'])
 async def test_criar_servico_com_status(cliente_admin: AsyncClient, status: str):
 	"""Valida que criar servico com status."""
-	resposta = await cliente_admin.post(
-		'/api/v1/servicos', json=_dados_servico(status=status)
-	)
+	resposta = await cliente_admin.post('/api/v1/servicos', json=_dados_servico(status=status))
 
 	assert resposta.status_code == 201
 	assert resposta.json()['status'] == status
@@ -35,9 +33,7 @@ async def test_criar_servico_com_status(cliente_admin: AsyncClient, status: str)
 @exige_banco
 async def test_adicionar_listar_e_atualizar_entregavel(cliente_admin: AsyncClient):
 	"""Valida que adicionar listar e atualizar entregavel."""
-	servico = (
-		await cliente_admin.post('/api/v1/servicos', json=_dados_servico())
-	).json()
+	servico = (await cliente_admin.post('/api/v1/servicos', json=_dados_servico())).json()
 
 	criado = await cliente_admin.post(
 		f'/api/v1/servicos/{servico["id"]}/entregaveis',

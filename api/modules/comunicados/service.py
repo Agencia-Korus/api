@@ -48,9 +48,7 @@ class ServicoComunicado:
 			offset=offset, limit=limit, filtros={'alvo': alvo}
 		)
 
-	async def atualizar(
-		self, comunicado_id: int, dados: ComunicadoAtualizar
-	) -> Comunicado:
+	async def atualizar(self, comunicado_id: int, dados: ComunicadoAtualizar) -> Comunicado:
 		"""Função para atualizar um registro pelo ID."""
 		comunicado = await self.repository.atualizar(
 			comunicado_id, dados.model_dump(exclude_none=True)
@@ -66,9 +64,7 @@ class ServicoComunicado:
 			raise ErroNaoEncontrado(_ENTIDADE, comunicado_id)
 		await self.sessao.commit()
 
-	async def marcar_lido(
-		self, comunicado_id: int, usuario_id: int
-	) -> ComunicadoLeitura:
+	async def marcar_lido(self, comunicado_id: int, usuario_id: int) -> ComunicadoLeitura:
 		"""Função para registrar a leitura de um comunicado."""
 		await self.obter(comunicado_id)
 		leitura = await self.leituras.marcar_lido(comunicado_id, usuario_id)
