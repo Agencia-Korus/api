@@ -2,23 +2,23 @@ from functools import lru_cache
 from pathlib import Path
 
 from core.constants import (
-	JWT_ACCESS_TOKEN_EXPIRE_MIN,
-	JWT_DEFAULT_ALGORITHM,
-	JWT_REFRESH_TOKEN_EXPIRE_DAYS,
+	ALGORITMO_PADRAO_JWT,
+	DIAS_EXPIRACAO_TOKEN_ATUALIZACAO_JWT,
+	MINUTOS_EXPIRACAO_TOKEN_ACESSO_JWT,
 )
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class Configuracoes(BaseSettings):
 	"""Classe que centraliza as configurações da aplicação."""
 
 	database_url: str = 'database-url'
 	debug: bool = False
 	jwt_secret_key: str = 'change-me'
-	jwt_algorithm: str = JWT_DEFAULT_ALGORITHM
-	jwt_access_token_expire_minutes: int = JWT_ACCESS_TOKEN_EXPIRE_MIN
-	jwt_refresh_token_expire_days: int = JWT_REFRESH_TOKEN_EXPIRE_DAYS
+	jwt_algorithm: str = ALGORITMO_PADRAO_JWT
+	jwt_access_token_expire_minutes: int = MINUTOS_EXPIRACAO_TOKEN_ACESSO_JWT
+	jwt_refresh_token_expire_days: int = DIAS_EXPIRACAO_TOKEN_ATUALIZACAO_JWT
 	cors_allow_origins: str = '*'
 	google_calendar_enabled: bool = False
 	google_calendar_id: str | None = None
@@ -33,15 +33,15 @@ class Settings(BaseSettings):
 
 	@field_validator('debug', mode='before')
 	@classmethod
-	def parse_debug(cls, value: object) -> object:
+	def interpretar_debug(cls, valor: object) -> object:
 		"""Função para converter o valor de debug recebido por configuração."""
-		if isinstance(value, str) and value.strip().lower() in {
+		if isinstance(valor, str) and valor.strip().lower() in {
 			'release',
 			'production',
 			'prod',
 		}:
 			return False
-		return value
+		return valor
 
 	def caminho_conta_servico_google(self) -> Path | None:
 		"""Função para localizar o arquivo de credenciais do Google Calendar."""
@@ -64,6 +64,6 @@ class Settings(BaseSettings):
 
 
 @lru_cache
-def obter_settings() -> Settings:
+def obter_configuracoes() -> Configuracoes:
 	"""Função para obter as configurações carregadas do ambiente."""
-	return Settings()
+	return Configuracoes()

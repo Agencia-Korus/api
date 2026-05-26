@@ -1,7 +1,7 @@
 from datetime import date, datetime, time
 
-from core.constants import DURACAO_EVENTO_PADRAO_MIN, TITULO_MAX_LENGTH
-from core.enums import EventoTipo, SolicitacaoStatus, enum_values
+from core.constants import DURACAO_MINIMA_EVENTO_PADRAO, TAMANHO_MAXIMO_TITULO
+from core.enums import EventoTipo, SituacaoSolicitacao, valores_enum
 from db.base import Base
 from sqlalchemy import (
 	BigInteger,
@@ -41,14 +41,14 @@ class EventoAgenda(Base):
 	usuario_id: Mapped[int] = mapped_column(
 		BigInteger, ForeignKey('usuario.id', ondelete='CASCADE'), nullable=False
 	)
-	titulo: Mapped[str] = mapped_column(String(TITULO_MAX_LENGTH), nullable=False)
+	titulo: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_TITULO), nullable=False)
 	descricao: Mapped[str | None] = mapped_column(Text)
 	tipo: Mapped[EventoTipo] = mapped_column(
 		SAEnum(
 			EventoTipo,
 			name='evento_tipo',
 			create_type=False,
-			values_callable=enum_values,
+			values_callable=valores_enum,
 		),
 		nullable=False,
 		default=EventoTipo.REUNIAO,
@@ -56,7 +56,7 @@ class EventoAgenda(Base):
 	data: Mapped[date] = mapped_column(Date, nullable=False)
 	hora: Mapped[time | None] = mapped_column(Time)
 	duracao_min: Mapped[int] = mapped_column(
-		Integer, nullable=False, default=DURACAO_EVENTO_PADRAO_MIN
+		Integer, nullable=False, default=DURACAO_MINIMA_EVENTO_PADRAO
 	)
 	google_event_id: Mapped[str | None] = mapped_column(String(255))
 	google_link: Mapped[str | None] = mapped_column(String(500))
@@ -83,19 +83,19 @@ class SolicitacaoReuniao(Base):
 	destinatario_id: Mapped[int] = mapped_column(
 		BigInteger, ForeignKey('usuario.id', ondelete='CASCADE'), nullable=False
 	)
-	titulo: Mapped[str] = mapped_column(String(TITULO_MAX_LENGTH), nullable=False)
+	titulo: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_TITULO), nullable=False)
 	mensagem: Mapped[str | None] = mapped_column(Text)
 	data: Mapped[date] = mapped_column(Date, nullable=False)
 	hora: Mapped[time] = mapped_column(Time, nullable=False)
-	status: Mapped[SolicitacaoStatus] = mapped_column(
+	status: Mapped[SituacaoSolicitacao] = mapped_column(
 		SAEnum(
-			SolicitacaoStatus,
+			SituacaoSolicitacao,
 			name='solicitacao_status',
 			create_type=False,
-			values_callable=enum_values,
+			values_callable=valores_enum,
 		),
 		nullable=False,
-		default=SolicitacaoStatus.PENDENTE,
+		default=SituacaoSolicitacao.PENDENTE,
 	)
 	criado_em: Mapped[datetime] = mapped_column(
 		DateTime(timezone=True), server_default=func.now(), nullable=False

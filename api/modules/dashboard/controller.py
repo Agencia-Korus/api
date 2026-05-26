@@ -1,63 +1,69 @@
 from typing import Annotated
 
-from core.enums import UserRole
-from core.security import UsuarioAtual, obter_usuario_atual, require_role
+from core.enums import PapelUsuario
+from core.security import UsuarioAtual, exigir_papel, obter_usuario_atual
 from deps import DependenciaSessao
 from fastapi import APIRouter, Depends
-from modules.dashboard.service import ServicoDashboard
+from modules.dashboard.service import ServicoPainel
 
-router = APIRouter(prefix='/dashboard', tags=['Dashboard'])
+roteador = APIRouter(prefix='/dashboard', tags=['Painel'])
 
 
-def _service(session: DependenciaSessao) -> ServicoDashboard:
+def _servico(sessao: DependenciaSessao) -> ServicoPainel:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return ServicoDashboard(session)
+	return ServicoPainel(sessao)
 
 
-DependenciaServico = Annotated[ServicoDashboard, Depends(_service)]
-AdminGuard = Depends(require_role(UserRole.ADMIN.value))
+DependenciaServico = Annotated[ServicoPainel, Depends(_servico)]
+GuardaAdmin = Depends(exigir_papel(PapelUsuario.ADMIN.value))
 DependenciaUsuarioAtual = Annotated[UsuarioAtual, Depends(obter_usuario_atual)]
 
 
-@router.get(
+@roteador.get(
 	'/admin',
-	dependencies=[AdminGuard],
-	summary='Dashboard geral da agência (somente admin)',
+	dependencies=[GuardaAdmin],
+	summary='Painel geral da agência (somente admin)',
 )
 async def admin(servico: DependenciaServico):
 	"""Função para montar os indicadores do painel administrativo."""
 	return await servico.admin()
 
 
-@router.get(
+@roteador.get(
 	'/clientes/{cliente_id}',
-	summary='Dashboard do cliente autenticado ou admin',
+	summary='Painel do cliente autenticado ou admin',
 	description=(
 		'Admin pode consultar qualquer cliente. Cliente consulta apenas o próprio '
 		'painel.'
 	),
 )
-async def cliente(cliente_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual):
+async def cliente(
+	cliente_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual
+):
 	"""Função para montar os indicadores do painel do cliente."""
-	return await servico.cliente(cliente_id, usuario_atual.id, usuario_atual.role)
+	return await servico.cliente(cliente_id, usuario_atual.id, usuario_atual.papel)
 
 
-@router.get(
+@roteador.get(
 	'/funcionarios/{funcionario_id}',
-	summary='Dashboard do funcionário autenticado ou admin',
+	summary='Painel do funcionário autenticado ou admin',
 	description=(
 		'Admin pode consultar qualquer funcionário. Funcionário consulta apenas '
 		'o próprio painel.'
 	),
 )
 async def funcionario(
-	funcionario_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual
+	funcionario_id: int,
+	servico: DependenciaServico,
+	usuario_atual: DependenciaUsuarioAtual,
 ):
 	"""Função para montar os indicadores do painel do funcionário."""
-	return await servico.funcionario(funcionario_id, usuario_atual.id, usuario_atual.role)
+	return await servico.funcionario(
+		funcionario_id, usuario_atual.id, usuario_atual.papel
+	)
 
 
-@router.get(
+@roteador.get(
 	'/projetos/{projeto_id}/kanban',
 	summary='Kanban do projeto visível ao usuário autenticado',
 	description=(
@@ -69,4 +75,6 @@ async def projeto_kanban(
 	projeto_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual
 ):
 	"""Função para montar os dados do quadro Kanban de um projeto."""
-	return await servico.projeto_kanban(projeto_id, usuario_atual.id, usuario_atual.role)
+	return await servico.projeto_kanban(
+		projeto_id, usuario_atual.id, usuario_atual.papel
+	)

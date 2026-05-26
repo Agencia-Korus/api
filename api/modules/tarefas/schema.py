@@ -1,12 +1,12 @@
 from datetime import date, datetime
 
 from core.constants import (
-	PAPEL_MAX_LENGTH,
-	TIPO_ARQUIVO_MAX_LENGTH,
-	TITULO_MAX_LENGTH,
-	URL_MAX_LENGTH,
+	TAMANHO_MAXIMO_PAPEL,
+	TAMANHO_MAXIMO_TIPO_ARQUIVO,
+	TAMANHO_MAXIMO_TITULO,
+	TAMANHO_MAXIMO_URL,
 )
-from core.enums import Complexidade, Prioridade, TarefaStatus
+from core.enums import Complexidade, Prioridade, SituacaoTarefa
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -15,9 +15,9 @@ class TarefaBase(BaseModel):
 
 	projeto_id: int
 	responsavel_id: int | None = None
-	titulo: str = Field(max_length=TITULO_MAX_LENGTH)
+	titulo: str = Field(max_length=TAMANHO_MAXIMO_TITULO)
 	descricao: str | None = None
-	categoria: str | None = Field(default=None, max_length=PAPEL_MAX_LENGTH)
+	categoria: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_PAPEL)
 	prazo: date | None = None
 	ordem: int = 0
 
@@ -25,7 +25,7 @@ class TarefaBase(BaseModel):
 class TarefaCriar(TarefaBase):
 	"""Classe que define os dados de tarefa usados pela API."""
 
-	status: TarefaStatus = TarefaStatus.A_FAZER
+	status: SituacaoTarefa = SituacaoTarefa.A_FAZER
 	complexidade: Complexidade = Complexidade.MEDIA
 	prioridade: Prioridade = Prioridade.MEDIA
 
@@ -34,12 +34,12 @@ class TarefaAtualizar(BaseModel):
 	"""Classe que define os dados de tarefa usados pela API."""
 
 	responsavel_id: int | None = None
-	titulo: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
+	titulo: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_TITULO)
 	descricao: str | None = None
-	categoria: str | None = Field(default=None, max_length=PAPEL_MAX_LENGTH)
+	categoria: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_PAPEL)
 	prazo: date | None = None
 	ordem: int | None = None
-	status: TarefaStatus | None = None
+	status: SituacaoTarefa | None = None
 	complexidade: Complexidade | None = None
 	prioridade: Prioridade | None = None
 
@@ -48,7 +48,7 @@ class TarefaResposta(TarefaBase):
 	"""Classe que define os dados de tarefa usados pela API."""
 
 	id: int
-	status: TarefaStatus
+	status: SituacaoTarefa
 	complexidade: Complexidade
 	prioridade: Prioridade
 	criado_em: datetime
@@ -78,9 +78,9 @@ class AnexoCriar(BaseModel):
 	"""Classe que define os dados de anexo usados pela API."""
 
 	tarefa_id: int
-	nome: str = Field(max_length=TITULO_MAX_LENGTH)
-	url: str = Field(max_length=URL_MAX_LENGTH)
-	tipo: str | None = Field(default=None, max_length=TIPO_ARQUIVO_MAX_LENGTH)
+	nome: str = Field(max_length=TAMANHO_MAXIMO_TITULO)
+	url: str = Field(max_length=TAMANHO_MAXIMO_URL)
+	tipo: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_TIPO_ARQUIVO)
 	tamanho: int | None = None
 
 

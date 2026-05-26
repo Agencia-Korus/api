@@ -1,34 +1,34 @@
 from typing import Annotated
 
-from core.enums import UserRole, UserStatus
-from core.security import require_role
+from core.enums import PapelUsuario, SituacaoUsuario
+from core.security import exigir_papel
 from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, status
 from modules.users.schema import (
+	UsuarioAtualizar,
 	UsuarioCriar,
 	UsuarioResposta,
-	UsuarioAtualizar,
 )
 from modules.users.service import ServicoUsuario
 from starlette.status import HTTP_201_CREATED
 
-router = APIRouter(prefix='/usuarios', tags=['Usuários'])
+roteador = APIRouter(prefix='/usuarios', tags=['Usuários'])
 
 
-def _service(session: DependenciaSessao) -> ServicoUsuario:
+def _servico(sessao: DependenciaSessao) -> ServicoUsuario:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return ServicoUsuario(session)
+	return ServicoUsuario(sessao)
 
 
-DependenciaServico = Annotated[ServicoUsuario, Depends(_service)]
-AdminGuard = Depends(require_role(UserRole.ADMIN.value))
+DependenciaServico = Annotated[ServicoUsuario, Depends(_servico)]
+GuardaAdmin = Depends(exigir_papel(PapelUsuario.ADMIN.value))
 
 
-@router.post(
+@roteador.post(
 	'',
 	response_model=UsuarioResposta,
 	status_code=HTTP_201_CREATED,
-	dependencies=[AdminGuard],
+	dependencies=[GuardaAdmin],
 	summary='Cria usuário (somente admin)',
 )
 async def criar(dados: UsuarioCriar, servico: DependenciaServico):
@@ -36,45 +36,49 @@ async def criar(dados: UsuarioCriar, servico: DependenciaServico):
 	return await servico.criar(dados)
 
 
-@router.get('', response_model=list[UsuarioResposta], dependencies=[AdminGuard])
+@roteador.get('', response_model=list[UsuarioResposta], dependencies=[GuardaAdmin])
 async def listar(
 	servico: DependenciaServico,
 	pagina: DependenciaPaginacao,
-	role: UserRole | None = None,
-	filtro_situacao: Annotated[UserStatus | None, Query(alias='status')] = None,
-	search: str | None = None,
+	papel: Annotated[PapelUsuario | None, Query(alias='role')] = None,
+	filtro_situacao: Annotated[SituacaoUsuario | None, Query(alias='status')] = None,
+	busca: Annotated[str | None, Query(alias='search')] = None,
 ):
 	"""Função para listar registros."""
 	return await servico.listar_filtrados(
 		offset=pagina.offset,
 		limit=pagina.limit,
-		role=role,
+		papel=papel,
 		status=filtro_situacao,
-		search=search,
+		busca=busca,
 	)
 
 
-@router.get('/{usuario_id}', response_model=UsuarioResposta, dependencies=[AdminGuard])
+@roteador.get(
+	'/{usuario_id}', response_model=UsuarioResposta, dependencies=[GuardaAdmin]
+)
 async def obter(usuario_id: int, servico: DependenciaServico):
 	"""Função para obter um registro pelo ID."""
 	return await servico.obter(usuario_id)
 
 
-@router.patch(
+@roteador.patch(
 	'/{usuario_id}',
 	response_model=UsuarioResposta,
-	dependencies=[AdminGuard],
+	dependencies=[GuardaAdmin],
 	summary='Edita dados do usuário (somente admin)',
 )
-async def atualizar(usuario_id: int, dados: UsuarioAtualizar, servico: DependenciaServico):
+async def atualizar(
+	usuario_id: int, dados: UsuarioAtualizar, servico: DependenciaServico
+):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(usuario_id, dados)
 
 
-@router.post(
+@roteador.post(
 	'/{usuario_id}/aprovar',
 	response_model=UsuarioResposta,
-	dependencies=[AdminGuard],
+	dependencies=[GuardaAdmin],
 	summary='Aprova cadastro pendente, ativando o usuário (somente admin)',
 )
 async def aprovar(usuario_id: int, servico: DependenciaServico):
@@ -82,10 +86,10 @@ async def aprovar(usuario_id: int, servico: DependenciaServico):
 	return await servico.aprovar(usuario_id)
 
 
-@router.delete(
+@roteador.delete(
 	'/{usuario_id}',
 	status_code=status.HTTP_204_NO_CONTENT,
-	dependencies=[AdminGuard],
+	dependencies=[GuardaAdmin],
 	summary='Remove usuário (somente admin)',
 )
 async def deletar(usuario_id: int, servico: DependenciaServico):

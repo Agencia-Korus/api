@@ -1,29 +1,31 @@
 from collections.abc import AsyncGenerator
 
-from core.config import obter_settings
-from core.database import normalize_async_database_url
+from core.config import obter_configuracoes
+from core.database import normalizar_url_banco_assincrono
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-settings = obter_settings()
-database_url, connect_args = normalize_async_database_url(settings.database_url)
+configuracoes = obter_configuracoes()
+url_banco, argumentos_conexao = normalizar_url_banco_assincrono(
+	configuracoes.database_url
+)
 
-engine = create_async_engine(
-	url=database_url,
-	echo=settings.debug,
+motor = create_async_engine(
+	url=url_banco,
+	echo=configuracoes.debug,
 	pool_pre_ping=True,
-	connect_args=connect_args,
+	connect_args=argumentos_conexao,
 )
 
-AsyncSessionLocal = async_sessionmaker(
-	bind=engine, class_=AsyncSession, autoflush=False, expire_on_commit=False
+FabricaSessaoAssincrona = async_sessionmaker(
+	bind=motor, class_=AsyncSession, autoflush=False, expire_on_commit=False
 )
 
 
-async def get_session() -> AsyncGenerator[AsyncSession, None]:
+async def obter_sessao() -> AsyncGenerator[AsyncSession, None]:
 	"""Função para fornecer uma sessão assíncrona do banco de dados."""
-	async with AsyncSessionLocal() as session:
+	async with FabricaSessaoAssincrona() as sessao:
 		try:
-			yield session
+			yield sessao
 		except Exception:
-			await session.rollback()
+			await sessao.rollback()
 			raise

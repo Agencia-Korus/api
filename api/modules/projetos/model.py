@@ -1,12 +1,12 @@
 from datetime import date, datetime
 
 from core.constants import (
-	PAPEL_MAX_LENGTH,
-	PROGRESSO_MAX,
-	PROGRESSO_MIN,
-	TITULO_MAX_LENGTH,
+	PROGRESSO_MAXIMO,
+	PROGRESSO_MINIMO,
+	TAMANHO_MAXIMO_PAPEL,
+	TAMANHO_MAXIMO_TITULO,
 )
-from core.enums import ProjetoStatus, enum_values
+from core.enums import SituacaoProjeto, valores_enum
 from db.base import Base
 from sqlalchemy import (
 	BigInteger,
@@ -31,7 +31,7 @@ class Projeto(Base):
 	__tablename__ = 'projeto'
 	__table_args__ = (
 		CheckConstraint(
-			f'progresso BETWEEN {PROGRESSO_MIN} AND {PROGRESSO_MAX}',
+			f'progresso BETWEEN {PROGRESSO_MINIMO} AND {PROGRESSO_MAXIMO}',
 			name='ck_projeto_progresso',
 		),
 	)
@@ -43,20 +43,20 @@ class Projeto(Base):
 	servico_id: Mapped[int | None] = mapped_column(
 		BigInteger, ForeignKey('servico.id', ondelete='SET NULL')
 	)
-	nome: Mapped[str] = mapped_column(String(TITULO_MAX_LENGTH), nullable=False)
+	nome: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_TITULO), nullable=False)
 	descricao: Mapped[str | None] = mapped_column(Text)
-	status: Mapped[ProjetoStatus] = mapped_column(
+	status: Mapped[SituacaoProjeto] = mapped_column(
 		SAEnum(
-			ProjetoStatus,
+			SituacaoProjeto,
 			name='projeto_status',
 			create_type=False,
-			values_callable=enum_values,
+			values_callable=valores_enum,
 		),
 		nullable=False,
-		default=ProjetoStatus.PLANEJAMENTO,
+		default=SituacaoProjeto.PLANEJAMENTO,
 	)
 	progresso: Mapped[int] = mapped_column(
-		SmallInteger, nullable=False, default=PROGRESSO_MIN
+		SmallInteger, nullable=False, default=PROGRESSO_MINIMO
 	)
 	data_inicio: Mapped[date | None] = mapped_column(Date)
 	data_fim: Mapped[date | None] = mapped_column(Date)
@@ -84,7 +84,7 @@ class ProjetoFuncionario(Base):
 		ForeignKey('funcionario.id', ondelete='CASCADE'),
 		primary_key=True,
 	)
-	papel: Mapped[str | None] = mapped_column(String(PAPEL_MAX_LENGTH))
+	papel: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_PAPEL))
 	data_entrada: Mapped[date] = mapped_column(
 		Date, nullable=False, server_default=func.current_date()
 	)

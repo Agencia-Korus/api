@@ -1,25 +1,25 @@
 from typing import Annotated
 
-from core.enums import UserRole
-from core.security import require_role
+from core.enums import PapelUsuario
+from core.security import exigir_papel
 from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, status
 from modules.lgpd.schema import ConsentimentoLgpdCriar, ConsentimentoLgpdResposta
 from modules.lgpd.service import ServicoLgpd
 
-router = APIRouter(prefix='/lgpd', tags=['LGPD'])
+roteador = APIRouter(prefix='/lgpd', tags=['LGPD'])
 
 
-def _service(session: DependenciaSessao) -> ServicoLgpd:
+def _servico(sessao: DependenciaSessao) -> ServicoLgpd:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return ServicoLgpd(session)
+	return ServicoLgpd(sessao)
 
 
-DependenciaServico = Annotated[ServicoLgpd, Depends(_service)]
-AdminGuard = Depends(require_role(UserRole.ADMIN.value))
+DependenciaServico = Annotated[ServicoLgpd, Depends(_servico)]
+GuardaAdmin = Depends(exigir_papel(PapelUsuario.ADMIN.value))
 
 
-@router.post(
+@roteador.post(
 	'/consentimentos',
 	response_model=ConsentimentoLgpdResposta,
 	status_code=status.HTTP_201_CREATED,
@@ -34,10 +34,10 @@ async def registrar(dados: ConsentimentoLgpdCriar, servico: DependenciaServico):
 	return await servico.registrar(dados)
 
 
-@router.get(
+@roteador.get(
 	'/consentimentos',
 	response_model=list[ConsentimentoLgpdResposta],
-	dependencies=[AdminGuard],
+	dependencies=[GuardaAdmin],
 	summary='Lista consentimentos LGPD (somente admin)',
 )
 async def listar(servico: DependenciaServico, pagina: DependenciaPaginacao):

@@ -1,63 +1,65 @@
 from __future__ import annotations
 
-from core.enums import AcademyTipo
-from core.exceptions import NotFoundError
-from modules.academy.model import Academy
-from modules.academy.repository import RepositorioAcademy
-from modules.academy.schema import AcademyCriar, AcademyAtualizar
+from core.enums import TipoAcademia
+from core.exceptions import ErroNaoEncontrado
+from modules.academy.model import Academia
+from modules.academy.repository import RepositorioAcademia
+from modules.academy.schema import AcademiaAtualizar, AcademiaCriar
 from sqlalchemy.ext.asyncio import AsyncSession
 
-_ENTITY = 'Conteúdo Academy'
+_ENTIDADE = 'Conteúdo Academia'
 
 
-class ServicoAcademy:
-	"""Classe responsável pelas regras de negócio de conteúdo da Academy."""
+class ServicoAcademia:
+	"""Classe responsável pelas regras de negócio de conteúdo da Academia."""
 
-	def __init__(self, session: AsyncSession):
+	def __init__(self, sessao: AsyncSession):
 		"""Função para inicializar a instância com suas dependências."""
-		self.session = session
-		self.repo = RepositorioAcademy(session)
+		self.sessao = sessao
+		self.repository = RepositorioAcademia(sessao)
 
-	async def criar(self, dados: AcademyCriar) -> Academy:
+	async def criar(self, dados: AcademiaCriar) -> Academia:
 		"""Função para criar um novo registro."""
-		item = Academy(**dados.model_dump())
-		item = await self.repo.adicionar(item)
-		await self.session.commit()
+		item = Academia(**dados.model_dump())
+		item = await self.repository.adicionar(item)
+		await self.sessao.commit()
 		return item
 
-	async def obter(self, item_id: int) -> Academy:
+	async def obter(self, item_id: int) -> Academia:
 		"""Função para obter um registro pelo ID."""
-		item = await self.repo.obter(item_id)
+		item = await self.repository.obter(item_id)
 		if not item:
-			raise NotFoundError(_ENTITY, item_id)
+			raise ErroNaoEncontrado(_ENTIDADE, item_id)
 		return item
 
-	async def listar(self, offset: int, limit: int) -> list[Academy]:
+	async def listar(self, offset: int, limit: int) -> list[Academia]:
 		"""Função para listar registros."""
-		return await self.repo.listar_todos(offset=offset, limit=limit)
+		return await self.repository.listar_todos(offset=offset, limit=limit)
 
 	async def listar_filtrados(
 		self,
 		offset: int,
 		limit: int,
-		tipo: AcademyTipo | None = None,
+		tipo: TipoAcademia | None = None,
 		publicado: bool | None = None,
-	) -> list[Academy]:
+	) -> list[Academia]:
 		"""Função para listar registros aplicando filtros e paginação."""
-		return await self.repo.listar_todos(
-			offset=offset, limit=limit, filters={'tipo': tipo, 'publicado': publicado}
+		return await self.repository.listar_todos(
+			offset=offset, limit=limit, filtros={'tipo': tipo, 'publicado': publicado}
 		)
 
-	async def atualizar(self, item_id: int, dados: AcademyAtualizar) -> Academy:
+	async def atualizar(self, item_id: int, dados: AcademiaAtualizar) -> Academia:
 		"""Função para atualizar um registro pelo ID."""
-		item = await self.repo.atualizar(item_id, dados.model_dump(exclude_none=True))
+		item = await self.repository.atualizar(
+			item_id, dados.model_dump(exclude_none=True)
+		)
 		if not item:
-			raise NotFoundError(_ENTITY, item_id)
-		await self.session.commit()
+			raise ErroNaoEncontrado(_ENTIDADE, item_id)
+		await self.sessao.commit()
 		return item
 
 	async def deletar(self, item_id: int) -> None:
 		"""Função para excluir um registro pelo ID."""
-		if not await self.repo.deletar(item_id):
-			raise NotFoundError(_ENTITY, item_id)
-		await self.session.commit()
+		if not await self.repository.deletar(item_id):
+			raise ErroNaoEncontrado(_ENTIDADE, item_id)
+		await self.sessao.commit()

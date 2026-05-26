@@ -4,11 +4,11 @@ from deps import DependenciaSessao
 from fastapi import APIRouter
 from sqlalchemy import text
 
-router = APIRouter(prefix='/health/db', tags=['Saúde'])
+roteador = APIRouter(prefix='/health/db', tags=['Saúde'])
 
 
-@router.get('', status_code=HTTPStatus.OK)
-async def health(session: DependenciaSessao):
+@roteador.get('', status_code=HTTPStatus.OK)
+async def saude(sessao: DependenciaSessao):
 	"""Função para verificar se o serviço está disponível."""
-	await session.execute(text('SELECT 1'))
+	await sessao.execute(text('SELECT 1'))
 	return {'status': 'ok'}

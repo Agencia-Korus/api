@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from core.constants import USER_AGENT_MAX_LENGTH
+from core.constants import TAMANHO_MAXIMO_AGENTE_USUARIO
 from core.enums import ConsentimentoTipo
 from pydantic import BaseModel, ConfigDict, Field, IPvAnyAddress
 
@@ -12,7 +12,9 @@ class ConsentimentoLgpdCriar(BaseModel):
 	tipo: ConsentimentoTipo
 	aceito: bool
 	ip: IPvAnyAddress | None = None
-	user_agent: str | None = Field(default=None, max_length=USER_AGENT_MAX_LENGTH)
+	user_agent: str | None = Field(
+		default=None, max_length=TAMANHO_MAXIMO_AGENTE_USUARIO
+	)
 
 
 class ConsentimentoLgpdResposta(BaseModel):

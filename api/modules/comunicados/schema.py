@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from core.constants import TITULO_MAX_LENGTH
+from core.constants import TAMANHO_MAXIMO_TITULO
 from core.enums import ComunicadoAlvo
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class ComunicadoBase(BaseModel):
 	"""Classe que define os dados de comunicado usados pela API."""
 
-	titulo: str = Field(max_length=TITULO_MAX_LENGTH)
+	titulo: str = Field(max_length=TAMANHO_MAXIMO_TITULO)
 	conteudo: str
 	alvo: ComunicadoAlvo = ComunicadoAlvo.TODOS
 
@@ -36,7 +36,7 @@ class ComunicadoCriar(ComunicadoBase):
 class ComunicadoAtualizar(BaseModel):
 	"""Classe que define os dados de comunicado usados pela API."""
 
-	titulo: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
+	titulo: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_TITULO)
 	conteudo: str | None = None
 	alvo: ComunicadoAlvo | None = None
 

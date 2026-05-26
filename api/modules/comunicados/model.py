@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from core.constants import TITULO_MAX_LENGTH
-from core.enums import ComunicadoAlvo, enum_values
+from core.constants import TAMANHO_MAXIMO_TITULO
+from core.enums import ComunicadoAlvo, valores_enum
 from db.base import Base
 from sqlalchemy import (
 	BigInteger,
@@ -26,14 +26,14 @@ class Comunicado(Base):
 	autor_id: Mapped[int] = mapped_column(
 		BigInteger, ForeignKey('admin.id', ondelete='RESTRICT'), nullable=False
 	)
-	titulo: Mapped[str] = mapped_column(String(TITULO_MAX_LENGTH), nullable=False)
+	titulo: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_TITULO), nullable=False)
 	conteudo: Mapped[str] = mapped_column(Text, nullable=False)
 	alvo: Mapped[ComunicadoAlvo] = mapped_column(
 		SAEnum(
 			ComunicadoAlvo,
 			name='comunicado_alvo',
 			create_type=False,
-			values_callable=enum_values,
+			values_callable=valores_enum,
 		),
 		nullable=False,
 		default=ComunicadoAlvo.TODOS,

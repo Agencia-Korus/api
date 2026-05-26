@@ -1,12 +1,12 @@
 from datetime import date, datetime
 
 from core.constants import (
-	PAPEL_MAX_LENGTH,
-	TIPO_ARQUIVO_MAX_LENGTH,
-	TITULO_MAX_LENGTH,
-	URL_MAX_LENGTH,
+	TAMANHO_MAXIMO_PAPEL,
+	TAMANHO_MAXIMO_TIPO_ARQUIVO,
+	TAMANHO_MAXIMO_TITULO,
+	TAMANHO_MAXIMO_URL,
 )
-from core.enums import Complexidade, Prioridade, TarefaStatus, enum_values
+from core.enums import Complexidade, Prioridade, SituacaoTarefa, valores_enum
 from db.base import Base
 from sqlalchemy import (
 	BigInteger,
@@ -36,24 +36,24 @@ class Tarefa(Base):
 	responsavel_id: Mapped[int | None] = mapped_column(
 		BigInteger, ForeignKey('funcionario.id', ondelete='SET NULL')
 	)
-	titulo: Mapped[str] = mapped_column(String(TITULO_MAX_LENGTH), nullable=False)
+	titulo: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_TITULO), nullable=False)
 	descricao: Mapped[str | None] = mapped_column(Text)
-	status: Mapped[TarefaStatus] = mapped_column(
+	status: Mapped[SituacaoTarefa] = mapped_column(
 		SAEnum(
-			TarefaStatus,
+			SituacaoTarefa,
 			name='tarefa_status',
 			create_type=False,
-			values_callable=enum_values,
+			values_callable=valores_enum,
 		),
 		nullable=False,
-		default=TarefaStatus.A_FAZER,
+		default=SituacaoTarefa.A_FAZER,
 	)
 	complexidade: Mapped[Complexidade] = mapped_column(
 		SAEnum(
 			Complexidade,
 			name='complexidade',
 			create_type=False,
-			values_callable=enum_values,
+			values_callable=valores_enum,
 		),
 		nullable=False,
 		default=Complexidade.MEDIA,
@@ -63,12 +63,12 @@ class Tarefa(Base):
 			Prioridade,
 			name='prioridade',
 			create_type=False,
-			values_callable=enum_values,
+			values_callable=valores_enum,
 		),
 		nullable=False,
 		default=Prioridade.MEDIA,
 	)
-	categoria: Mapped[str | None] = mapped_column(String(PAPEL_MAX_LENGTH))
+	categoria: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_PAPEL))
 	prazo: Mapped[date | None] = mapped_column(Date)
 	ordem: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 	criado_em: Mapped[datetime] = mapped_column(
@@ -113,9 +113,9 @@ class Anexo(Base):
 	tarefa_id: Mapped[int] = mapped_column(
 		BigInteger, ForeignKey('tarefa.id', ondelete='CASCADE'), nullable=False
 	)
-	nome: Mapped[str] = mapped_column(String(TITULO_MAX_LENGTH), nullable=False)
-	url: Mapped[str] = mapped_column(String(URL_MAX_LENGTH), nullable=False)
-	tipo: Mapped[str | None] = mapped_column(String(TIPO_ARQUIVO_MAX_LENGTH))
+	nome: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_TITULO), nullable=False)
+	url: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_URL), nullable=False)
+	tipo: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_TIPO_ARQUIVO))
 	tamanho: Mapped[int | None] = mapped_column(Integer)
 	criado_em: Mapped[datetime] = mapped_column(
 		DateTime(timezone=True), server_default=func.now(), nullable=False

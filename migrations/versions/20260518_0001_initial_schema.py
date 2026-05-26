@@ -1,4 +1,5 @@
-"""Initial Korus schema and bootstrap admin.
+# ruff: noqa: E501
+"""Esquema inicial da Korus e admin inicial.
 
 Revision ID: 20260518_0001
 Revises:
@@ -16,13 +17,11 @@ depends_on: str | Sequence[str] | None = None
 
 ADMIN_EMAIL = 'admin@email.com'
 ADMIN_NOME = 'Admin Korus'
-ADMIN_SENHA_HASH = (
-	'$2b$12$lURftWrAQLj8Rc3NwqLFq.YPR9F8nLI9FLgnpUT/fZGD/U/uMbFLa'
-)
+ADMIN_SENHA_HASH = '$2b$12$lURftWrAQLj8Rc3NwqLFq.YPR9F8nLI9FLgnpUT/fZGD/U/uMbFLa'
 ADMIN_NIVEL_ACESSO = 5
 
 
-UPGRADE_STATEMENTS: tuple[str, ...] = (
+INSTRUCOES_AVANCO: tuple[str, ...] = (
 	"""CREATE EXTENSION IF NOT EXISTS "pgcrypto";""",
 	"""CREATE EXTENSION IF NOT EXISTS "citext";""",
 	"""CREATE TYPE user_role         AS ENUM ('cliente', 'funcionario', 'admin');""",
@@ -314,7 +313,7 @@ ON CONFLICT (nome) DO NOTHING;""",
 )
 
 
-DOWNGRADE_STATEMENTS: tuple[str, ...] = (
+INSTRUCOES_RETORNO: tuple[str, ...] = (
 	"""DROP TRIGGER IF EXISTS trg_usuario_updated ON usuario;""",
 	"""DROP FUNCTION IF EXISTS fn_set_updated_at();""",
 	"""DROP TABLE IF EXISTS integracao CASCADE;""",
@@ -360,10 +359,10 @@ DOWNGRADE_STATEMENTS: tuple[str, ...] = (
 
 
 def upgrade() -> None:
-	for stmt in UPGRADE_STATEMENTS:
-		op.execute(stmt)
+	for consulta in INSTRUCOES_AVANCO:
+		op.execute(consulta)
 
 
 def downgrade() -> None:
-	for stmt in DOWNGRADE_STATEMENTS:
-		op.execute(stmt)
+	for consulta in INSTRUCOES_RETORNO:
+		op.execute(consulta)

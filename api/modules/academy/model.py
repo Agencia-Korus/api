@@ -2,12 +2,12 @@ from datetime import datetime
 from decimal import Decimal
 
 from core.constants import (
-	PRECO_DECIMAL_PLACES,
-	PRECO_TOTAL_DIGITS,
-	TITULO_MAX_LENGTH,
-	URL_MAX_LENGTH,
+	CASAS_DECIMAIS_PRECO,
+	DIGITOS_TOTAIS_PRECO,
+	TAMANHO_MAXIMO_TITULO,
+	TAMANHO_MAXIMO_URL,
 )
-from core.enums import AcademyTipo, enum_values
+from core.enums import TipoAcademia, valores_enum
 from db.base import Base
 from sqlalchemy import (
 	BigInteger,
@@ -24,30 +24,30 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 
-class Academy(Base):
-	"""Classe que representa a tabela de conteúdo da Academy no banco de dados."""
+class Academia(Base):
+	"""Classe que representa a tabela de conteúdo da Academia no banco de dados."""
 
 	__tablename__ = 'academy'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-	titulo: Mapped[str] = mapped_column(String(TITULO_MAX_LENGTH), nullable=False)
-	tipo: Mapped[AcademyTipo] = mapped_column(
+	titulo: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_TITULO), nullable=False)
+	tipo: Mapped[TipoAcademia] = mapped_column(
 		SAEnum(
-			AcademyTipo,
+			TipoAcademia,
 			name='academy_tipo',
 			create_type=False,
-			values_callable=enum_values,
+			values_callable=valores_enum,
 		),
 		nullable=False,
 	)
 	descricao: Mapped[str | None] = mapped_column(Text)
 	preco: Mapped[Decimal] = mapped_column(
-		Numeric(PRECO_TOTAL_DIGITS, PRECO_DECIMAL_PLACES),
+		Numeric(DIGITOS_TOTAIS_PRECO, CASAS_DECIMAIS_PRECO),
 		nullable=False,
 		default=Decimal('0.00'),
 	)
-	imagem: Mapped[str | None] = mapped_column(String(URL_MAX_LENGTH))
-	url_externa: Mapped[str] = mapped_column(String(URL_MAX_LENGTH), nullable=False)
+	imagem: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_URL))
+	url_externa: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_URL), nullable=False)
 	publicado: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 	criado_em: Mapped[datetime] = mapped_column(
 		DateTime(timezone=True), server_default=func.now(), nullable=False

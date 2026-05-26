@@ -1,20 +1,20 @@
 from datetime import date, datetime, time
 from typing import Literal
 
-from core.constants import DURACAO_EVENTO_PADRAO_MIN, TITULO_MAX_LENGTH
-from core.enums import EventoTipo, SolicitacaoStatus
+from core.constants import DURACAO_MINIMA_EVENTO_PADRAO, TAMANHO_MAXIMO_TITULO
+from core.enums import EventoTipo, SituacaoSolicitacao
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class EventoAgendaBase(BaseModel):
 	"""Classe que define os dados de evento de agenda usados pela API."""
 
-	titulo: str = Field(max_length=TITULO_MAX_LENGTH)
+	titulo: str = Field(max_length=TAMANHO_MAXIMO_TITULO)
 	descricao: str | None = None
 	tipo: EventoTipo = EventoTipo.REUNIAO
 	data: date
 	hora: time | None = None
-	duracao_min: int = DURACAO_EVENTO_PADRAO_MIN
+	duracao_min: int = DURACAO_MINIMA_EVENTO_PADRAO
 
 
 class EventoAgendaCriar(EventoAgendaBase):
@@ -40,7 +40,7 @@ class EventoAgendaCriar(EventoAgendaBase):
 class EventoAgendaAtualizar(BaseModel):
 	"""Classe que define os dados de evento de agenda usados pela API."""
 
-	titulo: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
+	titulo: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_TITULO)
 	descricao: str | None = None
 	tipo: EventoTipo | None = None
 	data: date | None = None
@@ -139,7 +139,7 @@ class EventoGoogleCalendarResposta(BaseModel):
 class SolicitacaoReuniaoBase(BaseModel):
 	"""Classe que define os dados de solicitação de reunião usados pela API."""
 
-	titulo: str = Field(max_length=TITULO_MAX_LENGTH)
+	titulo: str = Field(max_length=TAMANHO_MAXIMO_TITULO)
 	mensagem: str | None = None
 	data: date
 	hora: time
@@ -157,7 +157,7 @@ class SolicitacaoReuniaoBase(BaseModel):
 class SolicitacaoReuniaoCriar(SolicitacaoReuniaoBase):
 	"""Classe que define os dados de solicitação de reunião usados pela API."""
 
-	status: SolicitacaoStatus = SolicitacaoStatus.PENDENTE
+	status: SituacaoSolicitacao = SituacaoSolicitacao.PENDENTE
 
 	model_config = ConfigDict(
 		json_schema_extra={
@@ -177,11 +177,11 @@ class SolicitacaoReuniaoCriar(SolicitacaoReuniaoBase):
 class SolicitacaoReuniaoAtualizar(BaseModel):
 	"""Classe que define os dados de solicitação de reunião usados pela API."""
 
-	titulo: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
+	titulo: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_TITULO)
 	mensagem: str | None = None
 	data: date | None = None
 	hora: time | None = None
-	status: SolicitacaoStatus | None = None
+	status: SituacaoSolicitacao | None = None
 
 	model_config = ConfigDict(
 		json_schema_extra={
@@ -204,6 +204,6 @@ class SolicitacaoReuniaoResposta(BaseModel):
 	hora: time
 	remetente_id: int
 	destinatario_id: int
-	status: SolicitacaoStatus
+	status: SituacaoSolicitacao
 	criado_em: datetime
 	model_config = ConfigDict(from_attributes=True)

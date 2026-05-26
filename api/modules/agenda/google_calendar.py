@@ -10,7 +10,7 @@ from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
-from core.config import Settings
+from core.config import Configuracoes
 from fastapi import HTTPException, status
 from jose import jwt
 
@@ -35,7 +35,7 @@ class EventoGoogleCalendar:
 class ClienteGoogleCalendar:
 	"""Classe responsável pela comunicação com o Google Calendar."""
 
-	def __init__(self, configuracoes: Settings):
+	def __init__(self, configuracoes: Configuracoes):
 		"""Função para inicializar a instância com suas dependências."""
 		self.configuracoes = configuracoes
 		self._token_acesso: str | None = None

@@ -13,29 +13,31 @@ from sqlalchemy.ext.asyncio import AsyncConnection, create_async_engine
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from core.password import hash_password
+from core.password import gerar_hash_senha
 
-PASSWORD_HASH = hash_password('senha-forte-123')
-
-
-async def scalar(conn: AsyncConnection, sql: str, **params: Any) -> Any:
-	return (await conn.execute(text(sql), params)).scalar_one()
+HASH_SENHA_PADRAO = gerar_hash_senha('senha-forte-123')
 
 
-async def maybe_scalar(conn: AsyncConnection, sql: str, **params: Any) -> Any:
-	return (await conn.execute(text(sql), params)).scalar_one_or_none()
+async def obter_escalar(conexao: AsyncConnection, sql: str, **parametros: Any) -> Any:
+	return (await conexao.execute(text(sql), parametros)).scalar_one()
 
 
-async def upsert_user(
-	conn: AsyncConnection,
+async def obter_escalar_opcional(
+	conexao: AsyncConnection, sql: str, **parametros: Any
+) -> Any:
+	return (await conexao.execute(text(sql), parametros)).scalar_one_or_none()
+
+
+async def inserir_ou_atualizar_usuario(
+	conexao: AsyncConnection,
 	nome: str,
 	email: str,
-	role: str,
+	papel: str,
 	telefone: str = '(61) 99999-0000',
 	avatar: str | None = None,
 ) -> int:
-	return await scalar(
-		conn,
+	return await obter_escalar(
+		conexao,
 		"""
 		INSERT INTO usuario (nome, email, senha_hash, role, telefone, avatar, status)
 		VALUES (:nome, :email, :senha_hash, :role, :telefone, :avatar, 'ativo')
@@ -49,15 +51,15 @@ async def upsert_user(
 		""",
 		nome=nome,
 		email=email,
-		senha_hash=PASSWORD_HASH,
-		role=role,
+		senha_hash=HASH_SENHA_PADRAO,
+		role=papel,
 		telefone=telefone,
 		avatar=avatar,
 	)
 
 
-async def upsert_project(
-	conn: AsyncConnection,
+async def inserir_ou_atualizar_projeto(
+	conexao: AsyncConnection,
 	nome: str,
 	cliente_id: int,
 	servico_id: int,
@@ -66,14 +68,14 @@ async def upsert_project(
 	inicio: date,
 	fim: date,
 ) -> int:
-	projeto_id = await maybe_scalar(
-		conn,
+	projeto_id = await obter_escalar_opcional(
+		conexao,
 		'SELECT id FROM projeto WHERE nome=:nome AND cliente_id=:cliente_id',
 		nome=nome,
 		cliente_id=cliente_id,
 	)
 	if projeto_id:
-		await conn.execute(
+		await conexao.execute(
 			text(
 				"""
 				UPDATE projeto
@@ -97,8 +99,8 @@ async def upsert_project(
 			},
 		)
 		return projeto_id
-	return await scalar(
-		conn,
+	return await obter_escalar(
+		conexao,
 		"""
 		INSERT INTO projeto (
 			cliente_id, servico_id, nome, descricao, status, progresso,
@@ -121,8 +123,8 @@ async def upsert_project(
 	)
 
 
-async def upsert_task(
-	conn: AsyncConnection,
+async def inserir_ou_atualizar_tarefa(
+	conexao: AsyncConnection,
 	projeto_id: int,
 	responsavel_id: int,
 	titulo: str,
@@ -139,13 +141,13 @@ async def upsert_task(
 		if status == 'concluido'
 		else None
 	)
-	tarefa_id = await maybe_scalar(
-		conn,
+	tarefa_id = await obter_escalar_opcional(
+		conexao,
 		'SELECT id FROM tarefa WHERE projeto_id=:projeto_id AND titulo=:titulo',
 		projeto_id=projeto_id,
 		titulo=titulo,
 	)
-	params = {
+	parametros = {
 		'projeto_id': projeto_id,
 		'responsavel_id': responsavel_id,
 		'titulo': titulo,
@@ -159,7 +161,7 @@ async def upsert_task(
 		'concluido_em': concluido_em,
 	}
 	if tarefa_id:
-		await conn.execute(
+		await conexao.execute(
 			text(
 				"""
 				UPDATE tarefa
@@ -175,11 +177,11 @@ async def upsert_task(
 				WHERE id=:id
 				"""
 			),
-			{**params, 'id': tarefa_id},
+			{**parametros, 'id': tarefa_id},
 		)
 		return tarefa_id
-	return await scalar(
-		conn,
+	return await obter_escalar(
+		conexao,
 		"""
 		INSERT INTO tarefa (
 			projeto_id, responsavel_id, titulo, descricao, status, complexidade,
@@ -191,52 +193,52 @@ async def upsert_task(
 		)
 		RETURNING id
 		""",
-		**params,
+		**parametros,
 	)
 
 
-async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
-	engine = create_async_engine(os.environ['DATABASE_URL'], pool_pre_ping=True)
-	async with engine.begin() as conn:
-		carlos = await upsert_user(
-			conn,
+async def executar() -> None:  # noqa: PLR0912, PLR0914, PLR0915
+	motor = create_async_engine(os.environ['DATABASE_URL'], pool_pre_ping=True)
+	async with motor.begin() as conexao:
+		carlos = await inserir_ou_atualizar_usuario(
+			conexao,
 			'Carlos Mendes',
 			'carlos@korusagencia.com.br',
 			'admin',
 			avatar='https://images.unsplash.com/photo-1506794778202-cad84cf45f1d',
 		)
-		ana = await upsert_user(
-			conn,
+		ana = await inserir_ou_atualizar_usuario(
+			conexao,
 			'Ana Lima',
 			'ana@korusagencia.com.br',
 			'funcionario',
 			avatar='https://images.unsplash.com/photo-1494790108377-be9c29b29330',
 		)
-		pedro = await upsert_user(
-			conn,
+		pedro = await inserir_ou_atualizar_usuario(
+			conexao,
 			'Pedro Souza',
 			'pedro@korusagencia.com.br',
 			'funcionario',
 			avatar='https://images.unsplash.com/photo-1500648767791-00dcc994a43e',
 		)
-		julia = await upsert_user(
-			conn,
+		julia = await inserir_ou_atualizar_usuario(
+			conexao,
 			'Julia Ramos',
 			'julia@korusagencia.com.br',
 			'funcionario',
 			avatar='https://images.unsplash.com/photo-1438761681033-6461ffad8d80',
 		)
-		tech = await upsert_user(
-			conn, 'Tech Solutions Ltda.', 'contato@techsol.com.br', 'cliente'
+		tech = await inserir_ou_atualizar_usuario(
+			conexao, 'Tech Solutions Ltda.', 'contato@techsol.com.br', 'cliente'
 		)
-		sabor = await upsert_user(
-			conn, 'Restaurante Sabor & Arte', 'contato@saborarte.com', 'cliente'
+		sabor = await inserir_ou_atualizar_usuario(
+			conexao, 'Restaurante Sabor & Arte', 'contato@saborarte.com', 'cliente'
 		)
-		rv = await upsert_user(
-			conn, 'Consultoria RV', 'rv@consultoriasrv.com', 'cliente'
+		rv = await inserir_ou_atualizar_usuario(
+			conexao, 'Consultoria RV', 'rv@consultoriasrv.com', 'cliente'
 		)
 
-		await conn.execute(
+		await conexao.execute(
 			text(
 				"""
 				INSERT INTO admin (id, nivel_acesso)
@@ -246,7 +248,7 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 			),
 			{'id': carlos},
 		)
-		await conn.execute(
+		await conexao.execute(
 			text(
 				"""
 				INSERT INTO admin (id, nivel_acesso)
@@ -260,7 +262,7 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 			(pedro, 'Desenvolvedor', 'Web', 980, 3),
 			(julia, 'Marketing', 'Social Media', 2100, 6),
 		]:
-			await conn.execute(
+			await conexao.execute(
 				text(
 					"""
 					INSERT INTO funcionario (
@@ -287,7 +289,7 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 			(sabor, 'Restaurante Sabor & Arte', 'sabor-demo', 'Gastronomia'),
 			(rv, 'Consultoria RV', 'rv-demo', 'Consultoria'),
 		]:
-			await conn.execute(
+			await conexao.execute(
 				text(
 					"""
 					INSERT INTO cliente (id, razao_social, cnpj_cpf, segmento)
@@ -306,7 +308,7 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				},
 			)
 
-		services = [
+		servicos = [
 			(
 				'Identidade Visual',
 				'identidade-visual',
@@ -344,10 +346,10 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				'camera',
 			),
 		]
-		service_ids = {}
-		for nome, slug, descricao, icone in services:
-			service_ids[slug] = await scalar(
-				conn,
+		ids_servicos = {}
+		for nome, slug, descricao, icone in servicos:
+			ids_servicos[slug] = await obter_escalar(
+				conexao,
 				"""
 				INSERT INTO servico (nome, slug, descricao, icone, status)
 				VALUES (:nome, :slug, :descricao, :icone, 'ativo')
@@ -364,7 +366,7 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				icone=icone,
 			)
 
-		deliverables = {
+		entregaveis = {
 			'identidade-visual': [
 				'Logotipo',
 				'Paleta de cores',
@@ -391,13 +393,13 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				'Copywriting',
 			],
 		}
-		for slug, items in deliverables.items():
-			await conn.execute(
+		for slug, itens in entregaveis.items():
+			await conexao.execute(
 				text('DELETE FROM entregavel WHERE servico_id=:servico_id'),
-				{'servico_id': service_ids[slug]},
+				{'servico_id': ids_servicos[slug]},
 			)
-			for ordem, descricao in enumerate(items, start=1):
-				await conn.execute(
+			for ordem, descricao in enumerate(itens, start=1):
+				await conexao.execute(
 					text(
 						"""
 						INSERT INTO entregavel (servico_id, descricao, ordem)
@@ -405,49 +407,49 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 						"""
 					),
 					{
-						'servico_id': service_ids[slug],
+						'servico_id': ids_servicos[slug],
 						'descricao': descricao,
 						'ordem': ordem,
 					},
 				)
 
-		p_tech = await upsert_project(
-			conn,
+		projeto_tech = await inserir_ou_atualizar_projeto(
+			conexao,
 			'Identidade Visual Tech Solutions',
 			tech,
-			service_ids['identidade-visual'],
+			ids_servicos['identidade-visual'],
 			'em_andamento',
 			65,
 			date(2026, 2, 1),
 			date(2026, 5, 30),
 		)
-		p_sabor = await upsert_project(
-			conn,
+		projeto_sabor = await inserir_ou_atualizar_projeto(
+			conexao,
 			'Site Institucional Sabor & Arte',
 			sabor,
-			service_ids['desenvolvimento-web'],
+			ids_servicos['desenvolvimento-web'],
 			'em_revisao',
 			90,
 			date(2026, 2, 20),
 			date(2026, 4, 30),
 		)
-		p_rv = await upsert_project(
-			conn,
+		projeto_rv = await inserir_ou_atualizar_projeto(
+			conexao,
 			'Gestao de Redes RV',
 			rv,
-			service_ids['gestao-redes-sociais'],
+			ids_servicos['gestao-redes-sociais'],
 			'planejamento',
 			10,
 			date(2026, 4, 1),
 			date(2026, 6, 30),
 		)
 		for projeto_id, funcionario_id, papel in [
-			(p_tech, ana, 'Design'),
-			(p_tech, julia, 'Marketing'),
-			(p_sabor, pedro, 'Desenvolvimento'),
-			(p_rv, julia, 'Social Media'),
+			(projeto_tech, ana, 'Design'),
+			(projeto_tech, julia, 'Marketing'),
+			(projeto_sabor, pedro, 'Desenvolvimento'),
+			(projeto_rv, julia, 'Social Media'),
 		]:
-			await conn.execute(
+			await conexao.execute(
 				text(
 					"""
 					INSERT INTO projeto_funcionario (
@@ -465,10 +467,10 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				},
 			)
 
-		task_ids = {}
-		for task in [
+		ids_tarefas = {}
+		for tarefa in [
 			(
-				p_tech,
+				projeto_tech,
 				ana,
 				'Criar logotipo',
 				'Desenvolver o logo principal',
@@ -479,10 +481,10 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				1,
 			),
 			(
-				p_tech,
+				projeto_tech,
 				ana,
 				'Manual da marca',
-				'Documentar guidelines',
+				'Documentar diretrizes',
 				'a_fazer',
 				'media',
 				'marketing',
@@ -490,7 +492,7 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				2,
 			),
 			(
-				p_tech,
+				projeto_tech,
 				ana,
 				'Definir paleta de cores',
 				'Selecionar cores institucionais',
@@ -501,7 +503,7 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				1,
 			),
 			(
-				p_tech,
+				projeto_tech,
 				ana,
 				'Criar moodboard',
 				'Referencias visuais aprovadas',
@@ -512,7 +514,7 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				1,
 			),
 			(
-				p_sabor,
+				projeto_sabor,
 				pedro,
 				'Publicar homepage',
 				'Subir versao de revisao',
@@ -523,7 +525,7 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				1,
 			),
 			(
-				p_rv,
+				projeto_rv,
 				julia,
 				'Planejamento editorial',
 				'Calendario inicial',
@@ -534,9 +536,9 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				1,
 			),
 		]:
-			task_ids[task[2]] = await upsert_task(conn, *task)
+			ids_tarefas[tarefa[2]] = await inserir_ou_atualizar_tarefa(conexao, *tarefa)
 
-		await conn.execute(
+		await conexao.execute(
 			text(
 				"""
 				DELETE FROM comentario
@@ -544,9 +546,9 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 					AND conteudo='Iniciando o trabalho nesta tarefa.'
 				"""
 			),
-			{'tarefa_id': task_ids['Criar logotipo']},
+			{'tarefa_id': ids_tarefas['Criar logotipo']},
 		)
-		await conn.execute(
+		await conexao.execute(
 			text(
 				"""
 				INSERT INTO comentario (tarefa_id, autor_id, conteudo, criado_em)
@@ -554,7 +556,7 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				"""
 			),
 			{
-				'tarefa_id': task_ids['Criar logotipo'],
+				'tarefa_id': ids_tarefas['Criar logotipo'],
 				'autor_id': carlos,
 				'conteudo': 'Iniciando o trabalho nesta tarefa.',
 				'criado_em': datetime(2026, 4, 14, 10, 30, tzinfo=timezone.utc),
@@ -603,11 +605,11 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				['conteudo'],
 			),
 		]:
-			exists = await maybe_scalar(
-				conn, 'SELECT id FROM portfolio WHERE nome=:nome', nome=nome
+			existe = await obter_escalar_opcional(
+				conexao, 'SELECT id FROM portfolio WHERE nome=:nome', nome=nome
 			)
-			if not exists:
-				await conn.execute(
+			if not existe:
+				await conexao.execute(
 					text(
 						"""
 						INSERT INTO portfolio (
@@ -666,11 +668,11 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				'https://korus.local/foto',
 			),
 		]:
-			exists = await maybe_scalar(
-				conn, 'SELECT id FROM academy WHERE titulo=:titulo', titulo=titulo
+			existe = await obter_escalar_opcional(
+				conexao, 'SELECT id FROM academy WHERE titulo=:titulo', titulo=titulo
 			)
-			if not exists:
-				await conn.execute(
+			if not existe:
+				await conexao.execute(
 					text(
 						"""
 						INSERT INTO academy (
@@ -713,11 +715,11 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				datetime(2026, 4, 13, 9, 0, tzinfo=timezone.utc),
 			),
 		]:
-			exists = await maybe_scalar(
-				conn, 'SELECT id FROM comunicado WHERE titulo=:titulo', titulo=titulo
+			existe = await obter_escalar_opcional(
+				conexao, 'SELECT id FROM comunicado WHERE titulo=:titulo', titulo=titulo
 			)
-			if not exists:
-				await conn.execute(
+			if not existe:
+				await conexao.execute(
 					text(
 						"""
 						INSERT INTO comunicado (
@@ -753,8 +755,8 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 			),
 			(carlos, 'Sprint Planning', 'reuniao', date(2026, 4, 28), time(9, 0)),
 		]:
-			exists = await maybe_scalar(
-				conn,
+			existe = await obter_escalar_opcional(
+				conexao,
 				"""
 				SELECT id FROM evento_agenda
 				WHERE usuario_id=:usuario_id AND titulo=:titulo AND data=:data
@@ -763,8 +765,8 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				titulo=titulo,
 				data=data,
 			)
-			if not exists:
-				await conn.execute(
+			if not existe:
+				await conexao.execute(
 					text(
 						"""
 						INSERT INTO evento_agenda (
@@ -789,12 +791,12 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 			('Mes Perfeito', 'calendar', 'Entregou todas as tarefas do mes.', 150),
 			('Top da Semana', 'award', 'Ficou no ranking semanal.', 50),
 		]:
-			conquista_id = await maybe_scalar(
-				conn, 'SELECT id FROM conquista WHERE nome=:nome', nome=nome
+			conquista_id = await obter_escalar_opcional(
+				conexao, 'SELECT id FROM conquista WHERE nome=:nome', nome=nome
 			)
 			if not conquista_id:
-				conquista_id = await scalar(
-					conn,
+				conquista_id = await obter_escalar(
+					conexao,
 					"""
 					INSERT INTO conquista (nome, icone, descricao, xp_bonus)
 					VALUES (:nome, :icone, :descricao, :bonus)
@@ -812,7 +814,7 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 			(julia, conquista_ids[1]),
 			(julia, conquista_ids[2]),
 		]:
-			await conn.execute(
+			await conexao.execute(
 				text(
 					"""
 					INSERT INTO funcionario_conquista (
@@ -831,14 +833,14 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 		for funcionario_id, tarefa_id, acao, xp, data in [
 			(
 				ana,
-				task_ids['Criar moodboard'],
+				ids_tarefas['Criar moodboard'],
 				'Concluiu tarefa: Criar moodboard',
 				25,
 				datetime(2026, 4, 15, 12, 0, tzinfo=timezone.utc),
 			),
 			(
 				ana,
-				task_ids['Definir paleta de cores'],
+				ids_tarefas['Definir paleta de cores'],
 				'Iniciou tarefa: Definir paleta de cores',
 				10,
 				datetime(2026, 4, 14, 12, 0, tzinfo=timezone.utc),
@@ -858,8 +860,8 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				datetime(2026, 4, 13, 11, 0, tzinfo=timezone.utc),
 			),
 		]:
-			exists = await maybe_scalar(
-				conn,
+			existe = await obter_escalar_opcional(
+				conexao,
 				"""
 				SELECT id FROM historico_xp
 				WHERE funcionario_id=:funcionario_id AND acao=:acao AND data=:data
@@ -868,8 +870,8 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				acao=acao,
 				data=data,
 			)
-			if not exists:
-				await conn.execute(
+			if not existe:
+				await conexao.execute(
 					text(
 						"""
 						INSERT INTO historico_xp (
@@ -931,14 +933,14 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 				date(2026, 5, 25),
 			),
 		]:
-			exists = await maybe_scalar(
-				conn,
+			existe = await obter_escalar_opcional(
+				conexao,
 				'SELECT id FROM lead WHERE email=:email AND nome=:nome',
 				email=email,
 				nome=nome,
 			)
-			if not exists:
-				await conn.execute(
+			if not existe:
+				await conexao.execute(
 					text(
 						"""
 						INSERT INTO lead (
@@ -957,7 +959,7 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 						'nome': nome,
 						'email': email,
 						'empresa': empresa,
-						'servico_id': service_ids[slug],
+						'servico_id': ids_servicos[slug],
 						'orcamento': orcamento,
 						'prazo': prazo,
 						'mensagem': 'Solicitacao criada pelo formulario do site.',
@@ -966,9 +968,9 @@ async def main() -> None:  # noqa: PLR0912, PLR0914, PLR0915
 					},
 				)
 
-	await engine.dispose()
-	print({'seed': 'ok'})
+	await motor.dispose()
+	print({'carga': 'ok'})
 
 
 if __name__ == '__main__':
-	asyncio.run(main())
+	asyncio.run(executar())

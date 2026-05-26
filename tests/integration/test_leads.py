@@ -3,11 +3,11 @@ import uuid
 import pytest
 from httpx import AsyncClient
 
-from tests.conftest import requires_db
+from tests.conftest import exige_banco
 
 
-def _payload(**overrides):
-	base = {
+def _dados(**substituicoes):
+	dados_base = {
 		'nome': f'Lead {uuid.uuid4().hex[:6]}',
 		'email': f'{uuid.uuid4().hex[:8]}@example.com',
 		'whatsapp': '+5561999990000',
@@ -16,25 +16,25 @@ def _payload(**overrides):
 		'status': 'novo',
 		'prioridade': 'media',
 	}
-	base.update(overrides)
-	return base
+	dados_base.update(substituicoes)
+	return dados_base
 
 
 @pytest.mark.asyncio
-@requires_db
+@exige_banco
 @pytest.mark.parametrize('prioridade', ['baixa', 'media', 'alta'])
-async def test_criar_lead_com_prioridades(admin_client: AsyncClient, prioridade: str):
-	resp = await admin_client.post(
-		'/api/v1/leads', json=_payload(prioridade=prioridade)
+async def test_criar_lead_com_prioridades(cliente_admin: AsyncClient, prioridade: str):
+	resposta = await cliente_admin.post(
+		'/api/v1/leads', json=_dados(prioridade=prioridade)
 	)
-	assert resp.status_code == 201
-	assert resp.json()['prioridade'] == prioridade
+	assert resposta.status_code == 201
+	assert resposta.json()['prioridade'] == prioridade
 
 
 @pytest.mark.asyncio
-@requires_db
+@exige_banco
 @pytest.mark.parametrize(
-	('status_inicial', 'novo_status'),
+	('situacao_inicial', 'nova_situacao'),
 	[
 		('novo', 'em_contato'),
 		('em_contato', 'qualificado'),
@@ -42,20 +42,20 @@ async def test_criar_lead_com_prioridades(admin_client: AsyncClient, prioridade:
 	],
 )
 async def test_atualizar_status_lead(
-	admin_client: AsyncClient, status_inicial: str, novo_status: str
+	cliente_admin: AsyncClient, situacao_inicial: str, nova_situacao: str
 ):
 	criado = (
-		await admin_client.post('/api/v1/leads', json=_payload(status=status_inicial))
+		await cliente_admin.post('/api/v1/leads', json=_dados(status=situacao_inicial))
 	).json()
-	resp = await admin_client.patch(
-		f'/api/v1/leads/{criado["id"]}', json={'status': novo_status}
+	resposta = await cliente_admin.patch(
+		f'/api/v1/leads/{criado["id"]}', json={'status': nova_situacao}
 	)
-	assert resp.status_code == 200
-	assert resp.json()['status'] == novo_status
+	assert resposta.status_code == 200
+	assert resposta.json()['status'] == nova_situacao
 
 
 @pytest.mark.asyncio
-@requires_db
-async def test_lead_nao_encontrado_retorna_404(admin_client: AsyncClient):
-	resp = await admin_client.get('/api/v1/leads/99999999')
-	assert resp.status_code == 404
+@exige_banco
+async def test_lead_nao_encontrado_retorna_404(cliente_admin: AsyncClient):
+	resposta = await cliente_admin.get('/api/v1/leads/99999999')
+	assert resposta.status_code == 404

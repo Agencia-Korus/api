@@ -2,12 +2,12 @@ from enum import Enum
 from typing import Iterable
 
 
-def enum_values(cls: type[Enum]) -> Iterable[str]:
+def valores_enum(cls: type[Enum]) -> Iterable[str]:
 	"""Função para listar os valores textuais de uma enumeração."""
 	return [member.value for member in cls]
 
 
-class UserRole(str, Enum):
+class PapelUsuario(str, Enum):
 	"""Enumeração com os valores permitidos para user role."""
 
 	CLIENTE = 'cliente'
@@ -15,7 +15,7 @@ class UserRole(str, Enum):
 	ADMIN = 'admin'
 
 
-class UserStatus(str, Enum):
+class SituacaoUsuario(str, Enum):
 	"""Enumeração com os valores permitidos para user status."""
 
 	ATIVO = 'ativo'
@@ -23,21 +23,21 @@ class UserStatus(str, Enum):
 	PENDENTE = 'pendente'
 
 
-class ServicoStatus(str, Enum):
+class SituacaoServico(str, Enum):
 	"""Enumeração com os valores permitidos para servico status."""
 
 	ATIVO = 'ativo'
 	INATIVO = 'inativo'
 
 
-class AcademyTipo(str, Enum):
+class TipoAcademia(str, Enum):
 	"""Enumeração com os valores permitidos para academy tipo."""
 
 	EBOOK = 'ebook'
 	CURSO = 'curso'
 
 
-class LeadStatus(str, Enum):
+class SituacaoLead(str, Enum):
 	"""Enumeração com os valores permitidos para lead status."""
 
 	NOVO = 'novo'
@@ -55,7 +55,7 @@ class LeadPrioridade(str, Enum):
 	ALTA = 'alta'
 
 
-class ProjetoStatus(str, Enum):
+class SituacaoProjeto(str, Enum):
 	"""Enumeração com os valores permitidos para projeto status."""
 
 	PLANEJAMENTO = 'planejamento'
@@ -65,7 +65,7 @@ class ProjetoStatus(str, Enum):
 	PAUSADO = 'pausado'
 
 
-class TarefaStatus(str, Enum):
+class SituacaoTarefa(str, Enum):
 	"""Enumeração com os valores permitidos para tarefa status."""
 
 	A_FAZER = 'a_fazer'
@@ -109,7 +109,7 @@ class EventoTipo(str, Enum):
 	PESSOAL = 'pessoal'
 
 
-class SolicitacaoStatus(str, Enum):
+class SituacaoSolicitacao(str, Enum):
 	"""Enumeração com os valores permitidos para solicitacao status."""
 
 	PENDENTE = 'pendente'
@@ -126,7 +126,7 @@ class ConsentimentoTipo(str, Enum):
 	MARKETING = 'marketing'
 
 
-class IntegracaoStatus(str, Enum):
+class SituacaoIntegracao(str, Enum):
 	"""Enumeração com os valores permitidos para integracao status."""
 
 	CONECTADO = 'conectado'

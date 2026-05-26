@@ -1,12 +1,12 @@
 from datetime import date, datetime
 
 from core.constants import (
-	NOME_MAX_LENGTH,
-	ORCAMENTO_MAX_LENGTH,
-	RAZAO_SOCIAL_MAX_LENGTH,
-	TELEFONE_MAX_LENGTH,
+	TAMANHO_MAXIMO_NOME,
+	TAMANHO_MAXIMO_ORCAMENTO,
+	TAMANHO_MAXIMO_RAZAO_SOCIAL,
+	TAMANHO_MAXIMO_TELEFONE,
 )
-from core.enums import LeadPrioridade, LeadStatus, enum_values
+from core.enums import LeadPrioridade, SituacaoLead, valores_enum
 from db.base import Base
 from sqlalchemy import (
 	BigInteger,
@@ -34,29 +34,29 @@ class Lead(Base):
 	servico_id: Mapped[int | None] = mapped_column(
 		BigInteger, ForeignKey('servico.id', ondelete='SET NULL')
 	)
-	nome: Mapped[str] = mapped_column(String(NOME_MAX_LENGTH), nullable=False)
+	nome: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_NOME), nullable=False)
 	email: Mapped[str] = mapped_column(CITEXT(), nullable=False)
-	whatsapp: Mapped[str | None] = mapped_column(String(TELEFONE_MAX_LENGTH))
-	empresa: Mapped[str | None] = mapped_column(String(RAZAO_SOCIAL_MAX_LENGTH))
-	orcamento: Mapped[str | None] = mapped_column(String(ORCAMENTO_MAX_LENGTH))
+	whatsapp: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_TELEFONE))
+	empresa: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_RAZAO_SOCIAL))
+	orcamento: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_ORCAMENTO))
 	prazo_desejado: Mapped[date | None] = mapped_column(Date)
 	termos_aceitos: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-	status: Mapped[LeadStatus] = mapped_column(
+	status: Mapped[SituacaoLead] = mapped_column(
 		SAEnum(
-			LeadStatus,
+			SituacaoLead,
 			name='lead_status',
 			create_type=False,
-			values_callable=enum_values,
+			values_callable=valores_enum,
 		),
 		nullable=False,
-		default=LeadStatus.NOVO,
+		default=SituacaoLead.NOVO,
 	)
 	prioridade: Mapped[LeadPrioridade] = mapped_column(
 		SAEnum(
 			LeadPrioridade,
 			name='lead_prioridade',
 			create_type=False,
-			values_callable=enum_values,
+			values_callable=valores_enum,
 		),
 		nullable=False,
 		default=LeadPrioridade.MEDIA,

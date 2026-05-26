@@ -1,29 +1,31 @@
 import pytest
 from httpx import AsyncClient
 
-from tests.conftest import requires_db
+from tests.conftest import exige_banco
 
 
 @pytest.mark.asyncio
-@requires_db
+@exige_banco
 @pytest.mark.parametrize(
-	'status_input',
+	'situacao_entrada',
 	['conectado', 'desconectado'],
 )
-async def test_criar_integracao_status(admin_client: AsyncClient, status_input: str):
+async def test_criar_integracao_status(
+	cliente_admin: AsyncClient, situacao_entrada: str
+):
 	dados = {
 		'nome': 'google_calendar',
-		'status': status_input,
+		'status': situacao_entrada,
 	}
-	resp = await admin_client.post('/api/v1/integracoes', json=dados)
-	assert resp.status_code in {201, 409}
-	if resp.status_code == 201:
-		assert resp.json()['status'] == status_input
+	resposta = await cliente_admin.post('/api/v1/integracoes', json=dados)
+	assert resposta.status_code in {201, 409}
+	if resposta.status_code == 201:
+		assert resposta.json()['status'] == situacao_entrada
 
 
 @pytest.mark.asyncio
-@requires_db
-async def test_listar_integracoes(admin_client: AsyncClient):
-	resp = await admin_client.get('/api/v1/integracoes')
-	assert resp.status_code == 200
-	assert isinstance(resp.json(), list)
+@exige_banco
+async def test_listar_integracoes(cliente_admin: AsyncClient):
+	resposta = await cliente_admin.get('/api/v1/integracoes')
+	assert resposta.status_code == 200
+	assert isinstance(resposta.json(), list)

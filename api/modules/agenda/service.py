@@ -3,8 +3,8 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from core.config import obter_settings
-from core.exceptions import NotFoundError
+from core.config import obter_configuracoes
+from core.exceptions import ErroNaoEncontrado
 from modules.agenda.google_calendar import ClienteGoogleCalendar, EventoGoogleCalendar
 from modules.agenda.model import EventoAgenda, SolicitacaoReuniao
 from modules.agenda.repository import (
@@ -13,26 +13,26 @@ from modules.agenda.repository import (
 )
 from modules.agenda.schema import (
 	AgendaEventoSiteResposta,
-	EventoAgendaCriar,
 	EventoAgendaAtualizar,
-	SolicitacaoReuniaoCriar,
+	EventoAgendaCriar,
 	SolicitacaoReuniaoAtualizar,
+	SolicitacaoReuniaoCriar,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
-_ENTITY_EVENTO = 'Evento de agenda'
-_ENTITY_SOLICITACAO = 'Solicitação de reunião'
+_ENTIDADE_EVENTO = 'Evento de agenda'
+_ENTIDADE_SOLICITACAO = 'Solicitação de reunião'
 
 
 class ServicoAgenda:
 	"""Classe responsável pelas regras de negócio de agenda."""
 
-	def __init__(self, session: AsyncSession):
+	def __init__(self, sessao: AsyncSession):
 		"""Função para inicializar a instância com suas dependências."""
-		self.session = session
-		self.eventos = RepositorioEventoAgenda(session)
-		self.solicitacoes = RepositorioSolicitacaoReuniao(session)
-		self.calendario_google = ClienteGoogleCalendar(obter_settings())
+		self.sessao = sessao
+		self.eventos = RepositorioEventoAgenda(sessao)
+		self.solicitacoes = RepositorioSolicitacaoReuniao(sessao)
+		self.calendario_google = ClienteGoogleCalendar(obter_configuracoes())
 
 	async def criar_evento(self, dados: EventoAgendaCriar) -> EventoAgenda:
 		"""Função para criar um evento na agenda."""
@@ -48,15 +48,15 @@ class ServicoAgenda:
 		if evento_google:
 			evento.google_event_id = evento_google.id
 			evento.google_link = evento_google.link
-			await self.session.flush()
-		await self.session.commit()
+			await self.sessao.flush()
+		await self.sessao.commit()
 		return evento
 
 	async def obter_evento(self, evento_id: int) -> EventoAgenda:
 		"""Função para buscar um evento da agenda pelo ID."""
 		evento = await self.eventos.obter(evento_id)
 		if not evento:
-			raise NotFoundError(_ENTITY_EVENTO, evento_id)
+			raise ErroNaoEncontrado(_ENTIDADE_EVENTO, evento_id)
 		return evento
 
 	async def listar_eventos(self, usuario_id: int) -> list[EventoAgenda]:
@@ -106,7 +106,7 @@ class ServicoAgenda:
 	@staticmethod
 	def _evento_local_para_site(evento: EventoAgenda) -> AgendaEventoSiteResposta:
 		"""Função interna para converter evento local para a resposta do site."""
-		fuso_horario = ZoneInfo(obter_settings().google_calendar_timezone)
+		fuso_horario = ZoneInfo(obter_configuracoes().google_calendar_timezone)
 		hora = (evento.hora or time.min).replace(tzinfo=None)
 		inicio = datetime.combine(evento.data, hora, tzinfo=fuso_horario)
 		fim = inicio + timedelta(minutes=evento.duracao_min)
@@ -158,7 +158,7 @@ class ServicoAgenda:
 		"""Função para atualizar um evento da agenda."""
 		evento_atual = await self.eventos.obter(evento_id)
 		if not evento_atual:
-			raise NotFoundError(_ENTITY_EVENTO, evento_id)
+			raise ErroNaoEncontrado(_ENTIDADE_EVENTO, evento_id)
 		evento = await self.eventos.atualizar(
 			evento_id, dados.model_dump(exclude_none=True)
 		)
@@ -182,19 +182,19 @@ class ServicoAgenda:
 		if evento_google:
 			evento.google_event_id = evento_google.id
 			evento.google_link = evento_google.link
-			await self.session.flush()
-		await self.session.commit()
+			await self.sessao.flush()
+		await self.sessao.commit()
 		return evento
 
 	async def deletar_evento(self, evento_id: int) -> None:
 		"""Função para excluir um evento da agenda."""
 		evento = await self.eventos.obter(evento_id)
 		if not evento:
-			raise NotFoundError(_ENTITY_EVENTO, evento_id)
+			raise ErroNaoEncontrado(_ENTIDADE_EVENTO, evento_id)
 		if evento.google_event_id:
 			await self.calendario_google.deletar_evento(evento.google_event_id)
 		await self.eventos.deletar(evento_id)
-		await self.session.commit()
+		await self.sessao.commit()
 
 	async def criar_solicitacao(
 		self, dados: SolicitacaoReuniaoCriar
@@ -202,14 +202,14 @@ class ServicoAgenda:
 		"""Função para criar uma solicitação de reunião."""
 		solicitacao = SolicitacaoReuniao(**dados.model_dump())
 		solicitacao = await self.solicitacoes.adicionar(solicitacao)
-		await self.session.commit()
+		await self.sessao.commit()
 		return solicitacao
 
 	async def obter_solicitacao(self, solicitacao_id: int) -> SolicitacaoReuniao:
 		"""Função para buscar uma solicitação de reunião pelo ID."""
 		solicitacao = await self.solicitacoes.obter(solicitacao_id)
 		if not solicitacao:
-			raise NotFoundError(_ENTITY_SOLICITACAO, solicitacao_id)
+			raise ErroNaoEncontrado(_ENTIDADE_SOLICITACAO, solicitacao_id)
 		return solicitacao
 
 	async def listar_solicitacoes_recebidas(
@@ -226,12 +226,12 @@ class ServicoAgenda:
 			solicitacao_id, dados.model_dump(exclude_none=True)
 		)
 		if not solicitacao:
-			raise NotFoundError(_ENTITY_SOLICITACAO, solicitacao_id)
-		await self.session.commit()
+			raise ErroNaoEncontrado(_ENTIDADE_SOLICITACAO, solicitacao_id)
+		await self.sessao.commit()
 		return solicitacao
 
 	async def deletar_solicitacao(self, solicitacao_id: int) -> None:
 		"""Função para excluir uma solicitação de reunião."""
 		if not await self.solicitacoes.deletar(solicitacao_id):
-			raise NotFoundError(_ENTITY_SOLICITACAO, solicitacao_id)
-		await self.session.commit()
+			raise ErroNaoEncontrado(_ENTIDADE_SOLICITACAO, solicitacao_id)
+		await self.sessao.commit()

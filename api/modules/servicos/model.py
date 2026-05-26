@@ -1,12 +1,12 @@
 from datetime import datetime
 
 from core.constants import (
-	ICONE_MAX_LENGTH,
-	NOME_MAX_LENGTH,
-	SLUG_MAX_LENGTH,
-	URL_MAX_LENGTH,
+	TAMANHO_MAXIMO_ICONE,
+	TAMANHO_MAXIMO_NOME,
+	TAMANHO_MAXIMO_SLUG,
+	TAMANHO_MAXIMO_URL,
 )
-from core.enums import ServicoStatus, enum_values
+from core.enums import SituacaoServico, valores_enum
 from db.base import Base
 from sqlalchemy import (
 	BigInteger,
@@ -29,21 +29,21 @@ class Servico(Base):
 	__tablename__ = 'servico'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-	nome: Mapped[str] = mapped_column(String(NOME_MAX_LENGTH), nullable=False)
+	nome: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_NOME), nullable=False)
 	slug: Mapped[str] = mapped_column(
-		String(SLUG_MAX_LENGTH), unique=True, nullable=False
+		String(TAMANHO_MAXIMO_SLUG), unique=True, nullable=False
 	)
 	descricao: Mapped[str | None] = mapped_column(Text)
-	icone: Mapped[str | None] = mapped_column(String(ICONE_MAX_LENGTH))
-	status: Mapped[ServicoStatus] = mapped_column(
+	icone: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_ICONE))
+	status: Mapped[SituacaoServico] = mapped_column(
 		SAEnum(
-			ServicoStatus,
+			SituacaoServico,
 			name='servico_status',
 			create_type=False,
-			values_callable=enum_values,
+			values_callable=valores_enum,
 		),
 		nullable=False,
-		default=ServicoStatus.ATIVO,
+		default=SituacaoServico.ATIVO,
 	)
 	criado_em: Mapped[datetime] = mapped_column(
 		DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -65,7 +65,7 @@ class Entregavel(Base):
 		ForeignKey('servico.id', ondelete='CASCADE'),
 		nullable=False,
 	)
-	descricao: Mapped[str] = mapped_column(String(URL_MAX_LENGTH), nullable=False)
+	descricao: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_URL), nullable=False)
 	ordem: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=0)
 
 	servico: Mapped['Servico'] = relationship(back_populates='entregaveis')

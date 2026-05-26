@@ -1,45 +1,45 @@
 from typing import Annotated
 
-from core.enums import AcademyTipo, UserRole
-from core.security import require_role
+from core.enums import PapelUsuario, TipoAcademia
+from core.security import exigir_papel
 from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, status
-from modules.academy.schema import AcademyCriar, AcademyResposta, AcademyAtualizar
-from modules.academy.service import ServicoAcademy
+from modules.academy.schema import AcademiaAtualizar, AcademiaCriar, AcademiaResposta
+from modules.academy.service import ServicoAcademia
 
-router = APIRouter(prefix='/academy', tags=['Academy'])
+roteador = APIRouter(prefix='/academy', tags=['Academia'])
 
 
-def _service(session: DependenciaSessao) -> ServicoAcademy:
+def _servico(sessao: DependenciaSessao) -> ServicoAcademia:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return ServicoAcademy(session)
+	return ServicoAcademia(sessao)
 
 
-DependenciaServico = Annotated[ServicoAcademy, Depends(_service)]
-AdminGuard = Depends(require_role(UserRole.ADMIN.value))
+DependenciaServico = Annotated[ServicoAcademia, Depends(_servico)]
+GuardaAdmin = Depends(exigir_papel(PapelUsuario.ADMIN.value))
 
 
-@router.post(
+@roteador.post(
 	'',
-	response_model=AcademyResposta,
+	response_model=AcademiaResposta,
 	status_code=status.HTTP_201_CREATED,
-	dependencies=[AdminGuard],
-	summary='Cria conteúdo no Academy (somente admin)',
+	dependencies=[GuardaAdmin],
+	summary='Cria conteúdo no Academia (somente admin)',
 )
-async def criar(dados: AcademyCriar, servico: DependenciaServico):
+async def criar(dados: AcademiaCriar, servico: DependenciaServico):
 	"""Função para criar um novo registro."""
 	return await servico.criar(dados)
 
 
-@router.get(
+@roteador.get(
 	'',
-	response_model=list[AcademyResposta],
-	summary='Lista conteúdos publicados do Academy (público/home)',
+	response_model=list[AcademiaResposta],
+	summary='Lista conteúdos publicados do Academia (público/home)',
 )
 async def listar(
 	servico: DependenciaServico,
 	pagina: DependenciaPaginacao,
-	tipo: AcademyTipo | None = None,
+	tipo: TipoAcademia | None = None,
 	publicado: Annotated[
 		bool,
 		Query(description='Por padrão a home lista somente conteúdos publicados.'),
@@ -51,16 +51,16 @@ async def listar(
 	)
 
 
-@router.get(
+@roteador.get(
 	'/admin',
-	response_model=list[AcademyResposta],
-	dependencies=[AdminGuard],
-	summary='Lista todos os conteúdos do Academy para gestão (somente admin)',
+	response_model=list[AcademiaResposta],
+	dependencies=[GuardaAdmin],
+	summary='Lista todos os conteúdos do Academia para gestão (somente admin)',
 )
 async def listar_admin(
 	servico: DependenciaServico,
 	pagina: DependenciaPaginacao,
-	tipo: AcademyTipo | None = None,
+	tipo: TipoAcademia | None = None,
 	publicado: bool | None = None,
 ):
 	"""Função para listar registros na visão administrativa."""
@@ -69,32 +69,34 @@ async def listar_admin(
 	)
 
 
-@router.get(
+@roteador.get(
 	'/{item_id}',
-	response_model=AcademyResposta,
-	summary='Obtém conteúdo do Academy (público/home)',
+	response_model=AcademiaResposta,
+	summary='Obtém conteúdo do Academia (público/home)',
 )
 async def obter(item_id: int, servico: DependenciaServico):
 	"""Função para obter um registro pelo ID."""
 	return await servico.obter(item_id)
 
 
-@router.patch(
+@roteador.patch(
 	'/{item_id}',
-	response_model=AcademyResposta,
-	dependencies=[AdminGuard],
-	summary='Atualiza conteúdo no Academy (somente admin)',
+	response_model=AcademiaResposta,
+	dependencies=[GuardaAdmin],
+	summary='Atualiza conteúdo no Academia (somente admin)',
 )
-async def atualizar(item_id: int, dados: AcademyAtualizar, servico: DependenciaServico):
+async def atualizar(
+	item_id: int, dados: AcademiaAtualizar, servico: DependenciaServico
+):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(item_id, dados)
 
 
-@router.delete(
+@roteador.delete(
 	'/{item_id}',
 	status_code=status.HTTP_204_NO_CONTENT,
-	dependencies=[AdminGuard],
-	summary='Remove conteúdo do Academy (somente admin)',
+	dependencies=[GuardaAdmin],
+	summary='Remove conteúdo do Academia (somente admin)',
 )
 async def deletar(item_id: int, servico: DependenciaServico):
 	"""Função para excluir um registro pelo ID."""

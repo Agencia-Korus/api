@@ -1,10 +1,10 @@
 from datetime import datetime
 
 from core.constants import (
-	CATEGORIA_MAX_LENGTH,
-	NOME_MAX_LENGTH,
-	TITULO_MAX_LENGTH,
-	URL_MAX_LENGTH,
+	TAMANHO_MAXIMO_CATEGORIA,
+	TAMANHO_MAXIMO_NOME,
+	TAMANHO_MAXIMO_TITULO,
+	TAMANHO_MAXIMO_URL,
 )
 from db.base import Base
 from sqlalchemy import (
@@ -30,11 +30,11 @@ class Portfolio(Base):
 	projeto_id: Mapped[int | None] = mapped_column(
 		BigInteger, ForeignKey('projeto.id', ondelete='SET NULL')
 	)
-	nome: Mapped[str] = mapped_column(String(TITULO_MAX_LENGTH), nullable=False)
-	cliente: Mapped[str | None] = mapped_column(String(NOME_MAX_LENGTH))
-	categoria: Mapped[str | None] = mapped_column(String(CATEGORIA_MAX_LENGTH))
+	nome: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_TITULO), nullable=False)
+	cliente: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_NOME))
+	categoria: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_CATEGORIA))
 	descricao: Mapped[str | None] = mapped_column(Text)
-	imagem: Mapped[str | None] = mapped_column(String(URL_MAX_LENGTH))
+	imagem: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_URL))
 	ano: Mapped[int | None] = mapped_column(SmallInteger)
 	destaque: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 	tags: Mapped[list[str]] = mapped_column(

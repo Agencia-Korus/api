@@ -1,12 +1,12 @@
 import pytest
 from httpx import AsyncClient
 
-from tests.conftest import requires_db
+from tests.conftest import exige_banco
 
 
 @pytest.mark.asyncio
-@requires_db
-async def test_health_retorna_ok(client: AsyncClient):
-	response = await client.get('/health/db')
-	assert response.status_code == 200
-	assert response.json() == {'status': 'ok'}
+@exige_banco
+async def test_saude_retorna_ok(cliente_http: AsyncClient):
+	resposta = await cliente_http.get('/health/db')
+	assert resposta.status_code == 200
+	assert resposta.json() == {'status': 'ok'}

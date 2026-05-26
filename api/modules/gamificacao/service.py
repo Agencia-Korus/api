@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core.exceptions import NotFoundError
+from core.exceptions import ErroNaoEncontrado
 from modules.gamificacao.model import (
 	Conquista,
 	FuncionarioConquista,
@@ -14,11 +14,11 @@ from modules.gamificacao.repository import (
 	RepositorioRegraXp,
 )
 from modules.gamificacao.schema import (
-	ConquistaCriar,
 	ConquistaAtualizar,
+	ConquistaCriar,
 	HistoricoXpCriar,
-	RegraXpCriar,
 	RegraXpAtualizar,
+	RegraXpCriar,
 )
 from modules.users.model import Funcionario
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,19 +30,19 @@ _ENTITY_CONQUISTA = 'Conquista'
 class ServicoGamificacao:
 	"""Classe responsável pelas regras de negócio de gamificacao."""
 
-	def __init__(self, session: AsyncSession):
+	def __init__(self, sessao: AsyncSession):
 		"""Função para inicializar a instância com suas dependências."""
-		self.session = session
-		self.regras = RepositorioRegraXp(session)
-		self.historicos = RepositorioHistoricoXp(session)
-		self.conquistas = RepositorioConquista(session)
-		self.fc = RepositorioFuncionarioConquista(session)
+		self.sessao = sessao
+		self.regras = RepositorioRegraXp(sessao)
+		self.historicos = RepositorioHistoricoXp(sessao)
+		self.conquistas = RepositorioConquista(sessao)
+		self.fc = RepositorioFuncionarioConquista(sessao)
 
 	async def criar_regra(self, dados: RegraXpCriar) -> RegraXp:
 		"""Função para criar uma regra de XP."""
 		regra = RegraXp(**dados.model_dump())
 		regra = await self.regras.adicionar(regra)
-		await self.session.commit()
+		await self.sessao.commit()
 		return regra
 
 	async def listar_regras(self, offset: int, limit: int) -> list[RegraXp]:
@@ -55,26 +55,26 @@ class ServicoGamificacao:
 			regra_id, dados.model_dump(exclude_none=True)
 		)
 		if not regra:
-			raise NotFoundError(_ENTITY_REGRA, regra_id)
-		await self.session.commit()
+			raise ErroNaoEncontrado(_ENTITY_REGRA, regra_id)
+		await self.sessao.commit()
 		return regra
 
 	async def deletar_regra(self, regra_id: int) -> None:
 		"""Função para excluir uma regra de XP."""
 		if not await self.regras.deletar(regra_id):
-			raise NotFoundError(_ENTITY_REGRA, regra_id)
-		await self.session.commit()
+			raise ErroNaoEncontrado(_ENTITY_REGRA, regra_id)
+		await self.sessao.commit()
 
 	async def registrar_xp(self, dados: HistoricoXpCriar) -> HistoricoXp:
 		"""Função para registrar XP para um funcionário."""
-		funcionario = await self.session.obter(Funcionario, dados.funcionario_id)
+		funcionario = await self.sessao.obter(Funcionario, dados.funcionario_id)
 		if not funcionario:
-			raise NotFoundError('Funcionario', dados.funcionario_id)
+			raise ErroNaoEncontrado('Funcionario', dados.funcionario_id)
 		registro = HistoricoXp(**dados.model_dump())
 		registro = await self.historicos.adicionar(registro)
 		funcionario.xp_total += dados.xp
 		funcionario.nivel = max(1, (funcionario.xp_total // 500) + 1)
-		await self.session.commit()
+		await self.sessao.commit()
 		return registro
 
 	async def listar_historico(self, funcionario_id: int) -> list[HistoricoXp]:
@@ -85,7 +85,7 @@ class ServicoGamificacao:
 		"""Função para criar uma conquista."""
 		conquista = Conquista(**dados.model_dump())
 		conquista = await self.conquistas.adicionar(conquista)
-		await self.session.commit()
+		await self.sessao.commit()
 		return conquista
 
 	async def listar_conquistas(self, offset: int, limit: int) -> list[Conquista]:
@@ -100,23 +100,23 @@ class ServicoGamificacao:
 			conquista_id, dados.model_dump(exclude_none=True)
 		)
 		if not conquista:
-			raise NotFoundError(_ENTITY_CONQUISTA, conquista_id)
-		await self.session.commit()
+			raise ErroNaoEncontrado(_ENTITY_CONQUISTA, conquista_id)
+		await self.sessao.commit()
 		return conquista
 
 	async def deletar_conquista(self, conquista_id: int) -> None:
 		"""Função para excluir uma conquista."""
 		if not await self.conquistas.deletar(conquista_id):
-			raise NotFoundError(_ENTITY_CONQUISTA, conquista_id)
-		await self.session.commit()
+			raise ErroNaoEncontrado(_ENTITY_CONQUISTA, conquista_id)
+		await self.sessao.commit()
 
 	async def desbloquear_conquista(
 		self, funcionario_id: int, conquista_id: int
 	) -> FuncionarioConquista:
 		"""Função para desbloquear uma conquista para um funcionário."""
-		entry = await self.fc.desbloquear(funcionario_id, conquista_id)
-		await self.session.commit()
-		return entry
+		registro = await self.fc.desbloquear(funcionario_id, conquista_id)
+		await self.sessao.commit()
+		return registro
 
 	async def listar_conquistas_funcionario(
 		self, funcionario_id: int

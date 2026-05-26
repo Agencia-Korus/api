@@ -1,4 +1,4 @@
-from core.enums import ProjetoStatus
+from core.enums import SituacaoProjeto
 from db.base_repository import RepositorioBase
 from modules.projetos.model import Projeto, ProjetoFuncionario
 from sqlalchemy import delete, select
@@ -8,65 +8,67 @@ from sqlalchemy.ext.asyncio import AsyncSession
 class RepositorioProjeto(RepositorioBase[Projeto]):
 	"""Classe responsável pelo acesso aos dados de projeto."""
 
-	model = Projeto
+	modelo = Projeto
 
-	async def listar_for_funcionario(
+	async def listar_para_funcionario(
 		self,
 		funcionario_id: int,
 		offset: int,
 		limit: int,
-		status: ProjetoStatus | None = None,
+		status: SituacaoProjeto | None = None,
 	) -> list[Projeto]:
 		"""Função para listar projetos vinculados a um funcionário."""
-		stmt = (
+		consulta = (
 			select(Projeto)
 			.join(ProjetoFuncionario, ProjetoFuncionario.projeto_id == Projeto.id)
 			.where(ProjetoFuncionario.funcionario_id == funcionario_id)
 		)
 		if status is not None:
-			stmt = stmt.where(Projeto.status == status)
-		stmt = stmt.order_by(Projeto.criado_em.desc()).offset(offset).limit(limit)
-		result = await self.session.execute(stmt)
-		return list(result.scalars().all())
+			consulta = consulta.where(Projeto.status == status)
+		consulta = (
+			consulta.order_by(Projeto.criado_em.desc()).offset(offset).limit(limit)
+		)
+		resultado = await self.sessao.execute(consulta)
+		return list(resultado.scalars().all())
 
 
 class RepositorioProjetoFuncionario:
 	"""Classe responsável pelo acesso aos dados de membro do projeto."""
 
-	def __init__(self, session: AsyncSession):
+	def __init__(self, sessao: AsyncSession):
 		"""Função para inicializar a instância com suas dependências."""
-		self.session = session
+		self.sessao = sessao
 
-	async def adicionar(self, entry: ProjetoFuncionario) -> ProjetoFuncionario:
+	async def adicionar(self, registro: ProjetoFuncionario) -> ProjetoFuncionario:
 		"""Função para salvar um registro no banco de dados."""
-		self.session.add(entry)
-		await self.session.flush()
-		await self.session.refresh(entry)
-		return entry
+		self.sessao.add(registro)
+		await self.sessao.flush()
+		await self.sessao.refresh(registro)
+		return registro
 
 	async def listar_por_projeto(self, projeto_id: int) -> list[ProjetoFuncionario]:
 		"""Função para listar registros vinculados a um projeto."""
-		stmt = select(ProjetoFuncionario).where(
+		consulta = select(ProjetoFuncionario).where(
 			ProjetoFuncionario.projeto_id == projeto_id
 		)
-		result = await self.session.execute(stmt)
-		return list(result.scalars().all())
+		resultado = await self.sessao.execute(consulta)
+		return list(resultado.scalars().all())
 
-	async def has_member(self, projeto_id: int, funcionario_id: int) -> bool:
+	async def contem_membro(self, projeto_id: int, funcionario_id: int) -> bool:
 		"""Função para verificar se um funcionário participa de um projeto."""
-		stmt = select(ProjetoFuncionario).where(
+		consulta = select(ProjetoFuncionario).where(
 			ProjetoFuncionario.projeto_id == projeto_id,
 			ProjetoFuncionario.funcionario_id == funcionario_id,
 		)
-		result = await self.session.execute(stmt)
-		return result.scalar_one_or_none() is not None
+		resultado = await self.sessao.execute(consulta)
+		return resultado.scalar_one_or_none() is not None
 
-	async def remove(self, projeto_id: int, funcionario_id: int) -> bool:
+	async def remover(self, projeto_id: int, funcionario_id: int) -> bool:
 		"""Função para remover um vínculo entre projeto e funcionário."""
-		stmt = delete(ProjetoFuncionario).where(
+		consulta = delete(ProjetoFuncionario).where(
 			ProjetoFuncionario.projeto_id == projeto_id,
 			ProjetoFuncionario.funcionario_id == funcionario_id,
 		)
-		result = await self.session.execute(stmt)
-		await self.session.flush()
-		return result.rowcount > 0
+		resultado = await self.sessao.execute(consulta)
+		await self.sessao.flush()
+		return resultado.rowcount > 0

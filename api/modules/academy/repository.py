@@ -1,8 +1,8 @@
 from db.base_repository import RepositorioBase
-from modules.academy.model import Academy
+from modules.academy.model import Academia
 
 
-class RepositorioAcademy(RepositorioBase[Academy]):
-	"""Classe responsável pelo acesso aos dados de conteúdo da Academy."""
+class RepositorioAcademia(RepositorioBase[Academia]):
+	"""Classe responsável pelo acesso aos dados de conteúdo da Academia."""
 
-	model = Academy
+	modelo = Academia

@@ -13,107 +13,107 @@ os.environ.setdefault(
 )
 os.environ.setdefault('JWT_SECRET_KEY', 'test-secret')
 
-from core.security import criar_access_token
-from db.session import engine
+from core.security import criar_token_acesso
+from db.session import motor
 from main import app
 from sqlalchemy import text
 
-BASE_URL_ENV = 'KORUS_BASE_URL'
-DEFAULT_TIMEOUT_SECONDS = 30
-DEFAULT_DB_PORT = 5432
-SOCKET_CHECK_TIMEOUT = 1
+VARIAVEL_URL_BASE = 'KORUS_BASE_URL'
+TEMPO_LIMITE_PADRAO_SEGUNDOS = 30
+PORTA_PADRAO_BANCO = 5432
+TEMPO_LIMITE_SOCKET = 1
 
 
 @pytest.fixture(scope='session')
-def base_url() -> str | None:
-	return os.environ.get(BASE_URL_ENV)
+def url_base() -> str | None:
+	return os.environ.get(VARIAVEL_URL_BASE)
 
 
 @pytest_asyncio.fixture
-async def client(base_url: str | None) -> AsyncGenerator[AsyncClient, None]:
-	if base_url:
+async def cliente_http(url_base: str | None) -> AsyncGenerator[AsyncClient, None]:
+	if url_base:
 		async with AsyncClient(
-			base_url=base_url, timeout=DEFAULT_TIMEOUT_SECONDS
-		) as http_client:
-			yield http_client
+			base_url=url_base, timeout=TEMPO_LIMITE_PADRAO_SEGUNDOS
+		) as cliente_http_interno:
+			yield cliente_http_interno
 	else:
 		transport = ASGITransport(app=app)
 		async with AsyncClient(
 			transport=transport,
 			base_url='http://testserver',
-			timeout=DEFAULT_TIMEOUT_SECONDS,
-		) as http_client:
-			yield http_client
+			timeout=TEMPO_LIMITE_PADRAO_SEGUNDOS,
+		) as cliente_http_interno:
+			yield cliente_http_interno
 
 
 @pytest.fixture
-def admin_token() -> str:
-	return criar_access_token(subject=1, extra={'role': 'admin'})
+def token_admin() -> str:
+	return criar_token_acesso(sujeito=1, dados_extras={'role': 'admin'})
 
 
 @pytest.fixture
-def admin_headers(admin_token: str) -> dict[str, str]:
-	return {'Authorization': f'Bearer {admin_token}'}
+def cabecalhos_admin(token_admin: str) -> dict[str, str]:
+	return {'Authorization': f'Bearer {token_admin}'}
 
 
 @pytest_asyncio.fixture
-async def admin_client(
-	base_url: str | None, admin_headers: dict[str, str]
+async def cliente_admin(
+	url_base: str | None, cabecalhos_admin: dict[str, str]
 ) -> AsyncGenerator[AsyncClient, None]:
-	if base_url:
+	if url_base:
 		async with AsyncClient(
-			base_url=base_url,
-			timeout=DEFAULT_TIMEOUT_SECONDS,
-			headers=admin_headers,
-		) as http_client:
-			yield http_client
+			base_url=url_base,
+			timeout=TEMPO_LIMITE_PADRAO_SEGUNDOS,
+			headers=cabecalhos_admin,
+		) as cliente_http_interno:
+			yield cliente_http_interno
 	else:
 		transport = ASGITransport(app=app)
 		async with AsyncClient(
 			transport=transport,
 			base_url='http://testserver',
-			timeout=DEFAULT_TIMEOUT_SECONDS,
-			headers=admin_headers,
-		) as http_client:
-			yield http_client
+			timeout=TEMPO_LIMITE_PADRAO_SEGUNDOS,
+			headers=cabecalhos_admin,
+		) as cliente_http_interno:
+			yield cliente_http_interno
 
 
 @pytest.fixture
-def cliente_token() -> str:
-	return criar_access_token(subject=2, extra={'role': 'cliente'})
+def token_cliente() -> str:
+	return criar_token_acesso(sujeito=2, dados_extras={'role': 'cliente'})
 
 
 @pytest.fixture
-def cliente_headers(cliente_token: str) -> dict[str, str]:
-	return {'Authorization': f'Bearer {cliente_token}'}
+def cabecalhos_cliente(token_cliente: str) -> dict[str, str]:
+	return {'Authorization': f'Bearer {token_cliente}'}
 
 
-async def _ping_database() -> bool:
+async def _consultar_banco() -> bool:
 	try:
-		async with engine.connect() as conn:
-			await conn.execute(text('SELECT 1 FROM usuario LIMIT 1'))
+		async with motor.connect() as conexao:
+			await conexao.execute(text('SELECT 1 FROM usuario LIMIT 1'))
 			return True
 	except Exception:
 		return False
 	finally:
-		await engine.dispose()
+		await motor.dispose()
 
 
-def is_postgres_available() -> bool:
+def postgres_disponivel() -> bool:
 	host = os.environ.get('TEST_DB_HOST', 'localhost')
-	port = int(os.environ.get('TEST_DB_PORT', str(DEFAULT_DB_PORT)))
+	port = int(os.environ.get('TEST_DB_PORT', str(PORTA_PADRAO_BANCO)))
 	try:
-		with socket.create_connection((host, port), timeout=SOCKET_CHECK_TIMEOUT):
+		with socket.create_connection((host, port), timeout=TEMPO_LIMITE_SOCKET):
 			pass
 	except OSError:
 		return False
 	try:
-		return asyncio.run(_ping_database())
+		return asyncio.run(_consultar_banco())
 	except RuntimeError:
 		return False
 
 
-requires_db = pytest.mark.skipif(
-	not is_postgres_available(),
-	reason='Postgres com schema aplicado é necessário para integração',
+exige_banco = pytest.mark.skipif(
+	not postgres_disponivel(),
+	reason='Postgres com esquema aplicado é necessário para integração',
 )

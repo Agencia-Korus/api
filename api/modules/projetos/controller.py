@@ -1,36 +1,36 @@
 from typing import Annotated
 
-from core.enums import ProjetoStatus, UserRole
-from core.security import UsuarioAtual, obter_usuario_atual, require_role
+from core.enums import PapelUsuario, SituacaoProjeto
+from core.security import UsuarioAtual, exigir_papel, obter_usuario_atual
 from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, status
 from modules.projetos.schema import (
+	ProjetoAtualizar,
 	ProjetoCriar,
 	ProjetoFuncionarioCriar,
 	ProjetoFuncionarioResposta,
 	ProjetoResposta,
-	ProjetoAtualizar,
 )
 from modules.projetos.service import ServicoProjeto
 
-router = APIRouter(prefix='/projetos', tags=['Projetos'])
+roteador = APIRouter(prefix='/projetos', tags=['Projetos'])
 
 
-def _service(session: DependenciaSessao) -> ServicoProjeto:
+def _servico(sessao: DependenciaSessao) -> ServicoProjeto:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return ServicoProjeto(session)
+	return ServicoProjeto(sessao)
 
 
-DependenciaServico = Annotated[ServicoProjeto, Depends(_service)]
-AdminGuard = Depends(require_role(UserRole.ADMIN.value))
+DependenciaServico = Annotated[ServicoProjeto, Depends(_servico)]
+GuardaAdmin = Depends(exigir_papel(PapelUsuario.ADMIN.value))
 DependenciaUsuarioAtual = Annotated[UsuarioAtual, Depends(obter_usuario_atual)]
 
 
-@router.post(
+@roteador.post(
 	'',
 	response_model=ProjetoResposta,
 	status_code=status.HTTP_201_CREATED,
-	dependencies=[AdminGuard],
+	dependencies=[GuardaAdmin],
 	summary='Cria projeto e define cliente vinculado (somente admin)',
 )
 async def criar(dados: ProjetoCriar, servico: DependenciaServico):
@@ -38,7 +38,7 @@ async def criar(dados: ProjetoCriar, servico: DependenciaServico):
 	return await servico.criar(dados)
 
 
-@router.get(
+@roteador.get(
 	'',
 	response_model=list[ProjetoResposta],
 	summary='Lista projetos visíveis ao usuário autenticado',
@@ -52,44 +52,50 @@ async def listar(
 	pagina: DependenciaPaginacao,
 	usuario_atual: DependenciaUsuarioAtual,
 	cliente_id: int | None = None,
-	filtro_situacao: Annotated[ProjetoStatus | None, Query(alias='status')] = None,
+	filtro_situacao: Annotated[SituacaoProjeto | None, Query(alias='status')] = None,
 ):
 	"""Função para listar registros."""
-	return await servico.listar_visible(
+	return await servico.listar_visiveis(
 		offset=pagina.offset,
 		limit=pagina.limit,
 		usuario_id=usuario_atual.id,
-		role=usuario_atual.role,
+		papel=usuario_atual.papel,
 		cliente_id=cliente_id,
 		status=filtro_situacao,
 	)
 
 
-@router.get(
+@roteador.get(
 	'/{projeto_id}',
 	response_model=ProjetoResposta,
 	summary='Obtém projeto visível ao usuário autenticado',
 )
-async def obter(projeto_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual):
+async def obter(
+	projeto_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual
+):
 	"""Função para obter um registro pelo ID."""
-	return await servico.obter_visible(projeto_id, usuario_atual.id, usuario_atual.role)
+	return await servico.obter_visivel(
+		projeto_id, usuario_atual.id, usuario_atual.papel
+	)
 
 
-@router.patch(
+@roteador.patch(
 	'/{projeto_id}',
 	response_model=ProjetoResposta,
-	dependencies=[AdminGuard],
+	dependencies=[GuardaAdmin],
 	summary='Atualiza projeto (somente admin)',
 )
-async def atualizar(projeto_id: int, dados: ProjetoAtualizar, servico: DependenciaServico):
+async def atualizar(
+	projeto_id: int, dados: ProjetoAtualizar, servico: DependenciaServico
+):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(projeto_id, dados)
 
 
-@router.delete(
+@roteador.delete(
 	'/{projeto_id}',
 	status_code=status.HTTP_204_NO_CONTENT,
-	dependencies=[AdminGuard],
+	dependencies=[GuardaAdmin],
 	summary='Remove projeto (somente admin)',
 )
 async def deletar(projeto_id: int, servico: DependenciaServico):
@@ -97,11 +103,11 @@ async def deletar(projeto_id: int, servico: DependenciaServico):
 	await servico.deletar(projeto_id)
 
 
-@router.post(
+@roteador.post(
 	'/{projeto_id}/equipe',
 	response_model=ProjetoFuncionarioResposta,
 	status_code=status.HTTP_201_CREATED,
-	dependencies=[AdminGuard],
+	dependencies=[GuardaAdmin],
 	summary='Adiciona funcionário ao projeto (somente admin)',
 )
 async def adicionar_membro(
@@ -111,7 +117,7 @@ async def adicionar_membro(
 	return await servico.adicionar_membro(projeto_id, dados)
 
 
-@router.get(
+@roteador.get(
 	'/{projeto_id}/equipe',
 	response_model=list[ProjetoFuncionarioResposta],
 	summary='Lista equipe do projeto visível ao usuário autenticado',
@@ -120,16 +126,18 @@ async def listar_equipe(
 	projeto_id: int, servico: DependenciaServico, usuario_atual: DependenciaUsuarioAtual
 ):
 	"""Função para listar a equipe de um projeto."""
-	await servico.obter_visible(projeto_id, usuario_atual.id, usuario_atual.role)
+	await servico.obter_visivel(projeto_id, usuario_atual.id, usuario_atual.papel)
 	return await servico.listar_equipe(projeto_id)
 
 
-@router.delete(
+@roteador.delete(
 	'/{projeto_id}/equipe/{funcionario_id}',
 	status_code=status.HTTP_204_NO_CONTENT,
-	dependencies=[AdminGuard],
+	dependencies=[GuardaAdmin],
 	summary='Remove funcionário do projeto (somente admin)',
 )
-async def remover_membro(projeto_id: int, funcionario_id: int, servico: DependenciaServico):
+async def remover_membro(
+	projeto_id: int, funcionario_id: int, servico: DependenciaServico
+):
 	"""Função para remover um funcionário da equipe do projeto."""
 	await servico.remover_membro(projeto_id, funcionario_id)

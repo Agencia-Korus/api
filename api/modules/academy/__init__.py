@@ -1,1 +1,1 @@
-"""Pacote do módulo Academy."""
+"""Pacote do módulo Academia."""

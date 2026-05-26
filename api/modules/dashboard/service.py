@@ -3,8 +3,13 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 from typing import Any
 
-from core.enums import ProjetoStatus, TarefaStatus, UserRole, UserStatus
-from core.exceptions import NotFoundError
+from core.enums import (
+	PapelUsuario,
+	SituacaoProjeto,
+	SituacaoTarefa,
+	SituacaoUsuario,
+)
+from core.exceptions import ErroNaoEncontrado
 from fastapi import HTTPException, status
 from modules.agenda.model import EventoAgenda
 from modules.comunicados.model import Comunicado
@@ -17,94 +22,94 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class ServicoDashboard:
-	"""Classe responsável pelas regras de negócio de dashboard."""
+class ServicoPainel:
+	"""Classe responsável pelas regras de negócio do painel."""
 
-	def __init__(self, session: AsyncSession):
+	def __init__(self, sessao: AsyncSession):
 		"""Função para inicializar a instância com suas dependências."""
-		self.session = session
+		self.sessao = sessao
 
 	async def admin(self) -> dict[str, Any]:
 		"""Função para montar os indicadores do painel administrativo."""
 		return {
 			'cards': {
-				'leads_no_mes': await self._count(Lead),
-				'projetos_ativos': await self._count(
+				'leads_no_mes': await self._contar(Lead),
+				'projetos_ativos': await self._contar(
 					Projeto,
 					Projeto.status.in_([
-						ProjetoStatus.PLANEJAMENTO,
-						ProjetoStatus.EM_ANDAMENTO,
-						ProjetoStatus.EM_REVISAO,
+						SituacaoProjeto.PLANEJAMENTO,
+						SituacaoProjeto.EM_ANDAMENTO,
+						SituacaoProjeto.EM_REVISAO,
 					]),
 				),
-				'tarefas_concluidas': await self._count(
-					Tarefa, Tarefa.status == TarefaStatus.CONCLUIDO
+				'tarefas_concluidas': await self._contar(
+					Tarefa, Tarefa.status == SituacaoTarefa.CONCLUIDO
 				),
-				'clientes_ativos': await self._count(
+				'clientes_ativos': await self._contar(
 					Usuario,
-					Usuario.role == UserRole.CLIENTE,
-					Usuario.status == UserStatus.ATIVO,
+					Usuario.role == PapelUsuario.CLIENTE,
+					Usuario.status == SituacaoUsuario.ATIVO,
 				),
 			},
-			'leads_por_semana': await self._series_by_period(
+			'leads_por_semana': await self._series_por_periodo(
 				Lead.data, 'week', Lead.id
 			),
-			'tarefas_concluidas_por_dia': await self._series_by_period(
+			'tarefas_concluidas_por_dia': await self._series_por_periodo(
 				Tarefa.concluido_em,
 				'day',
 				Tarefa.id,
 				Tarefa.concluido_em.is_not(None),
 			),
-			'leads_recentes': await self._recent_leads(),
+			'leads_recentes': await self._leads_recentes(),
 			'ranking_xp_semanal': await self._ranking(),
 		}
 
 	async def cliente(
-		self, cliente_id: int, usuario_id: int | None = None, role: str | None = None
+		self, cliente_id: int, usuario_id: int | None = None, papel: str | None = None
 	) -> dict[str, Any]:
 		"""Função para montar os indicadores do painel do cliente."""
-		await self._ensure_can_view_cliente(cliente_id, usuario_id, role)
-		project_ids = select(Projeto.id).where(Projeto.cliente_id == cliente_id)
+		await self._garantir_acesso_cliente(cliente_id, usuario_id, papel)
+		ids_projetos = select(Projeto.id).where(Projeto.cliente_id == cliente_id)
 		return {
 			'cards': {
-				'projetos_ativos': await self._count(
+				'projetos_ativos': await self._contar(
 					Projeto,
 					Projeto.cliente_id == cliente_id,
 					Projeto.status.in_([
-						ProjetoStatus.PLANEJAMENTO,
-						ProjetoStatus.EM_ANDAMENTO,
-						ProjetoStatus.EM_REVISAO,
+						SituacaoProjeto.PLANEJAMENTO,
+						SituacaoProjeto.EM_ANDAMENTO,
+						SituacaoProjeto.EM_REVISAO,
 					]),
 				),
-				'tarefas_em_andamento': await self._count(
+				'tarefas_em_andamento': await self._contar(
 					Tarefa,
-					Tarefa.projeto_id.in_(project_ids),
+					Tarefa.projeto_id.in_(ids_projetos),
 					Tarefa.status.in_([
-						TarefaStatus.A_FAZER,
-						TarefaStatus.EM_PROGRESSO,
+						SituacaoTarefa.A_FAZER,
+						SituacaoTarefa.EM_PROGRESSO,
 					]),
 				),
-				'entregas_concluidas': await self._count(
+				'entregas_concluidas': await self._contar(
 					Tarefa,
-					Tarefa.projeto_id.in_(project_ids),
-					Tarefa.status == TarefaStatus.CONCLUIDO,
+					Tarefa.projeto_id.in_(ids_projetos),
+					Tarefa.status == SituacaoTarefa.CONCLUIDO,
 				),
 			},
-			'projetos': await self._projects_for_cliente(cliente_id),
-			'proximas_entregas': await self._upcoming_tasks(project_ids),
-			'comunicados_recentes': await self._recent_announcements(),
-			'eventos': await self._events_for_user(cliente_id),
+			'projetos': await self._projetos_do_cliente(cliente_id),
+			'proximas_entregas': await self._tarefas_proximas(ids_projetos),
+			'comunicados_recentes': await self._comunicados_recentes(),
+			'eventos': await self._eventos_do_usuario(cliente_id),
 		}
 
 	async def funcionario(
 		self,
 		funcionario_id: int,
 		usuario_id: int | None = None,
-		role: str | None = None,
+		papel: str | None = None,
 	) -> dict[str, Any]:
 		"""Função para montar os indicadores do painel do funcionário."""
-		funcionario = await self._ensure_can_view_funcionario(
-			funcionario_id, usuario_id, role
+		funcionario = await self._garantir_acesso_funcionario(
+			funcionario_id, usuario_id, papel
 		)
 		return {
 			'perfil': {
@@ -114,39 +119,39 @@ class ServicoDashboard:
 				'nivel': funcionario.nivel,
 			},
 			'cards': {
-				'tarefas_atribuidas': await self._count(
+				'tarefas_atribuidas': await self._contar(
 					Tarefa, Tarefa.responsavel_id == funcionario_id
 				),
-				'tarefas_concluidas': await self._count(
+				'tarefas_concluidas': await self._contar(
 					Tarefa,
 					Tarefa.responsavel_id == funcionario_id,
-					Tarefa.status == TarefaStatus.CONCLUIDO,
+					Tarefa.status == SituacaoTarefa.CONCLUIDO,
 				),
-				'xp_no_mes': await self._xp_for_funcionario(funcionario_id),
+				'xp_no_mes': await self._xp_do_funcionario(funcionario_id),
 			},
-			'tarefas': await self._tasks_for_funcionario(funcionario_id),
-			'historico_xp': await self._xp_history(funcionario_id),
-			'conquistas': await self._achievements_for_funcionario(funcionario_id),
+			'tarefas': await self._tarefas_do_funcionario(funcionario_id),
+			'historico_xp': await self._historico_xp(funcionario_id),
+			'conquistas': await self._conquistas_do_funcionario(funcionario_id),
 			'ranking_xp_semanal': await self._ranking(),
 		}
 
 	async def projeto_kanban(
-		self, projeto_id: int, usuario_id: int | None = None, role: str | None = None
+		self, projeto_id: int, usuario_id: int | None = None, papel: str | None = None
 	) -> dict[str, Any]:
 		"""Função para montar os dados do quadro Kanban de um projeto."""
-		projeto = await self.session.obter(Projeto, projeto_id)
+		projeto = await self.sessao.obter(Projeto, projeto_id)
 		if not projeto:
-			raise NotFoundError('Projeto', projeto_id)
-		await self._ensure_can_view_projeto(projeto, usuario_id, role)
-		stmt = (
+			raise ErroNaoEncontrado('Projeto', projeto_id)
+		await self._garantir_acesso_projeto(projeto, usuario_id, papel)
+		consulta = (
 			select(Tarefa)
 			.where(Tarefa.projeto_id == projeto_id)
 			.order_by(Tarefa.status, Tarefa.ordem, Tarefa.prazo)
 		)
-		tarefas = list((await self.session.execute(stmt)).scalars().all())
-		columns = {status.value: [] for status in TarefaStatus}
+		tarefas = list((await self.sessao.execute(consulta)).scalars().all())
+		colunas = {situacao.value: [] for situacao in SituacaoTarefa}
 		for tarefa in tarefas:
-			columns[tarefa.status.value].append(self._task_payload(tarefa))
+			colunas[tarefa.status.value].append(self._dados_tarefa(tarefa))
 		return {
 			'projeto': {
 				'id': projeto.id,
@@ -155,33 +160,33 @@ class ServicoDashboard:
 				'progresso': projeto.progresso,
 				'data_fim': projeto.data_fim,
 			},
-			'colunas': columns,
-			'columns': columns,
+			'colunas': colunas,
+			'columns': colunas,
 		}
 
-	async def _count(self, model, *conditions) -> int:
+	async def _contar(self, modelo, *condicoes) -> int:
 		"""Função interna para contar registros com filtros opcionais."""
-		stmt = select(func.count()).select_from(model)
-		for condition in conditions:
-			stmt = stmt.where(condition)
-		return int((await self.session.execute(stmt)).scalar_one())
+		consulta = select(func.count()).select_from(modelo)
+		for condicao in condicoes:
+			consulta = consulta.where(condicao)
+		return int((await self.sessao.execute(consulta)).scalar_one())
 
-	async def _series_by_period(
-		self, date_column, period: str, id_column, *conditions
+	async def _series_por_periodo(
+		self, coluna_data, periodo: str, coluna_id, *condicoes
 	) -> list[dict[str, Any]]:
 		"""Função interna para agrupar registros por período."""
-		bucket = func.date_trunc(period, date_column).label('periodo')
-		stmt = select(bucket, func.count(id_column)).where(date_column.is_not(None))
-		for condition in conditions:
-			stmt = stmt.where(condition)
-		stmt = stmt.group_by(bucket).order_by(bucket)
-		rows = (await self.session.execute(stmt)).all()
-		return [{'periodo': row[0], 'total': int(row[1])} for row in rows]
+		faixa = func.date_trunc(periodo, coluna_data).label('periodo')
+		consulta = select(faixa, func.count(coluna_id)).where(coluna_data.is_not(None))
+		for condicao in condicoes:
+			consulta = consulta.where(condicao)
+		consulta = consulta.group_by(faixa).order_by(faixa)
+		linhas = (await self.sessao.execute(consulta)).all()
+		return [{'periodo': linha[0], 'total': int(linha[1])} for linha in linhas]
 
-	async def _recent_leads(self) -> list[dict[str, Any]]:
+	async def _leads_recentes(self) -> list[dict[str, Any]]:
 		"""Função interna para listar leads recentes."""
-		stmt = select(Lead).order_by(Lead.data.desc()).limit(10)
-		leads = list((await self.session.execute(stmt)).scalars().all())
+		consulta = select(Lead).order_by(Lead.data.desc()).limit(10)
+		leads = list((await self.sessao.execute(consulta)).scalars().all())
 		return [
 			{
 				'id': lead.id,
@@ -197,13 +202,13 @@ class ServicoDashboard:
 
 	async def _ranking(self) -> list[dict[str, Any]]:
 		"""Função interna para montar o ranking de funcionários."""
-		stmt = (
+		consulta = (
 			select(Funcionario, Usuario)
 			.join(Usuario, Usuario.id == Funcionario.id)
 			.order_by(Funcionario.xp_total.desc(), Usuario.nome)
 			.limit(10)
 		)
-		rows = (await self.session.execute(stmt)).all()
+		linhas = (await self.sessao.execute(consulta)).all()
 		return [
 			{
 				'funcionario_id': funcionario.id,
@@ -212,67 +217,67 @@ class ServicoDashboard:
 				'nivel': funcionario.nivel,
 				'xp_total': funcionario.xp_total,
 			}
-			for funcionario, usuario in rows
+			for funcionario, usuario in linhas
 		]
 
-	async def _ensure_cliente(self, cliente_id: int) -> Cliente:
+	async def _garantir_cliente(self, cliente_id: int) -> Cliente:
 		"""Função interna para garantir que o cliente existe."""
-		cliente = await self.session.obter(Cliente, cliente_id)
+		cliente = await self.sessao.obter(Cliente, cliente_id)
 		if not cliente:
-			raise NotFoundError('Cliente', cliente_id)
+			raise ErroNaoEncontrado('Cliente', cliente_id)
 		return cliente
 
-	async def _ensure_funcionario(self, funcionario_id: int) -> Funcionario:
+	async def _garantir_funcionario(self, funcionario_id: int) -> Funcionario:
 		"""Função interna para garantir que o funcionário existe."""
-		funcionario = await self.session.obter(Funcionario, funcionario_id)
+		funcionario = await self.sessao.obter(Funcionario, funcionario_id)
 		if not funcionario:
-			raise NotFoundError('Funcionario', funcionario_id)
+			raise ErroNaoEncontrado('Funcionario', funcionario_id)
 		return funcionario
 
-	async def _ensure_can_view_cliente(
-		self, cliente_id: int, usuario_id: int | None, role: str | None
+	async def _garantir_acesso_cliente(
+		self, cliente_id: int, usuario_id: int | None, papel: str | None
 	) -> Cliente:
 		"""Função interna para validar acesso aos dados de um cliente."""
-		cliente = await self._ensure_cliente(cliente_id)
-		if role is None:
+		cliente = await self._garantir_cliente(cliente_id)
+		if papel is None:
 			return cliente
-		if role == UserRole.ADMIN.value:
+		if papel == PapelUsuario.ADMIN.value:
 			return cliente
-		if role == UserRole.CLIENTE.value and usuario_id == cliente_id:
+		if papel == PapelUsuario.CLIENTE.value and usuario_id == cliente_id:
 			return cliente
 		raise HTTPException(
 			status_code=status.HTTP_403_FORBIDDEN,
-			detail='Acesso negado para este dashboard de cliente',
+			detail='Acesso negado para este painel de cliente',
 		)
 
-	async def _ensure_can_view_funcionario(
-		self, funcionario_id: int, usuario_id: int | None, role: str | None
+	async def _garantir_acesso_funcionario(
+		self, funcionario_id: int, usuario_id: int | None, papel: str | None
 	) -> Funcionario:
 		"""Função interna para validar acesso aos dados de um funcionário."""
-		funcionario = await self._ensure_funcionario(funcionario_id)
-		if role is None:
+		funcionario = await self._garantir_funcionario(funcionario_id)
+		if papel is None:
 			return funcionario
-		if role == UserRole.ADMIN.value:
+		if papel == PapelUsuario.ADMIN.value:
 			return funcionario
-		if role == UserRole.FUNCIONARIO.value and usuario_id == funcionario_id:
+		if papel == PapelUsuario.FUNCIONARIO.value and usuario_id == funcionario_id:
 			return funcionario
 		raise HTTPException(
 			status_code=status.HTTP_403_FORBIDDEN,
-			detail='Acesso negado para este dashboard de funcionário',
+			detail='Acesso negado para este painel de funcionário',
 		)
 
-	async def _ensure_can_view_projeto(
-		self, projeto: Projeto, usuario_id: int | None, role: str | None
+	async def _garantir_acesso_projeto(
+		self, projeto: Projeto, usuario_id: int | None, papel: str | None
 	) -> None:
 		"""Função interna para validar acesso aos dados de um projeto."""
-		if role is None:
+		if papel is None:
 			return
-		if role == UserRole.ADMIN.value:
+		if papel == PapelUsuario.ADMIN.value:
 			return
-		if role == UserRole.CLIENTE.value and projeto.cliente_id == usuario_id:
+		if papel == PapelUsuario.CLIENTE.value and projeto.cliente_id == usuario_id:
 			return
-		if role == UserRole.FUNCIONARIO.value:
-			stmt = (
+		if papel == PapelUsuario.FUNCIONARIO.value:
+			consulta = (
 				select(func.count())
 				.select_from(ProjetoFuncionario)
 				.where(
@@ -280,19 +285,19 @@ class ServicoDashboard:
 					ProjetoFuncionario.funcionario_id == usuario_id,
 				)
 			)
-			if int((await self.session.execute(stmt)).scalar_one()) > 0:
+			if int((await self.sessao.execute(consulta)).scalar_one()) > 0:
 				return
 		raise HTTPException(
 			status_code=status.HTTP_403_FORBIDDEN,
 			detail='Acesso negado para este projeto',
 		)
 
-	async def _projects_for_cliente(self, cliente_id: int) -> list[dict[str, Any]]:
+	async def _projetos_do_cliente(self, cliente_id: int) -> list[dict[str, Any]]:
 		"""Função interna para listar projetos de um cliente."""
-		stmt = (
+		consulta = (
 			select(Projeto).where(Projeto.cliente_id == cliente_id).order_by(Projeto.id)
 		)
-		projetos = list((await self.session.execute(stmt)).scalars().all())
+		projetos = list((await self.sessao.execute(consulta)).scalars().all())
 		return [
 			{
 				'id': projeto.id,
@@ -304,21 +309,21 @@ class ServicoDashboard:
 			for projeto in projetos
 		]
 
-	async def _upcoming_tasks(self, project_ids) -> list[dict[str, Any]]:
+	async def _tarefas_proximas(self, ids_projetos) -> list[dict[str, Any]]:
 		"""Função interna para listar próximas tarefas."""
-		stmt = (
+		consulta = (
 			select(Tarefa)
-			.where(Tarefa.projeto_id.in_(project_ids), Tarefa.prazo >= date.today())
+			.where(Tarefa.projeto_id.in_(ids_projetos), Tarefa.prazo >= date.today())
 			.order_by(Tarefa.prazo)
 			.limit(10)
 		)
-		tarefas = list((await self.session.execute(stmt)).scalars().all())
-		return [self._task_payload(tarefa) for tarefa in tarefas]
+		tarefas = list((await self.sessao.execute(consulta)).scalars().all())
+		return [self._dados_tarefa(tarefa) for tarefa in tarefas]
 
-	async def _recent_announcements(self) -> list[dict[str, Any]]:
+	async def _comunicados_recentes(self) -> list[dict[str, Any]]:
 		"""Função interna para listar comunicados recentes."""
-		stmt = select(Comunicado).order_by(Comunicado.data.desc()).limit(10)
-		comunicados = list((await self.session.execute(stmt)).scalars().all())
+		consulta = select(Comunicado).order_by(Comunicado.data.desc()).limit(10)
+		comunicados = list((await self.sessao.execute(consulta)).scalars().all())
 		return [
 			{
 				'id': comunicado.id,
@@ -330,15 +335,15 @@ class ServicoDashboard:
 			for comunicado in comunicados
 		]
 
-	async def _events_for_user(self, usuario_id: int) -> list[dict[str, Any]]:
+	async def _eventos_do_usuario(self, usuario_id: int) -> list[dict[str, Any]]:
 		"""Função interna para listar eventos de um usuário."""
-		stmt = (
+		consulta = (
 			select(EventoAgenda)
 			.where(EventoAgenda.usuario_id == usuario_id)
 			.order_by(EventoAgenda.data, EventoAgenda.hora)
 			.limit(20)
 		)
-		eventos = list((await self.session.execute(stmt)).scalars().all())
+		eventos = list((await self.sessao.execute(consulta)).scalars().all())
 		return [
 			{
 				'id': evento.id,
@@ -350,53 +355,55 @@ class ServicoDashboard:
 			for evento in eventos
 		]
 
-	async def _xp_for_funcionario(self, funcionario_id: int) -> int:
+	async def _xp_do_funcionario(self, funcionario_id: int) -> int:
 		"""Função interna para calcular o XP de um funcionário."""
-		start = datetime.now(timezone.utc).replace(
+		inicio = datetime.now(timezone.utc).replace(
 			day=1, hour=0, minute=0, second=0, microsecond=0
 		)
-		stmt = select(func.coalesce(func.sum(HistoricoXp.xp), 0)).where(
+		consulta = select(func.coalesce(func.sum(HistoricoXp.xp), 0)).where(
 			HistoricoXp.funcionario_id == funcionario_id,
-			HistoricoXp.data >= start,
+			HistoricoXp.data >= inicio,
 		)
-		return int((await self.session.execute(stmt)).scalar_one())
+		return int((await self.sessao.execute(consulta)).scalar_one())
 
-	async def _tasks_for_funcionario(self, funcionario_id: int) -> list[dict[str, Any]]:
+	async def _tarefas_do_funcionario(
+		self, funcionario_id: int
+	) -> list[dict[str, Any]]:
 		"""Função interna para listar tarefas de um funcionário."""
-		stmt = (
+		consulta = (
 			select(Tarefa)
 			.where(Tarefa.responsavel_id == funcionario_id)
 			.order_by(Tarefa.status, Tarefa.prazo)
 			.limit(20)
 		)
-		tarefas = list((await self.session.execute(stmt)).scalars().all())
-		return [self._task_payload(tarefa) for tarefa in tarefas]
+		tarefas = list((await self.sessao.execute(consulta)).scalars().all())
+		return [self._dados_tarefa(tarefa) for tarefa in tarefas]
 
-	async def _xp_history(self, funcionario_id: int) -> list[dict[str, Any]]:
+	async def _historico_xp(self, funcionario_id: int) -> list[dict[str, Any]]:
 		"""Função interna para listar o histórico de XP."""
-		stmt = (
+		consulta = (
 			select(HistoricoXp)
 			.where(HistoricoXp.funcionario_id == funcionario_id)
 			.order_by(HistoricoXp.data.desc())
 			.limit(20)
 		)
-		rows = list((await self.session.execute(stmt)).scalars().all())
+		linhas = list((await self.sessao.execute(consulta)).scalars().all())
 		return [
 			{
-				'id': row.id,
-				'acao': row.acao,
-				'xp': row.xp,
-				'tarefa_id': row.tarefa_id,
-				'data': row.data,
+				'id': linha.id,
+				'acao': linha.acao,
+				'xp': linha.xp,
+				'tarefa_id': linha.tarefa_id,
+				'data': linha.data,
 			}
-			for row in rows
+			for linha in linhas
 		]
 
-	async def _achievements_for_funcionario(
+	async def _conquistas_do_funcionario(
 		self, funcionario_id: int
 	) -> list[dict[str, Any]]:
 		"""Função interna para listar conquistas de um funcionário."""
-		stmt = (
+		consulta = (
 			select(Conquista, FuncionarioConquista.desbloqueado_em)
 			.join(
 				FuncionarioConquista,
@@ -405,7 +412,7 @@ class ServicoDashboard:
 			.where(FuncionarioConquista.funcionario_id == funcionario_id)
 			.order_by(FuncionarioConquista.desbloqueado_em.desc())
 		)
-		rows = (await self.session.execute(stmt)).all()
+		linhas = (await self.sessao.execute(consulta)).all()
 		return [
 			{
 				'id': conquista.id,
@@ -415,11 +422,11 @@ class ServicoDashboard:
 				'xp_bonus': conquista.xp_bonus,
 				'desbloqueado_em': desbloqueado_em,
 			}
-			for conquista, desbloqueado_em in rows
+			for conquista, desbloqueado_em in linhas
 		]
 
 	@staticmethod
-	def _task_payload(tarefa: Tarefa) -> dict[str, Any]:
+	def _dados_tarefa(tarefa: Tarefa) -> dict[str, Any]:
 		"""Função interna para montar o dados de uma tarefa."""
 		return {
 			'id': tarefa.id,

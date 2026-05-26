@@ -8,38 +8,40 @@ from sqlalchemy.ext.asyncio import AsyncSession
 class RepositorioComunicado(RepositorioBase[Comunicado]):
 	"""Classe responsável pelo acesso aos dados de comunicado."""
 
-	model = Comunicado
+	modelo = Comunicado
 
 
 class RepositorioComunicadoLeitura:
 	"""Classe responsável pelo acesso aos dados de leitura de comunicado."""
 
-	def __init__(self, session: AsyncSession):
+	def __init__(self, sessao: AsyncSession):
 		"""Função para inicializar a instância com suas dependências."""
-		self.session = session
+		self.sessao = sessao
 
 	async def marcar_lido(
 		self, comunicado_id: int, usuario_id: int
 	) -> ComunicadoLeitura:
 		"""Função para registrar a leitura de um comunicado."""
-		stmt = (
+		consulta = (
 			insert(ComunicadoLeitura)
 			.values(comunicado_id=comunicado_id, usuario_id=usuario_id)
 			.on_conflict_do_nothing(index_elements=['comunicado_id', 'usuario_id'])
 		)
-		await self.session.execute(stmt)
-		await self.session.flush()
-		select_stmt = select(ComunicadoLeitura).where(
+		await self.sessao.execute(consulta)
+		await self.sessao.flush()
+		consulta_selecao = select(ComunicadoLeitura).where(
 			ComunicadoLeitura.comunicado_id == comunicado_id,
 			ComunicadoLeitura.usuario_id == usuario_id,
 		)
-		result = await self.session.execute(select_stmt)
-		return result.scalar_one()
+		resultado = await self.sessao.execute(consulta_selecao)
+		return resultado.scalar_one()
 
-	async def listar_por_comunicado(self, comunicado_id: int) -> list[ComunicadoLeitura]:
+	async def listar_por_comunicado(
+		self, comunicado_id: int
+	) -> list[ComunicadoLeitura]:
 		"""Função para listar leituras vinculadas a um comunicado."""
-		stmt = select(ComunicadoLeitura).where(
+		consulta = select(ComunicadoLeitura).where(
 			ComunicadoLeitura.comunicado_id == comunicado_id
 		)
-		result = await self.session.execute(stmt)
-		return list(result.scalars().all())
+		resultado = await self.sessao.execute(consulta)
+		return list(resultado.scalars().all())

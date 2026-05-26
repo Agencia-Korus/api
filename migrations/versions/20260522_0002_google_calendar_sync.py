@@ -1,4 +1,4 @@
-"""Add Google Calendar sync fields to agenda events.
+"""Adiciona campos de sincronização com Google Calendar aos eventos da agenda.
 
 Revision ID: 20260522_0002
 Revises: 20260518_0001

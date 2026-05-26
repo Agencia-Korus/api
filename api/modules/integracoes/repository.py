@@ -1,36 +1,36 @@
 from db.base_repository import RepositorioBase
 from modules.integracoes.model import Integracao
-from modules.integracoes.schema import GOOGLE_CALENDAR_INTEGRATION
+from modules.integracoes.schema import INTEGRACAO_GOOGLE_CALENDAR
 from sqlalchemy import select
 
 
 class RepositorioIntegracao(RepositorioBase[Integracao]):
 	"""Classe responsável pelo acesso aos dados de integração."""
 
-	model = Integracao
+	modelo = Integracao
 
 	async def obter_por_nome(self, nome: str) -> Integracao | None:
 		"""Função para buscar uma integração pelo nome."""
-		stmt = select(Integracao).where(Integracao.nome == nome)
-		result = await self.session.execute(stmt)
-		return result.scalar_one_or_none()
+		consulta = select(Integracao).where(Integracao.nome == nome)
+		resultado = await self.sessao.execute(consulta)
+		return resultado.scalar_one_or_none()
 
 	async def obter_google_calendar(self, integracao_id: int) -> Integracao | None:
 		"""Função para buscar a integração do Google Calendar pelo ID."""
-		stmt = select(Integracao).where(
+		consulta = select(Integracao).where(
 			Integracao.id == integracao_id,
-			Integracao.nome == GOOGLE_CALENDAR_INTEGRATION,
+			Integracao.nome == INTEGRACAO_GOOGLE_CALENDAR,
 		)
-		result = await self.session.execute(stmt)
-		return result.scalar_one_or_none()
+		resultado = await self.sessao.execute(consulta)
+		return resultado.scalar_one_or_none()
 
 	async def listar_google_calendar(self, offset: int, limit: int) -> list[Integracao]:
 		"""Função para listar a integração do Google Calendar com paginação."""
-		stmt = (
+		consulta = (
 			select(Integracao)
-			.where(Integracao.nome == GOOGLE_CALENDAR_INTEGRATION)
+			.where(Integracao.nome == INTEGRACAO_GOOGLE_CALENDAR)
 			.offset(offset)
 			.limit(limit)
 		)
-		result = await self.session.execute(stmt)
-		return list(result.scalars().all())
+		resultado = await self.sessao.execute(consulta)
+		return list(resultado.scalars().all())

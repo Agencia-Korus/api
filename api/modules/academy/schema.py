@@ -1,25 +1,25 @@
 from datetime import datetime
 from decimal import Decimal
 
-from core.constants import TITULO_MAX_LENGTH, URL_MAX_LENGTH
-from core.enums import AcademyTipo
+from core.constants import TAMANHO_MAXIMO_TITULO, TAMANHO_MAXIMO_URL
+from core.enums import TipoAcademia
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class AcademyBase(BaseModel):
-	"""Classe que define os dados de conteúdo da Academy usados pela API."""
+class AcademiaBase(BaseModel):
+	"""Classe que define os dados de conteúdo da Academia usados pela API."""
 
-	titulo: str = Field(max_length=TITULO_MAX_LENGTH)
-	tipo: AcademyTipo
+	titulo: str = Field(max_length=TAMANHO_MAXIMO_TITULO)
+	tipo: TipoAcademia
 	descricao: str | None = None
 	preco: Decimal = Decimal('0.00')
-	imagem: str | None = Field(default=None, max_length=URL_MAX_LENGTH)
-	url_externa: str = Field(max_length=URL_MAX_LENGTH)
+	imagem: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_URL)
+	url_externa: str = Field(max_length=TAMANHO_MAXIMO_URL)
 	publicado: bool = False
 
 
-class AcademyCriar(AcademyBase):
-	"""Classe que define os dados de conteúdo da Academy usados pela API."""
+class AcademiaCriar(AcademiaBase):
+	"""Classe que define os dados de conteúdo da Academia usados pela API."""
 
 	model_config = ConfigDict(
 		json_schema_extra={
@@ -36,15 +36,15 @@ class AcademyCriar(AcademyBase):
 	)
 
 
-class AcademyAtualizar(BaseModel):
-	"""Classe que define os dados de conteúdo da Academy usados pela API."""
+class AcademiaAtualizar(BaseModel):
+	"""Classe que define os dados de conteúdo da Academia usados pela API."""
 
-	titulo: str | None = Field(default=None, max_length=TITULO_MAX_LENGTH)
-	tipo: AcademyTipo | None = None
+	titulo: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_TITULO)
+	tipo: TipoAcademia | None = None
 	descricao: str | None = None
 	preco: Decimal | None = None
-	imagem: str | None = Field(default=None, max_length=URL_MAX_LENGTH)
-	url_externa: str | None = Field(default=None, max_length=URL_MAX_LENGTH)
+	imagem: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_URL)
+	url_externa: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_URL)
 	publicado: bool | None = None
 
 	model_config = ConfigDict(
@@ -59,8 +59,8 @@ class AcademyAtualizar(BaseModel):
 	)
 
 
-class AcademyResposta(AcademyBase):
-	"""Classe que define os dados de conteúdo da Academy usados pela API."""
+class AcademiaResposta(AcademiaBase):
+	"""Classe que define os dados de conteúdo da Academia usados pela API."""
 
 	id: int
 	criado_em: datetime

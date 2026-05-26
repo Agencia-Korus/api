@@ -1,28 +1,28 @@
-from modules.academy import model as academy_model
-from modules.agenda import model as agenda_model
-from modules.comunicados import model as comunicados_model
-from modules.gamificacao import model as gamificacao_model
-from modules.integracoes import model as integracoes_model
-from modules.leads import model as leads_model
-from modules.lgpd import model as lgpd_model
-from modules.portfolio import model as portfolio_model
-from modules.projetos import model as projetos_model
-from modules.servicos import model as servicos_model
-from modules.tarefas import model as tarefas_model
-from modules.users import model as users_model
+from modules.academy import modelo as modelo_academia
+from modules.agenda import modelo as modelo_agenda
+from modules.comunicados import modelo as modelo_comunicados
+from modules.gamificacao import modelo as modelo_gamificacao
+from modules.integracoes import modelo as modelo_integracoes
+from modules.leads import modelo as modelo_leads
+from modules.lgpd import modelo as modelo_lgpd
+from modules.portfolio import modelo as modelo_portfolio
+from modules.projetos import modelo as modelo_projetos
+from modules.servicos import modelo as modelo_servicos
+from modules.tarefas import modelo as modelo_tarefas
+from modules.users import modelo as modelo_usuarios
 
 # utilizado na env de migração do allembic
-ALL_MODELS = (
-	academy_model,
-	agenda_model,
-	comunicados_model,
-	gamificacao_model,
-	integracoes_model,
-	leads_model,
-	lgpd_model,
-	portfolio_model,
-	projetos_model,
-	servicos_model,
-	tarefas_model,
-	users_model,
+TODOS_MODELOS = (
+	modelo_academia,
+	modelo_agenda,
+	modelo_comunicados,
+	modelo_gamificacao,
+	modelo_integracoes,
+	modelo_leads,
+	modelo_lgpd,
+	modelo_portfolio,
+	modelo_projetos,
+	modelo_servicos,
+	modelo_tarefas,
+	modelo_usuarios,
 )

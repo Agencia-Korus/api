@@ -1,32 +1,32 @@
 from typing import Annotated
 
-from core.enums import UserRole
-from core.security import require_role
+from core.enums import PapelUsuario
+from core.security import exigir_papel
 from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, status
 from modules.integracoes.schema import (
+	IntegracaoAtualizar,
 	IntegracaoCriar,
 	IntegracaoResposta,
-	IntegracaoAtualizar,
 )
 from modules.integracoes.service import ServicoIntegracao
 
-router = APIRouter(
+roteador = APIRouter(
 	prefix='/integracoes',
 	tags=['Integrações'],
-	dependencies=[Depends(require_role(UserRole.ADMIN.value))],
+	dependencies=[Depends(exigir_papel(PapelUsuario.ADMIN.value))],
 )
 
 
-def _service(session: DependenciaSessao) -> ServicoIntegracao:
+def _servico(sessao: DependenciaSessao) -> ServicoIntegracao:
 	"""Função para criar o serviço de aplicação com a sessão atual."""
-	return ServicoIntegracao(session)
+	return ServicoIntegracao(sessao)
 
 
-DependenciaServico = Annotated[ServicoIntegracao, Depends(_service)]
+DependenciaServico = Annotated[ServicoIntegracao, Depends(_servico)]
 
 
-@router.post(
+@roteador.post(
 	'',
 	response_model=IntegracaoResposta,
 	status_code=status.HTTP_201_CREATED,
@@ -38,7 +38,7 @@ async def criar(dados: IntegracaoCriar, servico: DependenciaServico):
 	return await servico.criar(dados)
 
 
-@router.get(
+@roteador.get(
 	'',
 	response_model=list[IntegracaoResposta],
 	summary='Lista configuração do Google Calendar (somente admin)',
@@ -48,7 +48,7 @@ async def listar(servico: DependenciaServico, pagina: DependenciaPaginacao):
 	return await servico.listar(offset=pagina.offset, limit=pagina.limit)
 
 
-@router.get(
+@roteador.get(
 	'/{integracao_id}',
 	response_model=IntegracaoResposta,
 	summary='Obtém configuração do Google Calendar (somente admin)',
@@ -58,17 +58,19 @@ async def obter(integracao_id: int, servico: DependenciaServico):
 	return await servico.obter(integracao_id)
 
 
-@router.patch(
+@roteador.patch(
 	'/{integracao_id}',
 	response_model=IntegracaoResposta,
 	summary='Atualiza configuração do Google Calendar (somente admin)',
 )
-async def atualizar(integracao_id: int, dados: IntegracaoAtualizar, servico: DependenciaServico):
+async def atualizar(
+	integracao_id: int, dados: IntegracaoAtualizar, servico: DependenciaServico
+):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(integracao_id, dados)
 
 
-@router.delete(
+@roteador.delete(
 	'/{integracao_id}',
 	status_code=status.HTTP_204_NO_CONTENT,
 	summary='Remove configuração do Google Calendar (somente admin)',
