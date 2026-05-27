@@ -51,6 +51,7 @@ logs/
 .env.*
 !.env.example
 !.env.template
+.env.google-calendar-service-account.json
 
 # =========================
 # FastAPI / local runtime
@@ -142,3 +143,6 @@ Thumbs.db
 
 *.swp
 *.swo
+
+# Cloned reference repository used only for local comparison.
+korus-entrega2/

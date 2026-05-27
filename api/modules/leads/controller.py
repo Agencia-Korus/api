@@ -2,67 +2,90 @@ import csv
 from io import StringIO
 from typing import Annotated
 
+from core.enums import LeadPrioridade, PapelUsuario, SituacaoLead
+from core.security import exigir_papel
+from core.swagger import exemplo_requisicao_json
+from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, Response, status
-
-from api.deps import PaginationDep, SessionDep
-from core.enums import LeadPrioridade, LeadStatus, UserRole
-from core.security import require_role
-from modules.leads.schema import LeadCreate, LeadResponse, LeadUpdate
-from modules.leads.service import LeadService
+from modules.leads.schema import LeadAtualizar, LeadCriar, LeadResposta
+from modules.leads.service import ServicoLead
 
 router = APIRouter(
 	prefix='/leads',
 	tags=['Leads'],
-	dependencies=[Depends(require_role(UserRole.ADMIN.value))],
+	dependencies=[Depends(exigir_papel(PapelUsuario.ADMIN.value))],
 )
 
 
-def _service(session: SessionDep) -> LeadService:
-	return LeadService(session)
+def _servico(sessao: DependenciaSessao) -> ServicoLead:
+	"""Função para criar o serviço de aplicação com a sessão atual."""
+	return ServicoLead(sessao)
 
 
-ServiceDep = Annotated[LeadService, Depends(_service)]
+DependenciaServico = Annotated[ServicoLead, Depends(_servico)]
 
 
-@router.post('', response_model=LeadResponse, status_code=status.HTTP_201_CREATED)
-async def criar(payload: LeadCreate, service: ServiceDep):
-	return await service.create(payload)
+@router.post('', response_model=LeadResposta, status_code=status.HTTP_201_CREATED)
+async def criar(dados: LeadCriar, servico: DependenciaServico):
+	"""Função para criar um novo registro."""
+	return await servico.criar(dados)
 
 
-@router.get('', response_model=list[LeadResponse])
+@router.get(
+	'',
+	response_model=list[LeadResposta],
+	openapi_extra=exemplo_requisicao_json({
+		'offset': 0,
+		'limit': 20,
+		'status': 'novo',
+		'prioridade': 'media',
+		'servico_id': 1,
+		'search': 'Marina',
+	}),
+)
 async def listar(
-	service: ServiceDep,
-	page: PaginationDep,
-	status_filter: Annotated[LeadStatus | None, Query(alias='status')] = None,
+	servico: DependenciaServico,
+	pagina: DependenciaPaginacao,
+	filtro_situacao: Annotated[SituacaoLead | None, Query(alias='status')] = None,
 	prioridade: LeadPrioridade | None = None,
 	servico_id: int | None = None,
-	search: str | None = None,
+	busca: Annotated[str | None, Query(alias='search')] = None,
 ):
-	return await service.list_filtered(
-		offset=page.offset,
-		limit=page.limit,
-		status=status_filter,
+	"""Função para listar registros."""
+	return await servico.listar_filtrados(
+		offset=pagina.offset,
+		limit=pagina.limit,
+		status=filtro_situacao,
 		prioridade=prioridade,
 		servico_id=servico_id,
-		search=search,
+		busca=busca,
 	)
 
 
-@router.get('/export.csv')
+@router.get(
+	'/export.csv',
+	openapi_extra=exemplo_requisicao_json({
+		'status': 'novo',
+		'prioridade': 'media',
+		'servico_id': 1,
+		'search': 'Marina',
+	}),
+)
 async def exportar_csv(
-	service: ServiceDep,
-	status_filter: Annotated[LeadStatus | None, Query(alias='status')] = None,
+	servico: DependenciaServico,
+	filtro_situacao: Annotated[SituacaoLead | None, Query(alias='status')] = None,
 	prioridade: LeadPrioridade | None = None,
 	servico_id: int | None = None,
-	search: str | None = None,
+	busca: Annotated[str | None, Query(alias='search')] = None,
 ):
-	leads = await service.list_filtered(
+	"""Função para exportar registros em formato CSV."""
+	leads = await servico.listar_filtrados(
 		offset=0,
 		limit=10_000,
-		status=status_filter,
+		status=filtro_situacao,
 		prioridade=prioridade,
 		servico_id=servico_id,
-		search=search,
+		busca=busca,
 	)
 	buffer = StringIO()
 	writer = csv.writer(buffer)
@@ -100,16 +123,27 @@ async def exportar_csv(
 	)
 
 
-@router.get('/{lead_id}', response_model=LeadResponse)
-async def obter(lead_id: int, service: ServiceDep):
-	return await service.get(lead_id)
+@router.get(
+	'/{lead_id}',
+	response_model=LeadResposta,
+	openapi_extra=exemplo_requisicao_json({'lead_id': 1}),
+)
+async def obter(lead_id: int, servico: DependenciaServico):
+	"""Função para obter um registro pelo ID."""
+	return await servico.obter(lead_id)
 
 
-@router.patch('/{lead_id}', response_model=LeadResponse)
-async def atualizar(lead_id: int, payload: LeadUpdate, service: ServiceDep):
-	return await service.update(lead_id, payload)
+@router.patch('/{lead_id}', response_model=LeadResposta)
+async def atualizar(lead_id: int, dados: LeadAtualizar, servico: DependenciaServico):
+	"""Função para atualizar um registro pelo ID."""
+	return await servico.atualizar(lead_id, dados)
 
 
-@router.delete('/{lead_id}', status_code=status.HTTP_204_NO_CONTENT)
-async def deletar(lead_id: int, service: ServiceDep):
-	await service.delete(lead_id)
+@router.delete(
+	'/{lead_id}',
+	status_code=status.HTTP_204_NO_CONTENT,
+	openapi_extra=exemplo_requisicao_json({'lead_id': 1}),
+)
+async def deletar(lead_id: int, servico: DependenciaServico):
+	"""Função para excluir um registro pelo ID."""
+	await servico.deletar(lead_id)

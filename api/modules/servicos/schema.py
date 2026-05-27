@@ -1,57 +1,112 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
-
 from core.constants import (
-	ICONE_MAX_LENGTH,
-	NOME_MAX_LENGTH,
-	SLUG_MAX_LENGTH,
-	URL_MAX_LENGTH,
+	TAMANHO_MAXIMO_ICONE,
+	TAMANHO_MAXIMO_NOME,
+	TAMANHO_MAXIMO_SLUG,
+	TAMANHO_MAXIMO_URL,
 )
-from core.enums import ServicoStatus
+from core.enums import SituacaoServico
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ServicoBase(BaseModel):
-	nome: str = Field(max_length=NOME_MAX_LENGTH)
-	slug: str = Field(max_length=SLUG_MAX_LENGTH)
+	"""Classe que define os dados de serviço usados pela API."""
+
+	nome: str = Field(max_length=TAMANHO_MAXIMO_NOME)
+	slug: str = Field(max_length=TAMANHO_MAXIMO_SLUG)
 	descricao: str | None = None
-	icone: str | None = Field(default=None, max_length=ICONE_MAX_LENGTH)
-	status: ServicoStatus = ServicoStatus.ATIVO
+	icone: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_ICONE)
+	status: SituacaoServico = SituacaoServico.ATIVO
 
 
-class ServicoCreate(ServicoBase):
-	pass
+class ServicoCriar(ServicoBase):
+	"""Classe que define os dados de serviço usados pela API."""
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'nome': 'Identidade Visual',
+				'slug': 'identidade-visual',
+				'descricao': 'Criação de marca, manual e aplicações.',
+				'icone': 'palette',
+				'status': 'ativo',
+			}
+		}
+	)
 
 
-class ServicoUpdate(BaseModel):
-	nome: str | None = Field(default=None, max_length=NOME_MAX_LENGTH)
-	slug: str | None = Field(default=None, max_length=SLUG_MAX_LENGTH)
+class ServicoAtualizar(BaseModel):
+	"""Classe que define os dados de serviço usados pela API."""
+
+	nome: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_NOME)
+	slug: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_SLUG)
 	descricao: str | None = None
-	icone: str | None = Field(default=None, max_length=ICONE_MAX_LENGTH)
-	status: ServicoStatus | None = None
+	icone: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_ICONE)
+	status: SituacaoServico | None = None
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'nome': 'Branding completo',
+				'slug': 'branding-completo',
+				'descricao': 'Pacote completo de estratégia e identidade.',
+				'status': 'ativo',
+			}
+		}
+	)
 
 
-class ServicoResponse(ServicoBase):
+class ServicoResposta(ServicoBase):
+	"""Classe que define os dados de serviço usados pela API."""
+
 	id: int
 	criado_em: datetime
 	model_config = ConfigDict(from_attributes=True)
 
 
 class EntregavelBase(BaseModel):
-	descricao: str = Field(max_length=URL_MAX_LENGTH)
+	"""Classe que define os dados de entregável usados pela API."""
+
+	descricao: str = Field(max_length=TAMANHO_MAXIMO_URL)
 	ordem: int = 0
 
 
-class EntregavelCreate(EntregavelBase):
+class EntregavelCriar(EntregavelBase):
+	"""Classe que define os dados de entregável usados pela API."""
+
 	servico_id: int
 
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'descricao': 'Manual de marca em PDF',
+				'ordem': 1,
+				'servico_id': 1,
+			}
+		}
+	)
 
-class EntregavelUpdate(BaseModel):
-	descricao: str | None = Field(default=None, max_length=URL_MAX_LENGTH)
+
+class EntregavelAtualizar(BaseModel):
+	"""Classe que define os dados de entregável usados pela API."""
+
+	descricao: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_URL)
 	ordem: int | None = None
 
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'descricao': 'Manual de marca revisado',
+				'ordem': 2,
+			}
+		}
+	)
 
-class EntregavelResponse(EntregavelBase):
+
+class EntregavelResposta(EntregavelBase):
+	"""Classe que define os dados de entregável usados pela API."""
+
 	id: int
 	servico_id: int
 	model_config = ConfigDict(from_attributes=True)

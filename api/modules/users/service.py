@@ -1,146 +1,146 @@
 from __future__ import annotations
 
-from core.enums import UserRole, UserStatus
-from core.exceptions import BadRequestError, ConflictError, NotFoundError
-from core.password import hash_password
+from core.enums import PapelUsuario, SituacaoUsuario
+from core.exceptions import ErroConflito, ErroNaoEncontrado, ErroRequisicaoInvalida
+from core.password import gerar_hash_senha
 from modules.users.model import Admin, Cliente, Funcionario, Usuario
 from modules.users.repository import (
-	AdminRepository,
-	ClienteRepository,
-	FuncionarioRepository,
-	UsuarioRepository,
+	RepositorioAdmin,
+	RepositorioCliente,
+	RepositorioFuncionario,
+	RepositorioUsuario,
 )
-from modules.users.schema import UsuarioCreate, UsuarioRegister, UsuarioUpdate
+from modules.users.schema import UsuarioAtualizar, UsuarioCriar, UsuarioRegistrar
 from sqlalchemy.ext.asyncio import AsyncSession
 
-_ENTITY = 'Usuário'
+_ENTIDADE = 'Usuário'
 
 
-class UsuarioService:
-	def __init__(self, session: AsyncSession):
-		self.session = session
-		self.usuarios = UsuarioRepository(session)
-		self.clientes = ClienteRepository(session)
-		self.funcionarios = FuncionarioRepository(session)
-		self.admins = AdminRepository(session)
+class ServicoUsuario:
+	"""Classe responsável pelas regras de negócio de usuário."""
 
-	async def create(self, payload: UsuarioCreate) -> Usuario:
-		if await self.usuarios.get_by_email(payload.email):
-			raise ConflictError('Email já cadastrado')
+	def __init__(self, sessao: AsyncSession):
+		"""Função para inicializar a instância com suas dependências."""
+		self.sessao = sessao
+		self.usuarios = RepositorioUsuario(sessao)
+		self.clientes = RepositorioCliente(sessao)
+		self.funcionarios = RepositorioFuncionario(sessao)
+		self.admins = RepositorioAdmin(sessao)
+
+	async def criar(self, dados: UsuarioCriar) -> Usuario:
+		"""Função para criar um novo registro."""
+		if await self.usuarios.obter_por_email(dados.email):
+			raise ErroConflito('Email já cadastrado')
 
 		usuario = Usuario(
-			nome=payload.nome,
-			email=payload.email,
-			senha_hash=hash_password(payload.senha),
-			role=payload.role,
-			telefone=payload.telefone,
-			avatar=payload.avatar,
-			status=payload.status,
+			nome=dados.nome,
+			email=dados.email,
+			senha_hash=gerar_hash_senha(dados.senha),
+			role=dados.role,
+			telefone=dados.telefone,
+			avatar=dados.avatar,
+			status=dados.status,
 		)
-		usuario = await self.usuarios.add(usuario)
-		if payload.role == UserRole.CLIENTE:
-			cliente_payload = payload.cliente
+		usuario = await self.usuarios.adicionar(usuario)
+		if dados.role == PapelUsuario.CLIENTE:
+			dados_cliente = dados.cliente
 			cliente = Cliente(
 				id=usuario.id,
-				razao_social=cliente_payload.razao_social
-				if cliente_payload
-				else usuario.nome,
-				cnpj_cpf=cliente_payload.cnpj_cpf
-				if cliente_payload
-				else f'api-{usuario.id}',
-				segmento=cliente_payload.segmento if cliente_payload else None,
+				razao_social=dados_cliente.razao_social if dados_cliente else usuario.nome,
+				cnpj_cpf=dados_cliente.cnpj_cpf if dados_cliente else f'api-{usuario.id}',
+				segmento=dados_cliente.segmento if dados_cliente else None,
 			)
-			await self.clientes.add(cliente)
+			await self.clientes.adicionar(cliente)
 
-		if payload.role == UserRole.FUNCIONARIO:
-			funcionario_payload = payload.funcionario
+		if dados.role == PapelUsuario.FUNCIONARIO:
+			dados_funcionario = dados.funcionario
 			funcionario = Funcionario(
 				id=usuario.id,
-				cargo=funcionario_payload.cargo
-				if funcionario_payload
-				else 'Funcionário',
-				especialidade=funcionario_payload.especialidade
-				if funcionario_payload
-				else None,
+				cargo=dados_funcionario.cargo if dados_funcionario else 'Funcionário',
+				especialidade=dados_funcionario.especialidade if dados_funcionario else None,
 			)
-			await self.funcionarios.add(funcionario)
+			await self.funcionarios.adicionar(funcionario)
 
-		if payload.role == UserRole.ADMIN:
+		if dados.role == PapelUsuario.ADMIN:
 			admin = Admin(
 				id=usuario.id,
-				nivel_acesso=payload.admin.nivel_acesso if payload.admin else 1,
+				nivel_acesso=dados.admin.nivel_acesso if dados.admin else 1,
 			)
-			await self.admins.add(admin)
+			await self.admins.adicionar(admin)
 
-		await self.session.commit()
-		await self.session.refresh(usuario)
+		await self.sessao.commit()
+		await self.sessao.refresh(usuario)
 		return usuario
 
-	async def get(self, usuario_id: int) -> Usuario:
-		usuario = await self.usuarios.get(usuario_id)
+	async def obter(self, usuario_id: int) -> Usuario:
+		"""Função para obter um registro pelo ID."""
+		usuario = await self.usuarios.obter(usuario_id)
 		if not usuario:
-			raise NotFoundError(_ENTITY, usuario_id)
+			raise ErroNaoEncontrado(_ENTIDADE, usuario_id)
 		return usuario
 
-	async def list(self, offset: int, limit: int) -> list[Usuario]:
-		return await self.usuarios.list_all(offset=offset, limit=limit)
+	async def listar(self, offset: int, limit: int) -> list[Usuario]:
+		"""Função para listar registros."""
+		return await self.usuarios.listar_todos(offset=offset, limit=limit)
 
-	async def list_filtered(
+	async def listar_filtrados(
 		self,
 		offset: int,
 		limit: int,
-		role: UserRole | None = None,
-		status: UserStatus | None = None,
-		search: str | None = None,
+		papel: PapelUsuario | None = None,
+		status: SituacaoUsuario | None = None,
+		busca: str | None = None,
 	) -> list[Usuario]:
-		return await self.usuarios.list_filtered(
-			offset=offset, limit=limit, role=role, status=status, search=search
+		"""Função para listar registros aplicando filtros e paginação."""
+		return await self.usuarios.listar_filtrados(
+			offset=offset, limit=limit, papel=papel, status=status, busca=busca
 		)
 
-	async def update(self, usuario_id: int, payload: UsuarioUpdate) -> Usuario:
-		usuario = await self.usuarios.update(
-			usuario_id, payload.model_dump(exclude_none=True)
-		)
+	async def atualizar(self, usuario_id: int, dados: UsuarioAtualizar) -> Usuario:
+		"""Função para atualizar um registro pelo ID."""
+		usuario = await self.usuarios.atualizar(usuario_id, dados.model_dump(exclude_none=True))
 		if not usuario:
-			raise NotFoundError(_ENTITY, usuario_id)
-		await self.session.commit()
+			raise ErroNaoEncontrado(_ENTIDADE, usuario_id)
+		await self.sessao.commit()
 		return usuario
 
-	async def delete(self, usuario_id: int) -> None:
-		is_deleted = await self.usuarios.delete(usuario_id)
-		if not is_deleted:
-			raise NotFoundError(_ENTITY, usuario_id)
-		await self.session.commit()
+	async def deletar(self, usuario_id: int) -> None:
+		"""Função para excluir um registro pelo ID."""
+		removido = await self.usuarios.deletar(usuario_id)
+		if not removido:
+			raise ErroNaoEncontrado(_ENTIDADE, usuario_id)
+		await self.sessao.commit()
 
-	async def register(self, payload: UsuarioRegister) -> Usuario:
-		if payload.role == UserRole.ADMIN:
-			raise BadRequestError(
-				'Auto-cadastro como admin não é pertmitido. '
-				'Apenas admins podem promover usuários'
+	async def registrar(self, dados: UsuarioRegistrar) -> Usuario:
+		"""Função para registrar um novo usuário."""
+		if dados.role == PapelUsuario.ADMIN:
+			raise ErroRequisicaoInvalida(
+				'Auto-cadastro como admin não é pertmitido. Apenas admins podem promover usuários'
 			)
-		create_payload = UsuarioCreate(
-			nome=payload.nome,
-			email=payload.email,
-			senha=payload.senha,
-			role=payload.role,
-			telefone=payload.telefone,
-			avatar=payload.avatar,
-			status=UserStatus.PENDENTE,
-			cliente=payload.cliente,
-			funcionario=payload.funcionario,
+		dados_criacao = UsuarioCriar(
+			nome=dados.nome,
+			email=dados.email,
+			senha=dados.senha,
+			role=dados.role,
+			telefone=dados.telefone,
+			avatar=dados.avatar,
+			status=SituacaoUsuario.PENDENTE,
+			cliente=dados.cliente,
+			funcionario=dados.funcionario,
 		)
-		return await self.create(create_payload)
+		return await self.criar(dados_criacao)
 
-	async def approve(self, usuario_id: int) -> Usuario:
-		usuario = await self.get(usuario_id)
+	async def aprovar(self, usuario_id: int) -> Usuario:
+		"""Função para aprovar o cadastro de um usuário."""
+		usuario = await self.obter(usuario_id)
 		if usuario is None:
-			raise NotFoundError(_ENTITY, usuario_id)
-		if usuario.status == UserStatus.ATIVO:
+			raise ErroNaoEncontrado(_ENTIDADE, usuario_id)
+		if usuario.status == SituacaoUsuario.ATIVO:
 			return usuario
-		usuario_updated = await self.usuarios.update(
-			usuario_id, {'status': UserStatus.ATIVO}
+		usuario_atualizado = await self.usuarios.atualizar(
+			usuario_id, {'status': SituacaoUsuario.ATIVO}
 		)
-		if usuario_updated is None:
-			raise NotFoundError(_ENTITY, usuario_id)
-		await self.session.commit()
-		return usuario_updated
+		if usuario_atualizado is None:
+			raise ErroNaoEncontrado(_ENTIDADE, usuario_id)
+		await self.sessao.commit()
+		return usuario_atualizado

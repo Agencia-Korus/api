@@ -1,119 +1,120 @@
-import asyncio
 import os
-import socket
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Generator
+from importlib import import_module
+from pathlib import Path
+from typing import cast
 
 import pytest
 import pytest_asyncio
+from alembic import command
+from alembic.config import Config
+from core.config import obter_configuracoes
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
+from testcontainers.postgres import PostgresContainer
 
-os.environ.setdefault(
-	'DATABASE_URL',
-	'postgresql+asyncpg://korus:korus@localhost:5432/korus_test',
-)
+VARIAVEL_URL_BASE = 'KORUS_BASE_URL'
+TEMPO_LIMITE_PADRAO_SEGUNDOS = 30
+POSTGRES_IMAGE = os.environ.get('POSTGRES_IMAGE', 'postgres:16-alpine')
+CAMINHO_ALEMBIC = Path(__file__).resolve().parents[1] / 'alembic.ini'
+
 os.environ.setdefault('JWT_SECRET_KEY', 'test-secret')
 
-from core.security import create_access_token
-from db.session import engine
-from main import app
-from sqlalchemy import text
 
-BASE_URL_ENV = 'KORUS_BASE_URL'
-DEFAULT_TIMEOUT_SECONDS = 30
-DEFAULT_DB_PORT = 5432
-SOCKET_CHECK_TIMEOUT = 1
+def _executar_migracoes() -> None:
+	configuracao = Config(str(CAMINHO_ALEMBIC))
+	command.upgrade(configuracao, 'head')
 
 
 @pytest.fixture(scope='session')
-def base_url() -> str | None:
-	return os.environ.get(BASE_URL_ENV)
+def postgres_container() -> Generator[PostgresContainer, None, None]:
+	"""Sobe um Postgres efêmero para a sessão de testes."""
+	with PostgresContainer(POSTGRES_IMAGE, driver='asyncpg') as postgres:
+		os.environ['DATABASE_URL'] = postgres.get_connection_url()
+		obter_configuracoes.cache_clear()
+		_executar_migracoes()
+		yield postgres
+	obter_configuracoes.cache_clear()
 
 
-@pytest_asyncio.fixture
-async def client(base_url: str | None) -> AsyncGenerator[AsyncClient, None]:
-	if base_url:
-		async with AsyncClient(
-			base_url=base_url, timeout=DEFAULT_TIMEOUT_SECONDS
-		) as http_client:
-			yield http_client
-	else:
-		transport = ASGITransport(app=app)
-		async with AsyncClient(
-			transport=transport,
-			base_url='http://testserver',
-			timeout=DEFAULT_TIMEOUT_SECONDS,
-		) as http_client:
-			yield http_client
+@pytest.fixture(scope='session')
+def url_base() -> str | None:
+	return os.environ.get(VARIAVEL_URL_BASE)
 
 
-@pytest.fixture
-def admin_token() -> str:
-	return create_access_token(subject=1, extra={'role': 'admin'})
+@pytest.fixture(scope='session')
+def app_teste(postgres_container: PostgresContainer) -> FastAPI:
+	return cast(FastAPI, import_module('main').app)
 
 
 @pytest.fixture
-def admin_headers(admin_token: str) -> dict[str, str]:
-	return {'Authorization': f'Bearer {admin_token}'}
+def cliente_teste(app_teste: FastAPI) -> Generator[TestClient, None, None]:
+	with TestClient(app_teste) as cliente_http_interno:
+		yield cliente_http_interno
 
 
 @pytest_asyncio.fixture
-async def admin_client(
-	base_url: str | None, admin_headers: dict[str, str]
+async def cliente_http(
+	url_base: str | None, app_teste: FastAPI
 ) -> AsyncGenerator[AsyncClient, None]:
-	if base_url:
+	if url_base:
 		async with AsyncClient(
-			base_url=base_url,
-			timeout=DEFAULT_TIMEOUT_SECONDS,
-			headers=admin_headers,
-		) as http_client:
-			yield http_client
+			base_url=url_base, timeout=TEMPO_LIMITE_PADRAO_SEGUNDOS
+		) as cliente_http_interno:
+			yield cliente_http_interno
 	else:
-		transport = ASGITransport(app=app)
+		transport = ASGITransport(app=app_teste)
 		async with AsyncClient(
 			transport=transport,
 			base_url='http://testserver',
-			timeout=DEFAULT_TIMEOUT_SECONDS,
-			headers=admin_headers,
-		) as http_client:
-			yield http_client
+			timeout=TEMPO_LIMITE_PADRAO_SEGUNDOS,
+		) as cliente_http_interno:
+			yield cliente_http_interno
 
 
 @pytest.fixture
-def cliente_token() -> str:
-	return create_access_token(subject=2, extra={'role': 'cliente'})
+def token_admin() -> str:
+	criar_token_acesso = import_module('core.security').criar_token_acesso
+	return criar_token_acesso(sujeito=1, dados_extras={'role': 'admin'})
 
 
 @pytest.fixture
-def cliente_headers(cliente_token: str) -> dict[str, str]:
-	return {'Authorization': f'Bearer {cliente_token}'}
+def cabecalhos_admin(token_admin: str) -> dict[str, str]:
+	return {'Authorization': f'Bearer {token_admin}'}
 
 
-async def _ping_database() -> bool:
-	try:
-		async with engine.connect() as conn:
-			await conn.execute(text('SELECT 1 FROM usuario LIMIT 1'))
-			return True
-	except Exception:
-		return False
-	finally:
-		await engine.dispose()
+@pytest_asyncio.fixture
+async def cliente_admin(
+	url_base: str | None, app_teste: FastAPI, cabecalhos_admin: dict[str, str]
+) -> AsyncGenerator[AsyncClient, None]:
+	if url_base:
+		async with AsyncClient(
+			base_url=url_base,
+			timeout=TEMPO_LIMITE_PADRAO_SEGUNDOS,
+			headers=cabecalhos_admin,
+		) as cliente_http_interno:
+			yield cliente_http_interno
+	else:
+		transport = ASGITransport(app=app_teste)
+		async with AsyncClient(
+			transport=transport,
+			base_url='http://testserver',
+			timeout=TEMPO_LIMITE_PADRAO_SEGUNDOS,
+			headers=cabecalhos_admin,
+		) as cliente_http_interno:
+			yield cliente_http_interno
 
 
-def is_postgres_available() -> bool:
-	host = os.environ.get('TEST_DB_HOST', 'localhost')
-	port = int(os.environ.get('TEST_DB_PORT', str(DEFAULT_DB_PORT)))
-	try:
-		with socket.create_connection((host, port), timeout=SOCKET_CHECK_TIMEOUT):
-			pass
-	except OSError:
-		return False
-	try:
-		return asyncio.run(_ping_database())
-	except RuntimeError:
-		return False
+@pytest.fixture
+def token_cliente() -> str:
+	criar_token_acesso = import_module('core.security').criar_token_acesso
+	return criar_token_acesso(sujeito=2, dados_extras={'role': 'cliente'})
 
 
-requires_db = pytest.mark.skipif(
-	not is_postgres_available(),
-	reason='Postgres com schema aplicado é necessário para integração',
-)
+@pytest.fixture
+def cabecalhos_cliente(token_cliente: str) -> dict[str, str]:
+	return {'Authorization': f'Bearer {token_cliente}'}
+
+
+exige_banco = pytest.mark.usefixtures('postgres_container')

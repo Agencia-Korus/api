@@ -1,5 +1,12 @@
 from datetime import datetime
 
+from core.constants import (
+	TAMANHO_MAXIMO_CATEGORIA,
+	TAMANHO_MAXIMO_NOME,
+	TAMANHO_MAXIMO_TITULO,
+	TAMANHO_MAXIMO_URL,
+)
+from db.base import Base
 from sqlalchemy import (
 	BigInteger,
 	Boolean,
@@ -13,27 +20,21 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
-from core.constants import (
-	CATEGORIA_MAX_LENGTH,
-	NOME_MAX_LENGTH,
-	TITULO_MAX_LENGTH,
-	URL_MAX_LENGTH,
-)
-from db.base import Base
-
 
 class Portfolio(Base):
+	"""Classe que representa a tabela de portfólio no banco de dados."""
+
 	__tablename__ = 'portfolio'
 
 	id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
 	projeto_id: Mapped[int | None] = mapped_column(
 		BigInteger, ForeignKey('projeto.id', ondelete='SET NULL')
 	)
-	nome: Mapped[str] = mapped_column(String(TITULO_MAX_LENGTH), nullable=False)
-	cliente: Mapped[str | None] = mapped_column(String(NOME_MAX_LENGTH))
-	categoria: Mapped[str | None] = mapped_column(String(CATEGORIA_MAX_LENGTH))
+	nome: Mapped[str] = mapped_column(String(TAMANHO_MAXIMO_TITULO), nullable=False)
+	cliente: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_NOME))
+	categoria: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_CATEGORIA))
 	descricao: Mapped[str | None] = mapped_column(Text)
-	imagem: Mapped[str | None] = mapped_column(String(URL_MAX_LENGTH))
+	imagem: Mapped[str | None] = mapped_column(String(TAMANHO_MAXIMO_URL))
 	ano: Mapped[int | None] = mapped_column(SmallInteger)
 	destaque: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 	tags: Mapped[list[str]] = mapped_column(

@@ -1,54 +1,66 @@
-from core.enums import UserRole, UserStatus
-from db.base_repository import BaseRepository
+from core.enums import PapelUsuario, SituacaoUsuario
+from db.base_repository import RepositorioBase
 from modules.users.model import Admin, Cliente, Funcionario, Usuario
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class UsuarioRepository(BaseRepository[Usuario]):
-	model = Usuario
+class RepositorioUsuario(RepositorioBase[Usuario]):
+	"""Classe responsável pelo acesso aos dados de usuário."""
 
-	async def get_by_email(self, email: str) -> Usuario | None:
-		stmt = select(Usuario).where(Usuario.email == email)
-		result = await self.session.execute(stmt)
-		return result.scalar_one_or_none()
+	modelo = Usuario
 
-	async def list_filtered(
+	async def obter_por_email(self, email: str) -> Usuario | None:
+		"""Função para buscar um usuário pelo email."""
+		consulta = select(Usuario).where(Usuario.email == email)
+		resultado = await self.sessao.execute(consulta)
+		return resultado.scalar_one_or_none()
+
+	async def listar_filtrados(
 		self,
 		offset: int,
 		limit: int,
-		role: UserRole | None = None,
-		status: UserStatus | None = None,
-		search: str | None = None,
+		papel: PapelUsuario | None = None,
+		status: SituacaoUsuario | None = None,
+		busca: str | None = None,
 	) -> list[Usuario]:
-		stmt = select(Usuario)
-		if role is not None:
-			stmt = stmt.where(Usuario.role == role)
+		"""Função para listar registros aplicando filtros e paginação."""
+		consulta = select(Usuario)
+		if papel is not None:
+			consulta = consulta.where(Usuario.role == papel)
 		if status is not None:
-			stmt = stmt.where(Usuario.status == status)
-		if search:
-			term = f'%{search}%'
-			stmt = stmt.where(or_(Usuario.nome.ilike(term), Usuario.email.ilike(term)))
-		stmt = stmt.order_by(Usuario.nome).offset(offset).limit(limit)
-		result = await self.session.execute(stmt)
-		return list(result.scalars().all())
+			consulta = consulta.where(Usuario.status == status)
+		if busca:
+			termo = f'%{busca}%'
+			consulta = consulta.where(or_(Usuario.nome.ilike(termo), Usuario.email.ilike(termo)))
+		consulta = consulta.order_by(Usuario.nome).offset(offset).limit(limit)
+		resultado = await self.sessao.execute(consulta)
+		return list(resultado.scalars().all())
 
 
-class ClienteRepository(BaseRepository[Cliente]):
-	model = Cliente
+class RepositorioCliente(RepositorioBase[Cliente]):
+	"""Classe responsável pelo acesso aos dados de cliente."""
 
-	def __init__(self, session: AsyncSession):
-		super().__init__(session)
+	modelo = Cliente
 
-	async def get_by_documento(self, documento: str) -> Cliente | None:
-		stmt = select(Cliente).where(Cliente.cnpj_cpf == documento)
-		result = await self.session.execute(stmt)
-		return result.scalar_one_or_none()
+	def __init__(self, sessao: AsyncSession):
+		"""Função para inicializar a instância com suas dependências."""
+		super().__init__(sessao)
+
+	async def obter_por_documento(self, documento: str) -> Cliente | None:
+		"""Função para buscar um cliente pelo documento."""
+		consulta = select(Cliente).where(Cliente.cnpj_cpf == documento)
+		resultado = await self.sessao.execute(consulta)
+		return resultado.scalar_one_or_none()
 
 
-class FuncionarioRepository(BaseRepository[Funcionario]):
-	model = Funcionario
+class RepositorioFuncionario(RepositorioBase[Funcionario]):
+	"""Classe responsável pelo acesso aos dados de funcionário."""
+
+	modelo = Funcionario
 
 
-class AdminRepository(BaseRepository[Admin]):
-	model = Admin
+class RepositorioAdmin(RepositorioBase[Admin]):
+	"""Classe responsável pelo acesso aos dados de admin."""
+
+	modelo = Admin

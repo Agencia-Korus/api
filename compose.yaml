@@ -1,55 +1,59 @@
 services:
-    korus-db:
-        image: postgres:18
-        volumes:
-            - pgdata:/var/lib/postgresql/data
-        environment:
-            POSTGRES_USER: ${POSTGRES_USER}
-            POSTGRES_DB: ${POSTGRES_DB}
-            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-        ports:
-            - "5433:5432"
-        healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-            interval: 5s
-            timeout: 5s
-            retries: 5
-
-    korus-api:
-        image: korus-api
-        build:
-            context: ./api
-        entrypoint: ./entrypoint.sh
-        ports:
-            - "8000:8000"
-        depends_on:
-            korus-db:
-                condition: service_healthy
-        environment:
-            DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@korus-db:5432/${POSTGRES_DB}
-            DEBUG: ${DEBUG}
-            JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-            JWT_ALGORITHM: ${JWT_ALGORITHM}
-            JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
-            JWT_REFRESH_TOKEN_EXPIRE_DAYS: ${JWT_REFRESH_TOKEN_EXPIRE_DAYS}
-            CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS}
-
-    korus-auth:
-        image: korus-auth
-        build:
-            context: ./auth
-        ports:
-            - "8001:8001"
-        depends_on:
-            korus-db:
-                condition: service_healthy
-        environment:
-            DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@korus-db:5432/${POSTGRES_DB}
-            DEBUG: ${DEBUG}
-            JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-            JWT_ALGORITHM: ${JWT_ALGORITHM}
-            JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
-            JWT_REFRESH_TOKEN_EXPIRE_DAYS: ${JWT_REFRESH_TOKEN_EXPIRE_DAYS}
-
+  korus-db:
+    image: postgres:18
+    volumes:
+      - pgdata:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  korus-api:
+    image: korus-api
+    entrypoint: ./entrypoint.sh
+    command: poetry run uvicorn main:app --app-dir api --host 0.0.0.0 --port 8000
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      korus-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      DEBUG: ${DEBUG}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: ${JWT_REFRESH_TOKEN_EXPIRE_DAYS}
+      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS}
+      GOOGLE_CALENDAR_ENABLED: ${GOOGLE_CALENDAR_ENABLED}
+      GOOGLE_CALENDAR_ID: ${GOOGLE_CALENDAR_ID}
+      GOOGLE_CALENDAR_API_KEY: ${GOOGLE_CALENDAR_API_KEY}
+      GOOGLE_CALENDAR_SERVICE_ACCOUNT_FILE: /run/secrets/google-calendar-service-account.json
+      GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON: ${GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON}
+      GOOGLE_CALENDAR_DELEGATED_USER: ${GOOGLE_CALENDAR_DELEGATED_USER}
+      GOOGLE_CALENDAR_TIMEZONE: ${GOOGLE_CALENDAR_TIMEZONE}
+      GOOGLE_CALENDAR_DAYS_PAST: ${GOOGLE_CALENDAR_DAYS_PAST}
+      GOOGLE_CALENDAR_DAYS_FUTURE: ${GOOGLE_CALENDAR_DAYS_FUTURE}
+    volumes:
+      - ./:/app
+      - ./.env.google-calendar-service-account.json:/run/secrets/google-calendar-service-account.json:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 volumes:
-    pgdata:
+  pgdata:

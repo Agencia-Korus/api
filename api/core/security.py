@@ -1,74 +1,119 @@
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Any
 
-from core.config import get_settings
+from core.config import obter_configuracoes
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 
-settings = get_settings()
+configuracoes = obter_configuracoes()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/v1/auth/login', auto_error=False)
+esquema_bearer = HTTPBearer(auto_error=False)
 
-CREDENTIALS_EXCEPTION = HTTPException(
+EXCECAO_CREDENCIAIS = HTTPException(
 	status_code=status.HTTP_401_UNAUTHORIZED,
 	detail='Credenciais inválidas',
 	headers={'WWW-Authenticate': 'Bearer'},
 )
 
 
-def create_access_token(subject: str | int, extra: dict[str, Any] | None = None) -> str:
-	expire = datetime.now(timezone.utc) + timedelta(
-		minutes=settings.jwt_access_token_expire_minutes
-	)
-	payload: dict[str, Any] = {'sub': str(subject), 'exp': expire, 'type': 'access'}
-	if extra:
-		payload.update(extra)
-	return jwt.encode(
-		payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm
-	)
+@dataclass(frozen=True)
+class UsuarioAtual:
+	"""Classe que representa o usuário autenticado extraído do token."""
+
+	id: int
+	papel: str
 
 
-def create_refresh_token(subject: str | int) -> str:
-	expire = datetime.now(timezone.utc) + timedelta(
-		days=settings.jwt_refresh_token_expire_days
+def criar_token_acesso(sujeito: str | int, dados_extras: dict[str, Any] | None = None) -> str:
+	"""Função para criar um token JWT de acesso."""
+	expiracao = datetime.now(timezone.utc) + timedelta(
+		minutes=configuracoes.jwt_access_token_expire_minutes
 	)
-	payload = {'sub': str(subject), 'exp': expire, 'type': 'refresh'}
-	return jwt.encode(
-		payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm
-	)
+	dados: dict[str, Any] = {'sub': str(sujeito), 'exp': expiracao, 'type': 'access'}
+	if dados_extras:
+		dados.update(dados_extras)
+	return jwt.encode(dados, configuracoes.jwt_secret_key, algorithm=configuracoes.jwt_algorithm)
 
 
-def decode_token(token: str) -> dict[str, Any]:
+def criar_token_atualizacao(sujeito: str | int) -> str:
+	"""Função para criar um token JWT de renovação."""
+	expiracao = datetime.now(timezone.utc) + timedelta(
+		days=configuracoes.jwt_refresh_token_expire_days
+	)
+	dados = {'sub': str(sujeito), 'exp': expiracao, 'type': 'refresh'}
+	return jwt.encode(dados, configuracoes.jwt_secret_key, algorithm=configuracoes.jwt_algorithm)
+
+
+def decodificar_token(token: str) -> dict[str, Any]:
+	"""Função para decodificar e validar um token JWT."""
 	try:
 		return jwt.decode(
-			token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
+			token,
+			configuracoes.jwt_secret_key,
+			algorithms=[configuracoes.jwt_algorithm],
 		)
 	except JWTError as exc:
-		raise CREDENTIALS_EXCEPTION from exc
+		raise EXCECAO_CREDENCIAIS from exc
 
 
-def get_current_user_id(token: Annotated[str | None, Depends(oauth2_scheme)]) -> int:
-	if not token:
-		raise CREDENTIALS_EXCEPTION
-	payload = decode_token(token)
-	subject = payload.get('sub')
-	if not subject:
-		raise CREDENTIALS_EXCEPTION
-	return int(subject)
+def _extrair_token_bearer(credenciais: HTTPAuthorizationCredentials | None) -> str:
+	"""Função interna para extrair o token Bearer recebido."""
+	if not credenciais:
+		raise EXCECAO_CREDENCIAIS
+	return credenciais.credentials
 
 
-def require_role(*allowed_roles: str):
-	def _checker(token: Annotated[str | None, Depends(oauth2_scheme)]) -> int:
-		if not token:
-			raise CREDENTIALS_EXCEPTION
-		payload = decode_token(token)
-		role = payload.get('role')
-		if role not in allowed_roles:
+def obter_usuario_atual_id(
+	credenciais: Annotated[
+		HTTPAuthorizationCredentials | None,
+		Depends(esquema_bearer),
+	],
+) -> int:
+	"""Função para obter o ID do usuário autenticado."""
+	token = _extrair_token_bearer(credenciais)
+	dados = decodificar_token(token)
+	sujeito = dados.get('sub')
+	if not sujeito:
+		raise EXCECAO_CREDENCIAIS
+	return int(sujeito)
+
+
+def obter_usuario_atual(
+	credenciais: Annotated[
+		HTTPAuthorizationCredentials | None,
+		Depends(esquema_bearer),
+	],
+) -> UsuarioAtual:
+	"""Função para obter os dados do usuário autenticado."""
+	token = _extrair_token_bearer(credenciais)
+	dados = decodificar_token(token)
+	sujeito = dados.get('sub')
+	papel = dados.get('role')
+	if not sujeito or not papel:
+		raise EXCECAO_CREDENCIAIS
+	return UsuarioAtual(id=int(sujeito), papel=str(papel))
+
+
+def exigir_papel(*papeis_permitidos: str):
+	"""Função para exigir perfis específicos de acesso."""
+
+	def _verificar(
+		credenciais: Annotated[
+			HTTPAuthorizationCredentials | None,
+			Depends(esquema_bearer),
+		],
+	) -> int:
+		"""Função interna para validar o perfil do token recebido."""
+		token = _extrair_token_bearer(credenciais)
+		dados = decodificar_token(token)
+		papel = dados.get('role')
+		if papel not in papeis_permitidos:
 			raise HTTPException(
 				status_code=status.HTTP_403_FORBIDDEN,
 				detail='Acesso negado para este recurso',
 			)
-		return int(payload['sub'])
+		return int(dados['sub'])
 
-	return _checker
+	return _verificar
