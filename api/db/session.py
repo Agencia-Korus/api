@@ -15,9 +15,7 @@ from sqlalchemy.ext.asyncio import (
 def obter_motor() -> AsyncEngine:  # pragma: no cover
 	"""Função para criar o engine assíncrono sob demanda."""
 	configuracoes = obter_configuracoes()
-	url_banco, argumentos_conexao = normalizar_url_banco_assincrono(
-		configuracoes.database_url
-	)
+	url_banco, argumentos_conexao = normalizar_url_banco_assincrono(configuracoes.database_url)
 	return create_async_engine(
 		url=url_banco,
 		echo=configuracoes.debug,

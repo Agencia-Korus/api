@@ -22,7 +22,9 @@ async def enviar_imagem(
 	servico: DependenciaServico,
 	_usuario: DependenciaUsuario,
 	file: Annotated[UploadFile, File(description='Arquivo de imagem (até 5MB).')],
-	folder: Annotated[str, Form(description='Pasta destino: avatars, portfolio ou academy.')] = 'avatars',
+	folder: Annotated[
+		str, Form(description='Pasta destino: avatars, portfolio ou academy.')
+	] = 'avatars',
 ):
 	"""Envia uma imagem ao storage e retorna a URL pública (requer login)."""
 	url = await servico.enviar_imagem(file, folder)
