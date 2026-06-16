@@ -13,8 +13,9 @@ from modules.leads.service import ServicoLead
 router = APIRouter(
 	prefix='/leads',
 	tags=['Leads'],
-	dependencies=[Depends(exigir_papel(PapelUsuario.ADMIN.value))],
 )
+
+GuardaAdmin = Depends(exigir_papel(PapelUsuario.ADMIN.value))
 
 
 def _servico(sessao: DependenciaSessao) -> ServicoLead:
@@ -27,13 +28,14 @@ DependenciaServico = Annotated[ServicoLead, Depends(_servico)]
 
 @router.post('', response_model=LeadResposta, status_code=status.HTTP_201_CREATED)
 async def criar(dados: LeadCriar, servico: DependenciaServico):
-	"""Função para criar um novo registro."""
+	"""Função para criar um novo registro (formulário público de contato)."""
 	return await servico.criar(dados)
 
 
 @router.get(
 	'',
 	response_model=list[LeadResposta],
+	dependencies=[GuardaAdmin],
 	openapi_extra=exemplo_requisicao_json({
 		'offset': 0,
 		'limit': 20,
@@ -64,6 +66,7 @@ async def listar(
 
 @router.get(
 	'/export.csv',
+	dependencies=[GuardaAdmin],
 	openapi_extra=exemplo_requisicao_json({
 		'status': 'novo',
 		'prioridade': 'media',
@@ -126,6 +129,7 @@ async def exportar_csv(
 @router.get(
 	'/{lead_id}',
 	response_model=LeadResposta,
+	dependencies=[GuardaAdmin],
 	openapi_extra=exemplo_requisicao_json({'lead_id': 1}),
 )
 async def obter(lead_id: int, servico: DependenciaServico):
@@ -133,7 +137,7 @@ async def obter(lead_id: int, servico: DependenciaServico):
 	return await servico.obter(lead_id)
 
 
-@router.patch('/{lead_id}', response_model=LeadResposta)
+@router.patch('/{lead_id}', response_model=LeadResposta, dependencies=[GuardaAdmin])
 async def atualizar(lead_id: int, dados: LeadAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(lead_id, dados)
@@ -142,6 +146,7 @@ async def atualizar(lead_id: int, dados: LeadAtualizar, servico: DependenciaServ
 @router.delete(
 	'/{lead_id}',
 	status_code=status.HTTP_204_NO_CONTENT,
+	dependencies=[GuardaAdmin],
 	openapi_extra=exemplo_requisicao_json({'lead_id': 1}),
 )
 async def deletar(lead_id: int, servico: DependenciaServico):

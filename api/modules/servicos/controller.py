@@ -18,8 +18,9 @@ from modules.servicos.service import ServicoServico
 router = APIRouter(
 	prefix='/servicos',
 	tags=['Serviços'],
-	dependencies=[Depends(exigir_papel(PapelUsuario.ADMIN.value))],
 )
+
+GuardaAdmin = Depends(exigir_papel(PapelUsuario.ADMIN.value))
 
 
 def _servico(sessao: DependenciaSessao) -> ServicoServico:
@@ -30,7 +31,12 @@ def _servico(sessao: DependenciaSessao) -> ServicoServico:
 DependenciaServico = Annotated[ServicoServico, Depends(_servico)]
 
 
-@router.post('', response_model=ServicoResposta, status_code=status.HTTP_201_CREATED)
+@router.post(
+	'',
+	response_model=ServicoResposta,
+	status_code=status.HTTP_201_CREATED,
+	dependencies=[GuardaAdmin],
+)
 async def criar(dados: ServicoCriar, servico: DependenciaServico):
 	"""Função para criar um novo registro."""
 	return await servico.criar(dados)
@@ -66,7 +72,7 @@ async def obter(servico_id: int, servico: DependenciaServico):
 	return await servico.obter(servico_id)
 
 
-@router.patch('/{servico_id}', response_model=ServicoResposta)
+@router.patch('/{servico_id}', response_model=ServicoResposta, dependencies=[GuardaAdmin])
 async def atualizar(servico_id: int, dados: ServicoAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(servico_id, dados)
@@ -75,6 +81,7 @@ async def atualizar(servico_id: int, dados: ServicoAtualizar, servico: Dependenc
 @router.delete(
 	'/{servico_id}',
 	status_code=status.HTTP_204_NO_CONTENT,
+	dependencies=[GuardaAdmin],
 	openapi_extra=exemplo_requisicao_json({'servico_id': 1}),
 )
 async def deletar(servico_id: int, servico: DependenciaServico):
@@ -86,6 +93,7 @@ async def deletar(servico_id: int, servico: DependenciaServico):
 	'/{servico_id}/entregaveis',
 	response_model=EntregavelResposta,
 	status_code=status.HTTP_201_CREATED,
+	dependencies=[GuardaAdmin],
 )
 async def adicionar_entregavel(
 	servico_id: int, dados: EntregavelCriar, servico: DependenciaServico
@@ -105,7 +113,11 @@ async def listar_entregaveis(servico_id: int, servico: DependenciaServico):
 	return await servico.listar_entregaveis(servico_id)
 
 
-@router.patch('/entregaveis/{entregavel_id}', response_model=EntregavelResposta)
+@router.patch(
+	'/entregaveis/{entregavel_id}',
+	response_model=EntregavelResposta,
+	dependencies=[GuardaAdmin],
+)
 async def atualizar_entregavel(
 	entregavel_id: int, dados: EntregavelAtualizar, servico: DependenciaServico
 ):
@@ -116,6 +128,7 @@ async def atualizar_entregavel(
 @router.delete(
 	'/entregaveis/{entregavel_id}',
 	status_code=status.HTTP_204_NO_CONTENT,
+	dependencies=[GuardaAdmin],
 	openapi_extra=exemplo_requisicao_json({'entregavel_id': 1}),
 )
 async def remover_entregavel(entregavel_id: int, servico: DependenciaServico):

@@ -20,6 +20,9 @@ class Configuracoes(BaseSettings):
 	jwt_access_token_expire_minutes: int = MINUTOS_EXPIRACAO_TOKEN_ACESSO_JWT
 	jwt_refresh_token_expire_days: int = DIAS_EXPIRACAO_TOKEN_ATUALIZACAO_JWT
 	cors_allow_origins: str = '*'
+	supabase_url: str | None = None
+	supabase_bucket: str = 'korus-assets'
+	supabase_service_role_key: str | None = None
 	google_calendar_enabled: bool = False
 	google_calendar_id: str | None = None
 	google_calendar_api_key: str | None = None

@@ -15,8 +15,9 @@ from modules.portfolio.service import ServicoPortfolio
 router = APIRouter(
 	prefix='/portfolio',
 	tags=['Portfólio'],
-	dependencies=[Depends(exigir_papel(PapelUsuario.ADMIN.value))],
 )
+
+GuardaAdmin = Depends(exigir_papel(PapelUsuario.ADMIN.value))
 
 
 def _servico(sessao: DependenciaSessao) -> ServicoPortfolio:
@@ -27,7 +28,12 @@ def _servico(sessao: DependenciaSessao) -> ServicoPortfolio:
 DependenciaServico = Annotated[ServicoPortfolio, Depends(_servico)]
 
 
-@router.post('', response_model=PortfolioResposta, status_code=status.HTTP_201_CREATED)
+@router.post(
+	'',
+	response_model=PortfolioResposta,
+	status_code=status.HTTP_201_CREATED,
+	dependencies=[GuardaAdmin],
+)
 async def criar(dados: PortfolioCriar, servico: DependenciaServico):
 	"""Função para criar um novo registro."""
 	return await servico.criar(dados)
@@ -71,7 +77,7 @@ async def obter(item_id: int, servico: DependenciaServico):
 	return await servico.obter(item_id)
 
 
-@router.patch('/{item_id}', response_model=PortfolioResposta)
+@router.patch('/{item_id}', response_model=PortfolioResposta, dependencies=[GuardaAdmin])
 async def atualizar(item_id: int, dados: PortfolioAtualizar, servico: DependenciaServico):
 	"""Função para atualizar um registro pelo ID."""
 	return await servico.atualizar(item_id, dados)
@@ -80,6 +86,7 @@ async def atualizar(item_id: int, dados: PortfolioAtualizar, servico: Dependenci
 @router.delete(
 	'/{item_id}',
 	status_code=status.HTTP_204_NO_CONTENT,
+	dependencies=[GuardaAdmin],
 	openapi_extra=exemplo_requisicao_json({'item_id': 1}),
 )
 async def deletar(item_id: int, servico: DependenciaServico):

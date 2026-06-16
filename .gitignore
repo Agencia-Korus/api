@@ -73,6 +73,10 @@ uploads/
 storage/
 staticfiles/
 
+# Exceção: módulo de código de upload (proxy para o Supabase), não é storage de runtime
+!api/modules/uploads/
+!api/modules/uploads/*.py
+
 # =========================
 # SQLAlchemy / Alembic
 # =========================

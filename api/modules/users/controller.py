@@ -1,12 +1,13 @@
 from typing import Annotated
 
 from core.enums import PapelUsuario, SituacaoUsuario
-from core.security import exigir_papel
+from core.security import UsuarioAtual, exigir_papel, obter_usuario_atual
 from core.swagger import exemplo_requisicao_json
 from deps import DependenciaPaginacao, DependenciaSessao
 from fastapi import APIRouter, Depends, Query, status
 from modules.users.schema import (
 	UsuarioAtualizar,
+	UsuarioAtualizarProprio,
 	UsuarioCriar,
 	UsuarioRegistrar,
 	UsuarioResposta,
@@ -23,6 +24,7 @@ def _servico(sessao: DependenciaSessao) -> ServicoUsuario:
 
 
 DependenciaServico = Annotated[ServicoUsuario, Depends(_servico)]
+DependenciaUsuarioAtual = Annotated[UsuarioAtual, Depends(obter_usuario_atual)]
 GuardaAdmin = Depends(exigir_papel(PapelUsuario.ADMIN.value))
 
 
@@ -65,6 +67,31 @@ async def listar(
 		status=filtro_situacao,
 		busca=busca,
 	)
+
+
+@router.get(
+	'/me',
+	response_model=UsuarioResposta,
+	summary='Retorna os dados do usuário autenticado',
+)
+async def obter_proprio(usuario_atual: DependenciaUsuarioAtual, servico: DependenciaServico):
+	"""Função para obter os dados do próprio usuário autenticado."""
+	return await servico.obter(usuario_atual.id)
+
+
+@router.patch(
+	'/me',
+	response_model=UsuarioResposta,
+	summary='Atualiza o próprio perfil (qualquer usuário autenticado)',
+)
+async def atualizar_proprio(
+	dados: UsuarioAtualizarProprio,
+	usuario_atual: DependenciaUsuarioAtual,
+	servico: DependenciaServico,
+):
+	"""Função para o usuário autenticado atualizar seu próprio perfil."""
+	atualizacao = UsuarioAtualizar(**dados.model_dump(exclude_none=True))
+	return await servico.atualizar(usuario_atual.id, atualizacao)
 
 
 @router.get(

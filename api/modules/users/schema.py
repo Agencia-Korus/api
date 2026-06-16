@@ -143,6 +143,25 @@ class UsuarioAtualizar(BaseModel):
 	)
 
 
+class UsuarioAtualizarProprio(BaseModel):
+	"""Dados que o próprio usuário autenticado pode alterar no seu perfil."""
+
+	nome: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_NOME)
+	email: EmailStr | None = None
+	telefone: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_TELEFONE)
+	avatar: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_URL)
+
+	model_config = ConfigDict(
+		json_schema_extra={
+			'example': {
+				'nome': 'Ana Cliente',
+				'telefone': '+5511977777777',
+				'avatar': 'https://cdn.korus.com.br/avatars/ana.png',
+			}
+		}
+	)
+
+
 class UsuarioResposta(BaseModel):
 	"""Classe que define os dados de usuário usados pela API."""
 

@@ -11,6 +11,7 @@ from modules.portfolio.controller import router as router_portfolio
 from modules.projetos.controller import router as router_projetos
 from modules.servicos.controller import router as router_servicos
 from modules.tarefas.controller import router as router_tarefas
+from modules.uploads.controller import router as router_uploads
 from modules.users.controller import router as router_usuarios
 
 router_api = APIRouter()
@@ -28,6 +29,7 @@ for router_modulo in (
 	router_projetos,
 	router_servicos,
 	router_tarefas,
+	router_uploads,
 	router_usuarios,
 ):
 	router_api.include_router(router_modulo)

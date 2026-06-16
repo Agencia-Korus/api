@@ -26,9 +26,13 @@ app = FastAPI(
 	description=('Backend principal da Korus.'),
 )
 
+_origens_cors = [o.strip() for o in configuracoes.cors_allow_origins.split(',') if o.strip()]
+_liberar_todas_origens = '*' in _origens_cors
+
 app.add_middleware(
 	CORSMiddleware,
-	allow_origins=[o.strip() for o in configuracoes.cors_allow_origins.split(',')],
+	allow_origins=[] if _liberar_todas_origens else _origens_cors,
+	allow_origin_regex='.*' if _liberar_todas_origens else None,
 	allow_credentials=True,
 	allow_methods=['*'],
 	allow_headers=['*'],
