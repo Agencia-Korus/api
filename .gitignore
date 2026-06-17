@@ -50,6 +50,7 @@ logs/
 .env
 .env.*
 !.env.example
+!.env.local.example
 !.env.template
 .env.google-calendar-service-account.json
 
