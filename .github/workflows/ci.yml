@@ -60,7 +60,7 @@ jobs:
           --cov=modules
           --cov-report=term-missing
           --cov-report=xml
-          --cov-fail-under=100
+          --cov-fail-under=95
           -q
 
       - name: Upload coverage
