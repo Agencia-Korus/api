@@ -1,6 +1,28 @@
+from core.enums import SituacaoUsuario
 from db.base_repository import RepositorioBase
 from modules.agenda.model import EventoAgenda, SolicitacaoReuniao
+from modules.users.model import Usuario
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
+class RepositorioContatoAgenda:
+	"""Classe responsável por listar contatos disponíveis para reuniões."""
+
+	def __init__(self, sessao: AsyncSession):
+		"""Função para inicializar a instância com suas dependências."""
+		self.sessao = sessao
+
+	async def listar(self, excluir_id: int) -> list[Usuario]:
+		"""Função para listar usuários ativos, exceto o próprio solicitante."""
+		consulta = (
+			select(Usuario)
+			.where(Usuario.id != excluir_id)
+			.where(Usuario.status == SituacaoUsuario.ATIVO)
+			.order_by(Usuario.nome)
+		)
+		resultado = await self.sessao.execute(consulta)
+		return list(resultado.scalars().all())
 
 
 class RepositorioEventoAgenda(RepositorioBase[EventoAgenda]):

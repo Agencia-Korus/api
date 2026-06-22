@@ -8,6 +8,7 @@ from core.exceptions import ErroNaoEncontrado
 from modules.agenda.google_calendar import ClienteGoogleCalendar, EventoGoogleCalendar
 from modules.agenda.model import EventoAgenda, SolicitacaoReuniao
 from modules.agenda.repository import (
+	RepositorioContatoAgenda,
 	RepositorioEventoAgenda,
 	RepositorioSolicitacaoReuniao,
 )
@@ -32,7 +33,12 @@ class ServicoAgenda:
 		self.sessao = sessao
 		self.eventos = RepositorioEventoAgenda(sessao)
 		self.solicitacoes = RepositorioSolicitacaoReuniao(sessao)
+		self.contatos = RepositorioContatoAgenda(sessao)
 		self.calendario_google = ClienteGoogleCalendar(obter_configuracoes())
+
+	async def listar_contatos(self, usuario_id: int):
+		"""Função para listar contatos disponíveis para reuniões."""
+		return await self.contatos.listar(usuario_id)
 
 	async def criar_evento(self, dados: EventoAgendaCriar) -> EventoAgenda:
 		"""Função para criar um evento na agenda."""

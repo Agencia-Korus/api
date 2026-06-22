@@ -136,6 +136,15 @@ class EventoGoogleCalendarResposta(BaseModel):
 	)
 
 
+class ContatoAgendaResposta(BaseModel):
+	"""Classe que define um contato disponível para reuniões."""
+
+	id: int
+	nome: str
+	role: str
+	model_config = ConfigDict(from_attributes=True)
+
+
 class SolicitacaoReuniaoBase(BaseModel):
 	"""Classe que define os dados de solicitação de reunião usados pela API."""
 

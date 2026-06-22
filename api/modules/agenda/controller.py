@@ -8,6 +8,7 @@ from deps import DependenciaSessao
 from fastapi import APIRouter, Depends, status
 from modules.agenda.schema import (
 	AgendaEventoSiteResposta,
+	ContatoAgendaResposta,
 	EventoAgendaAtualizar,
 	EventoAgendaCriar,
 	EventoAgendaResposta,
@@ -137,6 +138,20 @@ async def atualizar_evento(
 async def deletar_evento(evento_id: int, servico: DependenciaServico):
 	"""Função para excluir um evento da agenda."""
 	await servico.deletar_evento(evento_id)
+
+
+@router.get(
+	'/contatos',
+	response_model=list[ContatoAgendaResposta],
+	summary='Lista contatos disponíveis para reuniões (usuário autenticado)',
+	description=(
+		'Retorna os usuários ativos (exceto o próprio) para permitir o envio de '
+		'solicitações de reunião por qualquer perfil.'
+	),
+)
+async def listar_contatos(usuario_atual: DependenciaUsuarioAtual, servico: DependenciaServico):
+	"""Função para listar contatos disponíveis para reuniões."""
+	return await servico.listar_contatos(usuario_atual.id)
 
 
 @router.post(
